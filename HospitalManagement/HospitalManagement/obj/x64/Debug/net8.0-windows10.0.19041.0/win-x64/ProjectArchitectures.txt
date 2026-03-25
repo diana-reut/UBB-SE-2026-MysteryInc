@@ -1,1 +1,0 @@
-C:\Users\Ale\Desktop\uni\iss\HospitalManagement\HospitalManagement\HospitalManagement.csproj;x64
