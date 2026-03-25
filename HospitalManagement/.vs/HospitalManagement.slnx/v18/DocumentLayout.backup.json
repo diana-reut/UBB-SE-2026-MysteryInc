@@ -1,12 +1,57 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\Ale\\Desktop\\uni\\iss\\HospitalManagement\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{238D9FD2-833D-EDA8-E574-E65F00FF6BD9}|HospitalManagement\\HospitalManagement.csproj|c:\\users\\ale\\desktop\\uni\\iss\\hospitalmanagement\\hospitalmanagement\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{238D9FD2-833D-EDA8-E574-E65F00FF6BD9}|HospitalManagement\\HospitalManagement.csproj|solutionrelative:hospitalmanagement\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{238D9FD2-833D-EDA8-E574-E65F00FF6BD9}|HospitalManagement\\HospitalManagement.csproj|c:\\users\\ale\\desktop\\uni\\iss\\hospitalmanagement\\hospitalmanagement\\hospitalmanagement.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{238D9FD2-833D-EDA8-E574-E65F00FF6BD9}|HospitalManagement\\HospitalManagement.csproj|solutionrelative:hospitalmanagement\\hospitalmanagement.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": ".gitignore",
+              "DocumentMoniker": "C:\\Users\\Ale\\Desktop\\uni\\iss\\HospitalManagement\\HospitalManagement\\.gitignore",
+              "RelativeDocumentMoniker": "HospitalManagement\\.gitignore",
+              "ToolTip": "C:\\Users\\Ale\\Desktop\\uni\\iss\\HospitalManagement\\HospitalManagement\\.gitignore",
+              "RelativeToolTip": "HospitalManagement\\.gitignore",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-03-25T14:31:13.823Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "HospitalManagement.csproj",
+              "DocumentMoniker": "C:\\Users\\Ale\\Desktop\\uni\\iss\\HospitalManagement\\HospitalManagement\\HospitalManagement.csproj",
+              "RelativeDocumentMoniker": "HospitalManagement\\HospitalManagement.csproj",
+              "ToolTip": "C:\\Users\\Ale\\Desktop\\uni\\iss\\HospitalManagement\\HospitalManagement\\HospitalManagement.csproj",
+              "RelativeToolTip": "HospitalManagement\\HospitalManagement.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-03-25T13:34:59.953Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
