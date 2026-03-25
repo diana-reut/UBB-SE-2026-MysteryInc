@@ -6,6 +6,4 @@ obj/
 *.userosscache
 *.sln.docstates
 appsettings.local.json
-/HospitalManagement/.vs/HospitalManagement.slnx/v18/.suo
-/.gitignore
-/HospitalManagement/.vs/HospitalManagement.slnx/v18/DocumentLayout.json
+**/appsettings.local.json
