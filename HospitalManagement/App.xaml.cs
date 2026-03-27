@@ -36,7 +36,6 @@ namespace HospitalManagement
         {
             InitializeComponent();
             Configuration.Config.Load();
-            // Database.DbConnectionFactory.TestConnection(); - it works!!
         }
 
         /// <summary>
