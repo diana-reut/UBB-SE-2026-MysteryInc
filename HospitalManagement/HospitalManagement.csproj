@@ -12,9 +12,9 @@
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+	<WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="configuration\appsettings.local.json" />
     <None Remove="configuration\appsettings.template.json" />
     <None Remove="Database\script1_create_database.sql" />
   </ItemGroup>
@@ -27,9 +27,6 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="configuration\appsettings.local.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="configuration\appsettings.template.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -61,6 +58,11 @@
     <Folder Include="View\" />
     <Folder Include="Service\" />
     <Folder Include="Repository\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="configuration\appsettings.local.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <!--

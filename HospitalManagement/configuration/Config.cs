@@ -38,11 +38,6 @@ namespace HospitalManagement.Configuration
                 throw new Exception("The connection string is empty.");
             }
 
-            if (!connectionString.Contains("Server=") || !connectionString.Contains("Database="))
-            {
-                throw new Exception("The connection string is improperly formatted.");
-            }
-
             ConnectionString = connectionString;
         }
     }
