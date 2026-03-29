@@ -13,7 +13,7 @@ using Windows.ApplicationModel.Chat;
 namespace HospitalManagement.Repository
 
 {
-    class PatientRepository
+    public class PatientRepository
     {
         private readonly HospitalDbContext _context;
 
