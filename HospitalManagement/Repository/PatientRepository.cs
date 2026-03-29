@@ -52,6 +52,29 @@ namespace HospitalManagement.Repository
             };
         }
 
+        public List<Patient> GetAll(bool include_archived)
+        {
+            List<Patient> patients = new List<Patient>();
+
+
+            string query = "SELECT * FROM Patient";
+
+            if (!include_archived)
+            {
+                // SQL Server BIT 0 is false
+                query += " WHERE Archived = 0";
+            }
+
+            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            {
+                while (reader.Read())
+                {
+                    patients.Add(MapToPatient(reader));
+                }
+            }
+
+            return patients;
+        }
         public List<Patient> GetArchived()
         {
             List<Patient> archivedPatients = new List<Patient>();
