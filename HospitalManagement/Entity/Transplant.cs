@@ -11,7 +11,7 @@ namespace HospitalManagement.Entity
     {
         public int TransplantId { get; set; }
         public int ReceiverId { get; set; }
-        public int DonorId { get; set; }
+        public int? DonorId { get; set; }
         public string OrganType { get; set; } = string.Empty;
         public DateTime RequestDate { get; set; }
         public DateTime? TransplantDate { get; set; }
