@@ -13,7 +13,7 @@ namespace HospitalManagement.ViewModel
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        // View-ul activ (Admin, Staff sau Pharmacist)
+
         public object CurrentView
         {
             get => _currentView;
@@ -24,7 +24,7 @@ namespace HospitalManagement.ViewModel
             }
         }
 
-        // Comenzi pentru interfață
+        
         public ICommand RedirectToAdminRoleCommand { get; }
         public ICommand RedirectToStaffRoleCommand { get; }
         public ICommand RedirectToPharmacistRoleCommand { get; }
@@ -42,7 +42,7 @@ namespace HospitalManagement.ViewModel
         private void RedirectToStaffRole() => CurrentView = "StaffDashboard";
         private void RedirectToPharmacistRole() => CurrentView = "PharmacistDashboard";
 
-        // SV23: Implementare monitorizare fantome
+        // SV23
         private void RecordGhostSighting()
         {
             if ((DateTime.Now - _lastResetTime).TotalHours > 24)
@@ -61,9 +61,9 @@ namespace HospitalManagement.ViewModel
 
         private void TriggerExorcismAlert()
         {
-            // Aici va veni logica de afișare a alertei
+           //this is an example
             string message = "CRITICAL PARANORMAL ACTIVITY DETECTED: Multiple sightings confirmed. Please CALL THE PRIEST immediately.";
-            Console.WriteLine(message); // Exemplu temporar
+            Console.WriteLine(message); 
         }
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
@@ -72,7 +72,7 @@ namespace HospitalManagement.ViewModel
         }
     }
 
-    // Această clasă transformă o simplă metodă într-o "Comandă" pe care o pot folosi butoanele din XAML
+
     public class RelayCommand : ICommand
     {
         private readonly Action _execute;
