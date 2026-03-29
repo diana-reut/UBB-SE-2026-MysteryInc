@@ -167,7 +167,6 @@ namespace HospitalManagement.Repository
                 if (pd.MedicalHistory.BloodType == bloodType && pd.MedicalHistory.Rh == rh) score += 50;
                 else score += 25;
 
-
                 if (pd.Sex == sex)
                     score += 20;
                 else score += 10;
@@ -229,5 +228,48 @@ namespace HospitalManagement.Repository
             int score = 30 - (group * 5);
             return Math.Max(score, 0);
         }
+
+        public bool Exists(string CNP)
+        {
+            string query = $"SELECT * FROM Patient WHERE CNP={CNP}";
+
+            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            {
+                return reader.Read();
+            }
+            
+        }
+
+        public void MarkAsDeceased(int id, DateOnly dod)
+        {
+            string query = $"UPDATE Patient SET DateOfDeath={dod} WHERE PatientID={id}";
+            _context.ExecuteNonQuery(query);
+        }
+
+        public void Add(Patient patientToAdd)
+        {
+            string query = $"INSERT INTO Patient VALUES({patientToAdd.FirstName}, {patientToAdd.LastName}," +
+                $"{patientToAdd.Cnp}, {patientToAdd.Dob}, {patientToAdd.Dod}, {patientToAdd.Sex}," +
+                $"{patientToAdd.PhoneNo}, {patientToAdd.EmergencyContact}, {patientToAdd.IsArchived}, {patientToAdd.IsDonor})";
+
+            _context.ExecuteNonQuery(query);
+        }
+
+        public void Update(Patient patientToUpdate)
+        {
+            string query = $"UPDATE Patient SET FirstName={patientToUpdate.FirstName}, LastName={patientToUpdate.LastName}," +
+                $"Cnp={patientToUpdate.Cnp}, Dob={patientToUpdate.Dob}, Dod={patientToUpdate.Dod}, Sex={patientToUpdate.Sex}," +
+                $"PhoneNo={patientToUpdate.PhoneNo}, EmergencyContact={patientToUpdate.EmergencyContact}, IsArchived={patientToUpdate.IsArchived}, IsDonor={patientToUpdate.IsDonor}" +
+                $"WHERE PatientID={patientToUpdate.Id}";
+
+            _context.ExecuteNonQuery(query);
+        }
+
+        public void Delete(int id)
+        {
+            string query = $"DELET FROM Patient WHERE PatientID={id}";
+            _context.ExecuteNonQuery(query);
+        }
+
     }
 }
