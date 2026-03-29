@@ -8,6 +8,7 @@ namespace HospitalManagement.Entity
 {
     public class Allergy
     {
+        //hii
         public int AllergyId { get; set; }
         public string AllergyName { get; set; } = string.Empty;
         public string? AllergyType { get; set; }
