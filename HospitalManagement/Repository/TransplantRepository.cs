@@ -32,7 +32,7 @@ namespace HospitalManagement.Repository
                 throw new ArgumentNullException(nameof(transplant));
 
             //DECI TOATA PARTEA ASTA CU TRANSPLANT NU VA FUNCTIONA PANA NU SE SCOATE DONOR_ID NOT NULL
-            //DUPA CE VA FI NULL VA FI OK ACEST COD (si requirementurile)
+            //DUPA CE VA FI NULL VA FI OK ACEST COD (si requirementurile) - DONE
             string sql = $@"
             INSERT INTO Transplants (ReceiverID, DonorID, OrganType, RequestDate, TransplantDate, Status, CompatibilityScore)
             VALUES (
@@ -106,7 +106,7 @@ namespace HospitalManagement.Repository
                     {
                         TransplantId = (int)reader["TransplantID"],
                         ReceiverId = (int)reader["ReceiverID"],
-                        DonorId = (int)reader["DonorID"],
+                        DonorId = reader["DonorID"] == DBNull.Value ? (int?)null : (int)reader["DonorID"],
                         OrganType = reader["OrganType"].ToString(),
                         RequestDate = (DateTime)reader["RequestDate"],
                         TransplantDate = reader["TransplantDate"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["TransplantDate"],
