@@ -10,6 +10,7 @@ using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
 
 namespace HospitalManagement.Repository
+
 {
     class PatientRepository
     {
