@@ -3,6 +3,7 @@ using HospitalManagement.Database;
 using System;
 using System.Collections.Generic;
 using HospitalManagement.Integration;
+using System.Linq;
 
 namespace HospitalManagement.Repository
 {
@@ -142,48 +143,48 @@ namespace HospitalManagement.Repository
 
             try
             {
-                _context.BeginTransaction(); 
+                _context.BeginTransaction();
 
                 string notesValue = prescription.DoctorNotes == null
                 ? "NULL"
                 : $"'{Escape(prescription.DoctorNotes)}'";
 
-                    string dateValue = prescription.Date == default
-                        ? "CONVERT(DATE, GETDATE())"
-                        : $"'{FormatDate(prescription.Date)}'";
+                string dateValue = prescription.Date == default
+                    ? "CONVERT(DATE, GETDATE())"
+                    : $"'{FormatDate(prescription.Date)}'";
 
-                    string sqlUpdateHeader = $@"
+                string sqlUpdateHeader = $@"
                     UPDATE Prescription 
                     SET DoctorNotes = {notesValue}, [Date] = {dateValue}
                     WHERE PrescriptionID = {prescription.Id}";
 
-                    _context.ExecuteNonQuery(sqlUpdateHeader);
+                _context.ExecuteNonQuery(sqlUpdateHeader);
 
-                    _context.ExecuteNonQuery($"DELETE FROM PrescriptionItems WHERE PrescriptionID = {prescription.Id}");
+                _context.ExecuteNonQuery($"DELETE FROM PrescriptionItems WHERE PrescriptionID = {prescription.Id}");
 
-                    if (prescription.MedicationList != null)
+                if (prescription.MedicationList != null)
+                {
+                    foreach (var item in prescription.MedicationList)
                     {
-                        foreach (var item in prescription.MedicationList)
-                        {
-                            string quantityValue = item.Quantity == null
-                                ? "NULL"
-                                : $"'{Escape(item.Quantity)}'";
+                        string quantityValue = item.Quantity == null
+                            ? "NULL"
+                            : $"'{Escape(item.Quantity)}'";
 
-                            string sqlItem = $@"
+                        string sqlItem = $@"
                         INSERT INTO PrescriptionItems (PrescriptionID, MedName, Quantity) 
                         VALUES ({prescription.Id}, '{Escape(item.MedName)}', {quantityValue})";
 
-                            _context.ExecuteNonQuery(sqlItem);
-                        }
+                        _context.ExecuteNonQuery(sqlItem);
                     }
-
-                    _context.CommitTransaction(); 
-        }
-                catch
-                {
-                    _context.RollbackTransaction();
-                    throw;
                 }
+
+                _context.CommitTransaction();
+            }
+            catch
+            {
+                _context.RollbackTransaction();
+                throw;
+            }
         }
 
         // RP21 Pagination
@@ -262,9 +263,9 @@ namespace HospitalManagement.Repository
                 LEFT JOIN MedicalRecord mr ON p.RecordID = mr.RecordID
                 LEFT JOIN MedicalHistory mh ON mr.HistoryID = mh.HistoryID
                 LEFT JOIN Patient pat ON mh.PatientID = pat.PatientID
-                LEFT JOIN Doctor d ON mr.DoctorID = d.DoctorID
+                -- TODO: Restore LEFT JOIN Doctor table once it is created in the database
+                -- LEFT JOIN Doctor d ON mr.StaffID = d.DoctorID
                 WHERE 1=1";
-            //aici daca voi avea tabelul Doctor, cred ca fac LEFT JOIN Doctor d ON mr.StaffID = d.DoctorID
 
             if (filter.PrescriptionId.HasValue)
                 sql += $" AND p.PrescriptionID = {filter.PrescriptionId.Value}";
@@ -272,9 +273,9 @@ namespace HospitalManagement.Repository
             if (filter.PatientId.HasValue)
                 sql += $" AND pat.PatientID = {filter.PatientId.Value}";
 
-            //momentan aici am pus StaffID pentru ca nu avem tabelul Doctor, daca il hardcodam schimbam
+            // Temporarily use mr.StaffID pending the Doctor table
             if (filter.DoctorId.HasValue)
-                sql += $" AND d.StaffID = {filter.DoctorId.Value}";
+                sql += $" AND mr.StaffID = {filter.DoctorId.Value}";
 
             if (!string.IsNullOrWhiteSpace(filter.MedName))
                 sql += $" AND pi.MedName LIKE '%{Escape(filter.MedName)}%'";
@@ -291,14 +292,41 @@ namespace HospitalManagement.Repository
                 sql += $" AND (pat.FirstName LIKE '%{name}%' OR pat.LastName LIKE '%{name}%')";
             }
 
+            // TODO: Restore DoctorName filter once the Doctor table is created
+            // if (!string.IsNullOrWhiteSpace(filter.DoctorName))
+            // {
+            //     string name = Escape(filter.DoctorName);
+            //     sql += $" AND (d.FirstName LIKE '%{name}%' OR d.LastName LIKE '%{name}%')";
+            // }
+
+            // Using the fake DTO list to resolve doctor names to IDs
             if (!string.IsNullOrWhiteSpace(filter.DoctorName))
             {
-                string name = Escape(filter.DoctorName);
-                sql += $" AND (d.FirstName LIKE '%{name}%' OR d.LastName LIKE '%{name}%')";
+                var searchTerm = filter.DoctorName.ToLower();
+
+                // 1. Find matching fake doctors in C#
+                var matchingDoctorIds = MockDoctorProvider.GetFakeDoctors()
+                    .Where(d => d.FirstName.ToLower().Contains(searchTerm) || 
+                                d.LastName.ToLower().Contains(searchTerm))
+                    .Select(d => d.DoctorId)
+                    .ToList();
+
+                // 2. Add them to SQL using the IN clause on mr.StaffID
+                if (matchingDoctorIds.Count > 0)
+                {
+                    string idList = string.Join(",", matchingDoctorIds);
+                    sql += $" AND mr.StaffID IN ({idList})";
+                }
+                else
+                {
+                    // If a name was typed but no fake doctors match, return empty results
+                    sql += " AND 1=0"; 
+                }
             }
 
             sql += " ORDER BY p.[Date] DESC";
 
+            // ... execution logic below remains the same
             using (var reader = _context.ExecuteQuery(sql))
             {
                 while (reader.Read())
