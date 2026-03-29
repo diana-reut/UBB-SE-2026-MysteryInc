@@ -31,12 +31,13 @@ namespace HospitalManagement.Repository
             if (transplant == null)
                 throw new ArgumentNullException(nameof(transplant));
 
-
+            //DECI TOATA PARTEA ASTA CU TRANSPLANT NU VA FUNCTIONA PANA NU SE SCOATE DONOR_ID NOT NULL
+            //DUPA CE VA FI NULL VA FI OK ACEST COD (si requirementurile)
             string sql = $@"
             INSERT INTO Transplants (ReceiverID, DonorID, OrganType, RequestDate, TransplantDate, Status, CompatibilityScore)
             VALUES (
                 {transplant.ReceiverId}, 
-                NULL,  //NU E OK, TREBUIE SA FIE NULL, ASA NU VA FUNCTIONA, VA DA EROARE, DAR TREBUIE SCHIMBAT DATABASE-UL
+                NULL, 
                 '{Escape(transplant.OrganType)}', 
                 '{FormatDate(DateTime.Now)}', 
                 NULL, 
