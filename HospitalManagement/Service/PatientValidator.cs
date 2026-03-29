@@ -11,6 +11,10 @@ namespace HospitalManagement.Service
     {
         public void ValidateUpdate(Patient newDetails, Patient existingPatient)
         {
+
+            if (newDetails == null || existingPatient == null)
+                throw new ValidationException("Patient data cannot be null.");
+
             if (newDetails.Cnp != existingPatient.Cnp || newDetails.Dob != existingPatient.Dob)
             {
                 throw new ValidationException("Identity cannot be modified: CNP and Date of Birth must remain consistent."); 
@@ -26,6 +30,12 @@ namespace HospitalManagement.Service
         {
             var result = new ValidationResult();
             //for this line above if there is an error replace with this: var result = new global::ValidationResult();
+
+            if (patient == null)
+            {
+                result.AddError("Patient data cannot be null.");
+                return result;
+            }
 
             ValidateName(patient.FirstName, "First Name", result); 
             ValidateName(patient.LastName, "Last Name", result); 
@@ -110,6 +120,12 @@ namespace HospitalManagement.Service
         public ValidationResult ValidateMedicalHistory(MedicalHistory history, MedicalHistory? existingHistory = null)
         {
             var result = new ValidationResult();
+
+            if (history == null)
+            {
+                result.AddError("Medical history data cannot be null.");
+                return result;
+            }
 
             if (history.PatientId <= 0)
             {
