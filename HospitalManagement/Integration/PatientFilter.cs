@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Integration
+
 {
     class PatientFilter
     {
