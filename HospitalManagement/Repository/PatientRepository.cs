@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using HospitalManagement.Database;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
+using HospitalManagement.Integration;
 
 namespace HospitalManagement.Repository
 {
@@ -89,6 +90,51 @@ namespace HospitalManagement.Repository
                 }
             }
             return archivedPatients;
+        }
+
+        public List<Patient> Search(PatientFilter patientFilter)
+        {
+            IEnumerable<Patient> patients = this.GetAll(true);
+            
+            if(!string.IsNullOrWhiteSpace(patientFilter.namePart))
+            {
+                patients = patients.Where(p =>
+                    p.FirstName.Contains(patientFilter.namePart, StringComparison.OrdinalIgnoreCase) ||
+                    p.LastName.Contains(patientFilter.namePart, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(patientFilter.CNP))
+            {
+                patients = patients.Where(p => p.Cnp == patientFilter.CNP);
+            }
+
+            int currentYear = DateTime.Now.Year;
+            if(patientFilter.minAge.HasValue)
+            {
+                patients = patients.Where(p => (currentYear - p.Dob.Year) >= patientFilter.minAge);
+            }
+
+            if (patientFilter.maxAge.HasValue)
+            {
+                patients = patients.Where(p => (currentYear - p.Dob.Year) <= patientFilter.maxAge);
+            }
+
+            if(patientFilter.bloodType.HasValue)
+            {
+                patients = patients.Where(p => p.MedicalHistory !=null && p.MedicalHistory.BloodType == patientFilter.bloodType);
+            }
+
+            if(patientFilter.sex.HasValue)
+            {
+                patients = patients.Where(p => p.Sex == patientFilter.sex);
+            }
+
+            if(patientFilter.hasChronicCond == true)
+            {
+                patients = patients.Where(p => p.MedicalHistory != null && p.MedicalHistory.ChronicConditions.Any());
+            }
+
+            return patients.ToList<Patient>();
         }
     }
 }
