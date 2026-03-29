@@ -22,5 +22,17 @@ namespace HospitalManagement.Entity
         public bool IsDonor { get; set; }
 
         public MedicalHistory? MedicalHistory { get; set; }
+
+        public string GetFullName() => $"{FirstName} {LastName}";
+
+        public int GetAge()
+        {
+            var today = DateTime.Today;
+            var age = today.Year - Dob.Year;
+            if (Dob.Date > today.AddYears(-age)) age--;
+            return age;
+        }
+
+        public bool IsDeceased => Dod.HasValue;
     }
 }
