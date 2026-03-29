@@ -123,7 +123,7 @@ CREATE TABLE Transplants
 (
     TransplantID INT IDENTITY(1,1) PRIMARY KEY,
     ReceiverID INT NOT NULL,
-    DonorID INT NOT NULL,
+    DonorID INT NULL,
     OrganType VARCHAR(100) NOT NULL,
     RequestDate DATETIME NOT NULL,
     TransplantDate DATETIME NULL,
