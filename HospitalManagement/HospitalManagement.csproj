@@ -53,6 +53,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Entity\DTOs\" />
     <Folder Include="Integration\" />
     <Folder Include="ViewModel\" />
     <Folder Include="View\" />
