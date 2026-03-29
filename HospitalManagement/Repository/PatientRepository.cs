@@ -8,6 +8,7 @@ using HospitalManagement.Database;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
+using Windows.ApplicationModel.Chat;
 
 namespace HospitalManagement.Repository
 {
@@ -135,6 +136,98 @@ namespace HospitalManagement.Repository
             }
 
             return patients.ToList<Patient>();
+        }
+
+        List<Patient> GetCompatibleDonors(BloodType bloodType, RhEnum rh, Sex sex, DateTime dob, int minAge, int maxAge)
+        {
+            IEnumerable<Patient> potentialDonors = this.GetAll(false);
+
+            potentialDonors = potentialDonors.Where(p => p.MedicalHistory != null);
+
+            int currentYear = DateTime.Now.Year;
+            // exclude if not in the age range
+            potentialDonors = potentialDonors.Where(p => (currentYear - p.Dob.Year) >= minAge && (currentYear - p.Dob.Year) <= maxAge);
+
+            // exclude if the possible donor has chronic condition
+            potentialDonors = potentialDonors.Where(p => !(p.MedicalHistory != null && p.MedicalHistory.ChronicConditions.Any()));
+
+            // exclude if the possible donor has an allergy with severity anaphylactic
+            potentialDonors = potentialDonors.Where(p => !(p.MedicalHistory != null && p.MedicalHistory.Allergies.Any(a => string.Equals(a.SeverityLevel, "anaphylactic", StringComparison.OrdinalIgnoreCase))));
+
+            // exclude if not a blood match
+            potentialDonors = potentialDonors.Where(p => (p.MedicalHistory != null && this.IsABloodMatch(p.MedicalHistory.BloodType, bloodType)));
+
+            // exclude if not a rh match
+            potentialDonors = potentialDonors.Where(p => (p.MedicalHistory != null && this.IsARhMatch(p.MedicalHistory.Rh, rh)));
+
+            Dictionary<Patient, int> donorsScore = new Dictionary<Patient, int>();
+            foreach(Patient pd in potentialDonors){
+                int score = 0;
+
+                if (pd.MedicalHistory.BloodType == bloodType && pd.MedicalHistory.Rh == rh) score += 50;
+                else score += 25;
+
+
+                if (pd.Sex == sex)
+                    score += 20;
+                else score += 10;
+
+                score += this.CalculateAgeScore(pd.Dob, dob);
+
+                donorsScore.Add(pd, score);
+
+            }
+
+            List<Patient> sortedPatients = donorsScore.OrderByDescending(kv => kv.Value)
+                .Select(kv => kv.Key)
+                .ToList();
+            return sortedPatients;
+        }
+
+        private bool IsABloodMatch(BloodType? donor, BloodType receiver)
+        {
+            if (donor == null)
+                return false;
+
+            if (donor == BloodType.O)
+                return true;
+
+            if (donor == BloodType.A && (receiver == BloodType.A || receiver == BloodType.AB))
+                return true;
+
+            if (donor == BloodType.B && (receiver == BloodType.B || receiver == BloodType.AB))
+                return true;
+
+            if (donor == BloodType.AB && receiver == BloodType.AB)
+                return true;
+
+            return false;
+        }
+
+        private bool IsARhMatch(RhEnum? donor, RhEnum receiver)
+        {
+            if (donor == null)
+                return false;
+
+            if (donor == RhEnum.Positive && receiver == RhEnum.Positive)
+                return true;
+
+            if (donor == RhEnum.Negative)
+                return true;
+            return false;
+        }
+
+        private int CalculateAgeScore(DateTime donorDob, DateTime receiverDob)
+        {
+            int currentYear = DateTime.Now.Year;
+
+            int donorAge = currentYear - donorDob.Year;
+            int recipientAge = currentYear - receiverDob.Year;
+            int ageGap = Math.Abs(donorAge - recipientAge);
+
+            int group = ageGap / 5; // 0 for 0-4, 1 for 5-9, etc.
+            int score = 30 - (group * 5);
+            return Math.Max(score, 0);
         }
     }
 }
