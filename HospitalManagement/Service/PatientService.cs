@@ -286,5 +286,36 @@ namespace HospitalManagement.Service
 
             return patient;
         }
+
+        /// <summary>
+        /// SV8: Checks if a patient has more than 10 ER visits in the last 3 months.
+        /// </summary>
+        public bool IsHighRiskPatient(int patientId)
+        {
+            // 1. Calculate the cutoff date (3 months ago)
+            DateTime fromDate = DateTime.UtcNow.AddMonths(-3);
+
+            // 2. Fetch the ER visit count from the Record Repository
+            int erVisitCount = _recordRepo.GetERVisitCount(patientId, fromDate);
+
+            // 3. Threshold Logic: return true if > 10, otherwise false
+            return erVisitCount > 10;
+        }
+
+        /// <summary>
+        /// SV9: Permanently removes a patient from the system.
+        /// </summary>
+        public void DeletePatient(int id)
+        {
+            // 1. Verify the patient exists
+            var existingPatient = _patientRepo.GetById(id);
+            if (existingPatient == null)
+            {
+                throw new KeyNotFoundException($"Cannot delete: Patient with ID {id} was not found.");
+            }
+
+            // 2. Permanently remove through the repository
+            _patientRepo.Delete(id);
+        }
     }
 }
