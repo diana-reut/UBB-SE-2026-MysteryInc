@@ -246,5 +246,13 @@ namespace HospitalManagement.Repository
             _context.ExecuteNonQuery(query);
         }
 
+        public void Add(Patient patientToAdd)
+        {
+            string query = $"INSERT INTO Patient VALUES({patientToAdd.FirstName}, {patientToAdd.LastName}," +
+                $"{patientToAdd.Cnp}, {patientToAdd.Dob}, {patientToAdd.Dod}, {patientToAdd.Sex}," +
+                $"{patientToAdd.PhoneNo}, {patientToAdd.EmergencyContact}, {patientToAdd.IsArchived}, {patientToAdd.IsDonor})";
+
+            _context.ExecuteNonQuery(query);
+        }
     }
 }
