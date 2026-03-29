@@ -265,5 +265,11 @@ namespace HospitalManagement.Repository
             _context.ExecuteNonQuery(query);
         }
 
+        public void Delete(int id)
+        {
+            string query = $"DELET FROM Patient WHERE PatientID={id}";
+            _context.ExecuteNonQuery(query);
+        }
+
     }
 }
