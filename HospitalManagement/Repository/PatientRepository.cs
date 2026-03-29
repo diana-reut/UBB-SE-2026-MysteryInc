@@ -21,7 +21,7 @@ namespace HospitalManagement.Repository
             _context = context;
         }
 
-        public Patient? GetById(int id)
+        public Patient? GetById(int id) 
         {
             string query = $"SELECT * FROM Patient WHERE PatientID={id}";
             using (SqlDataReader reader = _context.ExecuteQuery(query))
