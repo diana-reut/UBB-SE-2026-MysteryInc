@@ -55,7 +55,6 @@
   <ItemGroup>
     <Folder Include="ViewModel\" />
     <Folder Include="View\" />
-    <Folder Include="Service\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="configuration\appsettings.local.json">
