@@ -11,13 +11,16 @@ namespace HospitalManagement.Service
     internal class PatientService
     {
         private readonly PatientRepository _patientRepo;
-       
-        // private readonly MedicalHistoryRepository _historyRepo;
-        // private readonly MedicalRecordRepository _recordRepo;
 
-        public PatientService(PatientRepository patientRepo)
+        private readonly MedicalHistoryRepository _historyRepo;
+        private readonly MedicalRecordRepository _recordRepo;
+
+        public PatientService(PatientRepository patientRepo, MedicalHistoryRepository historyRepo,
+            MedicalRecordRepository recordRepo)
         {
             _patientRepo = patientRepo;
+            _historyRepo = historyRepo;
+            _recordRepo = recordRepo;
         }
 
 
@@ -207,6 +210,81 @@ namespace HospitalManagement.Service
 
             // 4. Pass the clean, validated filter to the Repository!
             return _patientRepo.Search(filter);
+        }
+
+        /// <summary>
+        /// SV3: Initializes the clinical profile for a patient.
+        /// </summary>
+        public void CreateMedicalHistory(int patientId, MedicalHistory history, List<Allergy> allergies)
+        {
+            // 1. Validate the patient exists
+            var existingPatient = _patientRepo.GetById(patientId);
+            if (existingPatient == null)
+            {
+                throw new ArgumentException($"Patient with ID {patientId} not found.");
+            }
+
+            // 2. Prevent duplicate histories
+            var existingHistory = _historyRepo.GetByPatientId(patientId);
+            if (existingHistory != null)
+            {
+                throw new InvalidOperationException($"Patient {patientId} already has a medical history.");
+            }
+
+            // 3. Link the history to the patient and save
+            history.PatientId = patientId;
+            _historyRepo.Create(history);
+
+            // 4. TODO: Save Allergies
+            // (When your team creates an AllergyRepository, loop through the 'allergies' list 
+            // and save them here, linking them to the newly created history.Id).
+        }
+
+        /// <summary>
+        /// SV4: Fetches the complete patient profile, including linked history and records.
+        /// </summary>
+        public Patient GetPatientDetails(int id)
+        {
+            // 1. Core Fetch
+            var patient = _patientRepo.GetById(id);
+            if (patient == null)
+            {
+               
+                throw new KeyNotFoundException($"Patient with ID {id} not found.");
+            }
+
+            // 2. History Link
+            var history = _historyRepo.GetByPatientId(id);
+            if (history == null)
+            {
+                // Initialize an empty one to avoid UI crashes
+                history = new MedicalHistory
+                {
+                    PatientId = id,
+                   
+                };
+            }
+            else
+            {
+
+                history.ChronicConditions = _historyRepo.GetChronicConditions(history.Id);
+                history.Allergies = _historyRepo.GetAllergiesByHistoryId(history.Id);
+            }
+
+            // 3. Record Timeline
+            List<MedicalRecord> records = new List<MedicalRecord>();
+            if (history.Id > 0) // Only fetch records if they have a real history saved in the DB
+            {
+                records = _recordRepo.GetByHistoryId(history.Id)
+                                     .OrderByDescending(r => r.ConsultationDate) // Newest first
+                                     .ToList();
+            }
+
+            // 4. Assemble the final object
+            patient.MedicalHistory = history;
+            history.MedicalRecords = records;
+
+            return patient;
         }
     }
 }
