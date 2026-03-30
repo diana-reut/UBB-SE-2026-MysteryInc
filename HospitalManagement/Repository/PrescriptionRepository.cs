@@ -211,7 +211,6 @@ namespace HospitalManagement.Repository
 
             var list = new List<Prescription>();
 
-            // PASUL 1: Extragem strict retetele
             using (var reader = _context.ExecuteQuery(sql))
             {
                 while (reader.Read())
@@ -227,9 +226,8 @@ namespace HospitalManagement.Repository
                     
                     list.Add(prescription);
                 }
-            } // <- Aici reader-ul DB principal este INCHIS CU SUCCES!
+            } 
 
-            // PASUL 2: Acum e SAFE sa chemam alte interogari pt listele de iteme.
             foreach (var rx in list)
             {
                 rx.MedicationList = GetItems(rx.Id);
@@ -275,7 +273,6 @@ namespace HospitalManagement.Repository
 
             var list = new List<Prescription>();
 
-            // Extragem PatientName direct cum facem si in Paginare
             string sql = @"
                 SELECT DISTINCT 
                     p.PrescriptionID, 
@@ -308,15 +305,12 @@ namespace HospitalManagement.Repository
             if (filter.DateTo.HasValue)
                 sql += $" AND p.[Date] <= '{FormatDate(filter.DateTo.Value)}'";
 
-            if (!string.IsNullOrWhiteSpace(filter.PatientName))
-            {
-                string name = Escape(filter.PatientName);
-                sql += $" AND (pat.FirstName LIKE '%{name}%' OR pat.LastName LIKE '%{name}%')";
-            }
 
-            if (!string.IsNullOrWhiteSpace(filter.DoctorName))
+            if (!string.IsNullOrWhiteSpace(filter.PatientName)) 
             {
-                var searchTerm = filter.DoctorName.ToLower();
+                string searchString = filter.PatientName; 
+                string[] nameParts = Escape(searchString).Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var searchTerm = searchString.ToLower();
 
                 var matchingDoctorIds = MockDoctorProvider.GetFakeDoctors()
                     .Where(d => d.FirstName.ToLower().Contains(searchTerm) || 
@@ -324,20 +318,31 @@ namespace HospitalManagement.Repository
                     .Select(d => d.DoctorId)
                     .ToList();
 
-                if (matchingDoctorIds.Count > 0)
+                string doctorInClause = matchingDoctorIds.Count > 0 
+                                      ? $"mr.StaffID IN ({string.Join(",", matchingDoctorIds)})" 
+                                      : "1=0"; 
+
+                string patientLikeClause = "";
+                if (nameParts.Length > 0)
                 {
-                    string idList = string.Join(",", matchingDoctorIds);
-                    sql += $" AND mr.StaffID IN ({idList})";
+                    patientLikeClause = "(";
+                    for (int i = 0; i < nameParts.Length; i++)
+                    {
+                        if (i > 0) patientLikeClause += " AND ";
+                        patientLikeClause += $"(pat.FirstName LIKE '%{nameParts[i]}%' OR pat.LastName LIKE '%{nameParts[i]}%')";
+                    }
+                    patientLikeClause += ")";
                 }
-                else
+                else 
                 {
-                    sql += " AND 1=0"; 
+                    patientLikeClause = "1=0";
                 }
+
+                sql += $" AND ({patientLikeClause} OR {doctorInClause})";
             }
 
             sql += " ORDER BY p.[Date] DESC";
 
-            // PASUL 1: Rulam doar Reader-ul principal, ca sa ne salvam lista. Fara GetItems!
             using (var reader = _context.ExecuteQuery(sql))
             {
                 while (reader.Read())
@@ -355,7 +360,6 @@ namespace HospitalManagement.Repository
                 }
             }
 
-            // PASUL 2: Abiadul ce am inchis reader-ul principal, aducem Medicamentele curat
             foreach (var rx in list)
             {
                 rx.MedicationList = GetItems(rx.Id);
