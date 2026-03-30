@@ -181,6 +181,7 @@ namespace HospitalManagement.Repository
             return null;
         }
 
+
         public List<MedicalRecord> GetAll() //for statistics service
         {
             List<MedicalRecord> records = new List<MedicalRecord>();
