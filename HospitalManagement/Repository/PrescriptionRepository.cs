@@ -372,5 +372,60 @@ namespace HospitalManagement.Repository
 
             return prescriptions;
         }
+
+        // AD1: Addict Detection Logic
+        public List<Patient> GetAddictCandidatePatients()
+        {
+            var flagList = new List<Patient>();
+
+            string sql = @"
+                SELECT 
+                    pat.PatientID, 
+                    pat.FirstName, 
+                    pat.LastName, 
+                    pat.CNP, 
+                    pat.DateOfBirth, 
+                    pat.DateOfDeath, 
+                    pat.Sex, 
+                    pat.Phone, 
+                    pat.EmergencyContact, 
+                    pat.Archived, 
+                    pat.IsDonor
+                FROM Patient pat
+                JOIN MedicalHistory mh ON pat.PatientID = mh.PatientID
+                JOIN MedicalRecord mr ON mh.HistoryID = mr.HistoryID
+                JOIN Prescription p ON mr.RecordID = p.RecordID
+                JOIN PrescriptionItems pi ON p.PrescriptionID = pi.PrescriptionID
+                WHERE p.[Date] >= DATEADD(day, -30, GETDATE())
+                AND (pat.Archived = 0 OR pat.Archived IS NULL)
+                GROUP BY 
+                    pat.PatientID, pat.FirstName, pat.LastName, pat.CNP, 
+                    pat.DateOfBirth, pat.DateOfDeath, pat.Sex, pat.Phone, 
+                    pat.EmergencyContact, pat.Archived, pat.IsDonor, pi.MedName
+                HAVING COUNT(DISTINCT mr.StaffID) >= 3";
+
+            using (var reader = _context.ExecuteQuery(sql))
+            {
+                while (reader.Read())
+                {
+                    flagList.Add(new Patient
+                    {
+                        Id = (int)reader["PatientID"],
+                        FirstName = reader["FirstName"].ToString() ?? "",
+                        LastName = reader["LastName"].ToString() ?? "",
+                        Cnp = reader["CNP"].ToString() ?? "",
+                        Dob = (DateTime)reader["DateOfBirth"],
+                        Dod = reader["DateOfDeath"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["DateOfDeath"],
+                        Sex = (Entity.Enums.Sex)Enum.Parse(typeof(Entity.Enums.Sex), reader["Sex"].ToString() ?? "M"),
+                        PhoneNo = reader["Phone"] == DBNull.Value ? "" : reader["Phone"].ToString(),
+                        EmergencyContact = reader["EmergencyContact"] == DBNull.Value ? "" : reader["EmergencyContact"].ToString(),
+                        IsArchived = (bool)reader["Archived"],
+                        IsDonor = (bool)reader["IsDonor"]
+                    });
+                }
+            }
+
+            return flagList.GroupBy(p => p.Id).Select(g => g.First()).ToList();
+        }
     }
 }
