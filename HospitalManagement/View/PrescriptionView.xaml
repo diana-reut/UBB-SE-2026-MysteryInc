@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="HospitalManagement.View.PrescriptionView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HospitalManagement.View"
+    xmlns:entity="using:HospitalManagement.Entity"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="BrandDark" Color="#1E2A38"/>
+        <SolidColorBrush x:Key="BrandPrimary" Color="#2A6478"/>
+        <SolidColorBrush x:Key="BrandSecondary" Color="#4A90A4"/>
+        <SolidColorBrush x:Key="BrandAccent" Color="#5EC499"/>
+
+        <Style x:Key="AccentButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BrandAccent}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title / Welcome Section -->
+            <RowDefinition Height="Auto"/> <!-- Filter Bar & Warning -->
+            <RowDefinition Height="*"/>    <!-- 3x3 Grid View -->
+            <RowDefinition Height="Auto"/> <!-- Pagination -->
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="PRESCRIPTIONS FEED" FontSize="14" FontWeight="Bold" Foreground="{StaticResource BrandSecondary}" CharacterSpacing="50"/>
+            <TextBlock Text="Chronological Overview" FontSize="26" Foreground="{StaticResource BrandDark}" FontWeight="Bold" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="White" 
+                CornerRadius="10" Padding="20" Margin="0,0,0,20"
+                BorderBrush="#E5E7EB" BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="Filter Options" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource BrandDark}" Margin="0,0,0,16"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <TextBox x:Name="SearchIdBox" PlaceholderText="ID..." Width="80" Height="40" CornerRadius="6" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="SearchNameBox" PlaceholderText="Patient / Doctor Name" Width="200" Height="40" CornerRadius="6" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="SearchMedBox" PlaceholderText="Medication Name" Width="180" Height="40" CornerRadius="6" VerticalContentAlignment="Center"/>
+
+                    <CalendarDatePicker x:Name="DateFromPicker" PlaceholderText="Date From" Width="140" Height="40" CornerRadius="6" VerticalAlignment="Center"/>
+                    <TextBlock Text="-" VerticalAlignment="Center" Foreground="#6B7280"/>
+                    <CalendarDatePicker x:Name="DateToPicker" PlaceholderText="Date To" Width="140" Height="40" CornerRadius="6" VerticalAlignment="Center"/>
+
+                    <Button Content="Search" Style="{StaticResource AccentButtonStyle}" 
+                            Click="OnApplyFilterClicked" Width="120" Margin="20,0,0,0"/>
+                </StackPanel>
+
+                <TextBlock Text="{x:Bind ViewModel.InfoMessage, Mode=OneWay}" 
+                           Foreground="OrangeRed" FontWeight="SemiBold" 
+                           Margin="0,12,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <GridView Grid.Row="2" 
+                  ItemsSource="{x:Bind ViewModel.Prescriptions, Mode=OneWay}"
+                  SelectionMode="None"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Stretch">
+
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsWrapGrid MaximumRowsOrColumns="3" Orientation="Horizontal" HorizontalAlignment="Center"/>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="entity:Prescription">
+                    <Border Background="White"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1" CornerRadius="10"
+                            Width="330" Height="230" Margin="12" Padding="20">
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Button Grid.Row="0" HorizontalAlignment="Center" Background="#F0F9F6" BorderBrush="{ThemeResource BrandAccent}" BorderThickness="1" CornerRadius="20" Padding="12,4">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE814;" Foreground="{ThemeResource BrandPrimary}" FontSize="14"/>
+                                    <TextBlock Text="{x:Bind Id}" FontSize="16" FontWeight="Bold" Foreground="{ThemeResource BrandPrimary}" />
+                                </StackPanel>
+
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <StackPanel Width="280" Padding="10">
+                                            <TextBlock Text="Medication Details" FontWeight="Bold" FontSize="18" Foreground="{ThemeResource BrandDark}" Margin="0,0,0,15"/>
+                                            <ListView ItemsSource="{x:Bind MedicationList}" SelectionMode="None">
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate x:DataType="entity:PrescriptionItem">
+                                                        <Grid Margin="0,6">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                <FontIcon Glyph="&#xE1D0;" Foreground="#6B7280" FontSize="14" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="0" Text="{x:Bind MedName}" FontWeight="SemiBold" Foreground="{ThemeResource BrandDark}"/>
+                                                            </StackPanel>
+                                                            <Border Grid.Column="1" Background="#E5E7EB" CornerRadius="4" Padding="6,2">
+                                                                <TextBlock Text="{x:Bind Quantity}" FontSize="12" FontWeight="SemiBold" Foreground="#4B5563"/>
+                                                            </Border>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
+                                            <Button Content="Acknowledge" Background="{ThemeResource BrandPrimary}" Foreground="White" CornerRadius="6" HorizontalAlignment="Stretch" Margin="0,20,0,0" Click="OnCloseFlyoutClicked"/>
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+
+                            <StackPanel Grid.Row="1" Margin="0,20,0,0" Spacing="6">
+                                <TextBlock Text="{x:Bind DoctorNotes}" TextWrapping="Wrap" MaxLines="3" Foreground="#4B5563" FontSize="13"/>
+                            </StackPanel>
+
+                            <Border Grid.Row="2" Background="#F4F6F8" CornerRadius="4" Padding="8,4" HorizontalAlignment="Right">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE787;" FontSize="12" Foreground="#6B7280"/>
+                                    <TextBlock Foreground="#6B7280" FontSize="12" FontWeight="SemiBold">
+                                        <Run Text="{x:Bind Date.ToString()}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="30" Margin="0,20,0,0">
+            <Button Command="{Binding PreviousPageCommand}" Click="OnPrevClicked" Background="White" BorderBrush="#E5E7EB" Width="110" Height="40" CornerRadius="20">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE72B;" FontSize="12"/>
+                    <TextBlock Text="Previous" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Button>
+            
+            <Border Background="{StaticResource BrandDark}" CornerRadius="20" Padding="20,0" Height="40">
+                <TextBlock FontSize="14" VerticalAlignment="Center" Foreground="White" FontWeight="Bold">
+                    <Run Text="PAGE "/>
+                    <Run Text="{x:Bind ViewModel.CurrentPage, Mode=OneWay}"/>
+                </TextBlock>
+            </Border>
+            
+            <Button Command="{Binding NextPageCommand}" Click="OnNextClicked" Background="White" BorderBrush="#E5E7EB" Width="110" Height="40" CornerRadius="20">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Next" FontWeight="SemiBold"/>
+                    <FontIcon Glyph="&#xE72A;" FontSize="12"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>
