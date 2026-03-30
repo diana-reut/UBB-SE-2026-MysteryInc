@@ -265,7 +265,7 @@ namespace HospitalManagement.Repository
                 LEFT JOIN Patient pat ON mh.PatientID = pat.PatientID
                 -- TODO: Restore LEFT JOIN Doctor table once it is created in the database
                 -- LEFT JOIN Doctor d ON mr.StaffID = d.DoctorID
-                WHERE 1=1";
+                WHERE 1=1 AND (pat.Archived = 0 OR pat.Archived IS NULL)";
 
             if (filter.PrescriptionId.HasValue)
                 sql += $" AND p.PrescriptionID = {filter.PrescriptionId.Value}";
