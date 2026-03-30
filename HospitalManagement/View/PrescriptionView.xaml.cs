@@ -41,20 +41,30 @@ namespace HospitalManagement.View
 
         private void OnCloseFlyoutClicked(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Parent is FrameworkElement element)
+            if (sender is Button btn)
             {
-                var flyout = FlyoutBase.GetAttachedFlyout(btn) ?? DefaultFlyout(element);
-                flyout?.Hide();
-            }
-        }
+                // Un FlyoutPresenter e panoul ascuns de sistem unde stã tot con?inutul tãu (StackPanel-ul).
+                // WinUI ne lasã sã tragem container-ul în care stã acest Buton direct.
+                if (btn.Parent is DependencyObject obj)
+                {
+                    // Cãutãm în ascenden?ã foarte rapid direct spre FlyoutPresenter-ul nativ
+                    var presenter = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(obj);
+                    while (presenter != null && !(presenter is Microsoft.UI.Xaml.Controls.FlyoutPresenter))
+                    {
+                        presenter = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(presenter);
+                    }
 
-        private FlyoutBase DefaultFlyout(FrameworkElement element)
-        {
-            while (element != null && !(element is Button b && b.Flyout != null))
-            {
-                element = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(element) as FrameworkElement;
+                    // Ne for?ãm la cel mai apropiat Popup din sistem ?i îl oprim
+                    if (presenter is Microsoft.UI.Xaml.Controls.FlyoutPresenter fp)
+                    {
+                        var popup = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(fp) as Microsoft.UI.Xaml.Controls.Primitives.Popup;
+                        if (popup != null)
+                        {
+                            popup.IsOpen = false;
+                        }
+                    }
+                }
             }
-            return (element as Button)?.Flyout;
         }
     }
 }

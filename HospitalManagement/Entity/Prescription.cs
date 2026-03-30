@@ -13,5 +13,8 @@ namespace HospitalManagement.Entity
         public List<PrescriptionItem> MedicationList { get; set; } = new();
         public string? DoctorNotes { get; set; }
         public DateTime Date { get; set; }
+
+        public string PatientName { get; set; } = "Unknown";
+        public string DoctorName { get; set; } = "Unknown";
     }
 }
