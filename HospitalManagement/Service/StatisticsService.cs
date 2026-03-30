@@ -99,5 +99,33 @@ namespace HospitalManagement.Service
 
             return ageGroups;
         }
+
+        public Dictionary<string, int> GetMostPrescribedMeds()
+        {
+            IEnumerable<Prescription> prescriptions = prescriptionRepo.GetAll();
+
+            var allItems = prescriptions.Where(p => p.MedicationList != null)
+                .SelectMany(p => p.MedicationList);
+
+            var topMeds = allItems.Where(item => !string.IsNullOrWhiteSpace(item.MedName))
+                .Where(item => !string.IsNullOrEmpty(item.MedName))
+                .GroupBy(item => item.MedName.Trim().ToLowerInvariant())
+                .OrderByDescending(g => g.Count())
+                .Take(20)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            return topMeds;
+        }
+
+        public Dictionary<string, int> GetActiveVsArchivedRatio()
+        {
+            IEnumerable<Patient> patients = patientRepo.GetAll(true);
+
+            return new Dictionary<string, int>
+            {
+                { "Active", patients.Count(p => !p.IsArchived) },
+                { "Archived", patients.Count(p => p.IsArchived) }
+            };
+        }
     }
 }

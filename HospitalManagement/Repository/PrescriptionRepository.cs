@@ -346,5 +346,31 @@ namespace HospitalManagement.Repository
 
             return list;
         }
+
+        public List<Prescription> GetAll()
+        {
+            List<Prescription> prescriptions = new List<Prescription>();
+
+            string query = $"SELECT * FROM Prescription";
+
+            using (var reader = _context.ExecuteQuery(query))
+            {
+                while (reader.Read())
+                {
+                    var prescription = new Prescription
+                    {
+                        Id = (int)reader["PrescriptionID"],
+                        RecordId = (int)reader["RecordID"],
+                        DoctorNotes = reader["DoctorNotes"] == DBNull.Value ? null : reader["DoctorNotes"].ToString(),
+                        Date = (DateTime)reader["Date"]
+                    };
+
+                    prescription.MedicationList = GetItems(prescription.Id);
+                    prescriptions.Add(prescription);
+                }
+            }
+
+            return prescriptions;
+        }
     }
 }
