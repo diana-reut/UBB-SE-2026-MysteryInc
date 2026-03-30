@@ -43,25 +43,36 @@ namespace HospitalManagement.Repository
             return null;
         }
 
-        public void Add(MedicalRecord record) // RP16
+        public int Add(MedicalRecord record) // RP16
         {
-            // ID range validation - same pattern as PatientRepo checks CNP before Add
             if (record.HistoryId <= 0 || record.StaffId <= 0)
                 throw new ArgumentException("HistoryId and StaffId must be greater than 0.");
 
-            string query = $"INSERT INTO MedicalRecord " +
-                           $"(HistoryID, SourceType, SourceID, StaffID, Symptoms, Diagnosis, ConsultationDate, " +
-                           $"PrescriptionID, BasePrice, FinalPrice, DiscountApplied, PoliceNotified, TransplantID) VALUES " +
-                           $"({record.HistoryId}, '{record.SourceType}', {record.SourceId}, {record.StaffId}, " +
-                           $"{(record.Symptoms != null ? $"'{record.Symptoms}'" : "NULL")}, " +
-                           $"{(record.Diagnosis != null ? $"'{record.Diagnosis}'" : "NULL")}, " +
-                           $"'{record.ConsultationDate:yyyy-MM-dd HH:mm:ss}', " +
-                           $"{(record.PrescriptionId.HasValue ? record.PrescriptionId.ToString() : "NULL")}, " +
-                           $"{record.BasePrice}, {record.FinalPrice}, " +
-                           $"{(record.DiscountApplied.HasValue ? record.DiscountApplied.ToString() : "NULL")}, " +
-                           $"{(record.PoliceNotified ? 1 : 0)}, " +
-                           $"{(record.TransplantId.HasValue ? record.TransplantId.ToString() : "NULL")})";
-            _context.ExecuteNonQuery(query);
+            string query = $@"
+        INSERT INTO MedicalRecord
+        (HistoryID, SourceType, SourceID, StaffID, Symptoms, Diagnosis, ConsultationDate,
+         PrescriptionID, BasePrice, FinalPrice, DiscountApplied, PoliceNotified, TransplantID)
+        OUTPUT INSERTED.RecordID
+        VALUES
+        ({record.HistoryId}, '{record.SourceType}', {record.SourceId}, {record.StaffId},
+         {(record.Symptoms != null ? $"'{record.Symptoms}'" : "NULL")},
+         {(record.Diagnosis != null ? $"'{record.Diagnosis}'" : "NULL")},
+         '{record.ConsultationDate:yyyy-MM-dd HH:mm:ss}',
+         {(record.PrescriptionId.HasValue ? record.PrescriptionId.ToString() : "NULL")},
+         {record.BasePrice}, {record.FinalPrice},
+         {(record.DiscountApplied.HasValue ? record.DiscountApplied.ToString() : "NULL")},
+         {(record.PoliceNotified ? 1 : 0)},
+         {(record.TransplantId.HasValue ? record.TransplantId.ToString() : "NULL")}
+        )";
+
+            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            {
+                if (reader.Read())
+                {
+                    return Convert.ToInt32(reader["RecordID"]);
+                }
+            }
+            throw new Exception("Failed to insert MedicalRecord.");
         }
 
         public void Update(MedicalRecord record) // RP16
