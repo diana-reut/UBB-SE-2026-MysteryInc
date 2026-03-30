@@ -53,5 +53,51 @@ namespace HospitalManagement.Service
             return genderCount;
         }
 
+        public Dictionary<string, int> GetConsultationDistribution()
+        {
+            IEnumerable<MedicalRecord> records = recordRepo.GetAll();
+
+            Dictionary<string, int> consultationTypeCount = records.GroupBy(r => r.SourceType.ToString())
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            return consultationTypeCount;
+        }
+
+        public Dictionary<string, int> GetTopDiagnoses()
+        {
+            IEnumerable<MedicalRecord> records = recordRepo.GetAll();
+
+            Dictionary<string, int> diagnosesCount = records.Where(r => !string.IsNullOrWhiteSpace(r.Diagnosis))
+                .GroupBy(r => r.Diagnosis!.Trim().ToLowerInvariant())
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            return diagnosesCount;
+        }
+
+        public Dictionary<string, int> GetAgeDistribution()
+        {
+            IEnumerable<Patient> patients = patientRepo.GetAll(true);
+
+            var ageGroups = new Dictionary<string, int>
+                {
+                    { "Pediatric (0-17)", 0 },
+                    { "Adult (18-64)", 0 },
+                    { "Geriatric (65+)", 0 }
+                };
+
+            foreach (var patient in patients)
+            {
+                int age = patient.GetAge();
+
+                if (age <= 17)
+                    ageGroups["Pediatric (0-17)"]++;
+                else if (age <= 64)
+                    ageGroups["Adult (18-64)"]++;
+                else
+                    ageGroups["Geriatric (65+)"]++;
+            }
+
+            return ageGroups;
+        }
     }
 }

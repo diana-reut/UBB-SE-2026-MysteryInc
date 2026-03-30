@@ -180,5 +180,19 @@ namespace HospitalManagement.Repository
             }
             return null;
         }
+
+        public List<MedicalRecord> GetAll() //for statistics service
+        {
+            List<MedicalRecord> records = new List<MedicalRecord>();
+            string query = $"SELECT * FROM MedicalRecord";
+            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            {
+                while (reader.Read())
+                {
+                    records.Add(MapToMedicalRecord(reader));
+                }
+            }
+            return records;
+        }
     }
 }
