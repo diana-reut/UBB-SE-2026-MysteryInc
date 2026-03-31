@@ -40,10 +40,13 @@ namespace HospitalManagement.ViewModel
             LoadPrescriptions();
         }
 
-]        public void UpdatePageData()
+        public void UpdatePageData()
         {
             Prescriptions.Clear();
             InfoMessage = string.Empty;
+
+            var fakeDoctors = HospitalManagement.Repository.MockDoctorProvider.GetFakeDoctors();
+            var random = new Random();
 
             bool hasActiveFilter = 
                 ActiveFilter.PrescriptionId.HasValue || 
@@ -53,26 +56,30 @@ namespace HospitalManagement.ViewModel
                 !string.IsNullOrWhiteSpace(ActiveFilter.PatientName) || 
                 !string.IsNullOrWhiteSpace(ActiveFilter.DoctorName);
 
+            List<Prescription> targetList;
+
             if (hasActiveFilter)
             {
                 var allFilteredResults = _prescriptionService.ApplyFilter(ActiveFilter);
-                var pageResults = allFilteredResults
+                targetList = allFilteredResults
                                     .Skip((CurrentPage - 1) * PageSize)
                                     .Take(PageSize)
                                     .ToList();
-            
-                foreach (var res in pageResults)
-                {
-                    Prescriptions.Add(res);
-                }
             }
             else
             {
-\                var latestOrders = _prescriptionService.GetLatestPrescriptions(PageSize, CurrentPage);
-                foreach (var order in latestOrders)
+                targetList = _prescriptionService.GetLatestPrescriptions(PageSize, CurrentPage);
+            }
+
+            foreach (var item in targetList)
+            {
+                if (string.IsNullOrEmpty(item.DoctorName) || item.DoctorName.Contains("Unknown"))
                 {
-                    Prescriptions.Add(order);
+                    var randomDoc = fakeDoctors[random.Next(fakeDoctors.Count)];
+                    item.DoctorName = $"Dr. {randomDoc.FirstName} {randomDoc.LastName}";
                 }
+                
+                Prescriptions.Add(item);
             }
         }
 

@@ -26,6 +26,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- MENIUL DE SUS -->
             <StackPanel Grid.Row="0" Spacing="10" Margin="0,20,0,0">
                 <TextBlock Text="PHARMACY" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
                 
@@ -48,23 +49,59 @@
                         Padding="10"/>
             </StackPanel>
 
-            <Button Grid.Row="1" Content="Back to Home" 
-                    Click="BackToHomeButton_Click"
-                    HorizontalAlignment="Stretch"
-                    Background="#2A6478"
-                    Foreground="White"
-                    CornerRadius="4"
-                    Padding="10,8"
-                    Margin="0,0,0,10">
-                <Button.ContentTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <FontIcon Glyph="&#xE72B;" Margin="0,0,8,0" FontSize="14"/>
-                            <TextBlock Text="{Binding}" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </Button.ContentTemplate>
-            </Button>
+            <!-- PARTEA DE JOS: GHOST SIGHTING & BACK TO HOME -->
+            <StackPanel Grid.Row="1" Spacing="10" Margin="0,0,0,10">
+                
+                <!-- Butonul nou: I saw a ghost! -->
+                <Button Command="{Binding ReportGhostCommand}"
+                        HorizontalAlignment="Stretch" 
+                        Background="#FFE779" 
+                        BorderBrush="Transparent"
+                        Padding="10" 
+                        CornerRadius="4"
+                        ToolTipService.ToolTip="Report Paranormal Activity">
+                    
+                    <!-- Adăugăm Resurse Speciale pentru a suprascrie Hover-ul -->
+                    <Button.Resources>
+                        <!-- Culoarea când dai hover (o nuanță mai intensă de galben/portocaliu) -->
+                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFD54F"/>
+                        <!-- Păstrăm culoarea textului închisă și la hover -->
+                        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#1E2A38"/>
+                        
+                        <!-- Culoarea când dai click efectiv pe buton (Pressed) -->
+                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFC107"/>
+                        <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#1E2A38"/>
+                    </Button.Resources>
+
+                    <Button.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE7BA;" Margin="0,0,8,0" FontSize="14" Foreground="#1E2A38"/>
+                                <TextBlock Text="I saw a ghost!" Foreground="#1E2A38" FontWeight="Bold"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Button.ContentTemplate>
+                </Button>
+
+                <!-- Butonul existent: Back to Home -->
+                <Button Content="Back to Home" 
+                        Click="BackToHomeButton_Click"
+                        HorizontalAlignment="Stretch"
+                        Background="#2A6478"
+                        Foreground="White"
+                        CornerRadius="4"
+                        Padding="10,8">
+                    <Button.ContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE72B;" Margin="0,0,8,0" FontSize="14"/>
+                                <TextBlock Text="{Binding}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Button.ContentTemplate>
+                </Button>
+
+            </StackPanel>
         </Grid>
 
         <ContentControl x:Name="MainContentArea" Grid.Column="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
