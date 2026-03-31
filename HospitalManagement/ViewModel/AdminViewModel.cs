@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input; // Required for ICommand
 using HospitalManagement.Entity;
+using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
 
@@ -12,6 +13,11 @@ namespace HospitalManagement.ViewModel
 {
     public class AdminViewModel : INotifyPropertyChanged
     {
+
+
+        public ICommand NavigateToHomeCommand { get; set; }
+
+
         private readonly PatientService _patientService;
 
         // --- The currently clicked patient in the UI ---
@@ -73,6 +79,31 @@ namespace HospitalManagement.ViewModel
 
         public ICommand SearchPatientCommand { get; }
 
+        // --- VM13: Filter Properties ---
+        private int? _minAge;
+        public int? MinAge
+        {
+            get => _minAge;
+            set { _minAge = value; OnPropertyChanged(); }
+        }
+
+        private int? _maxAge;
+        public int? MaxAge
+        {
+            get => _maxAge;
+            set { _maxAge = value; OnPropertyChanged(); }
+        }
+
+        private Sex? _selectedSexFilter;
+        public Sex? SelectedSexFilter
+        {
+            get => _selectedSexFilter;
+            set { _selectedSexFilter = value; OnPropertyChanged(); }
+        }
+
+        public ICommand FilterPatientCommand { get; }
+        public ICommand ClearFilterCommand { get; }
+
         // --- Properties bound to the View ---
         public ObservableCollection<Patient> Patients { get; set; }
 
@@ -95,9 +126,24 @@ namespace HospitalManagement.ViewModel
         // --- The Close Window Notification ---
         public Action CloseAddPatientWindow { get; set; }
 
+        // --- VM15: Deceased Logic ---
+        private DateTime? _dateOfDeath;
+        public DateTime? DateOfDeath
+        {
+            get => _dateOfDeath;
+            set { _dateOfDeath = value; OnPropertyChanged(); }
+        }
+
+        // This property will be used in XAML to disable buttons: IsEnabled="{Binding IsNotDeceased}"
+        public Func<string, string, DateTime?> RequestDateAction { get; set; }
+        public bool IsNotDeceased => SelectedPatient != null && !SelectedPatient.IsDeceased;
+
+        public ICommand MarkAsDeceasedCommand { get; }
+
         // --- UI Callbacks ---
         public Func<string, string, bool> ConfirmAction { get; set; }
         public Action<string> ShowAlertAction { get; set; } // For the deceased warning
+
 
         // --- Commands bound to the View Buttons ---
         public ICommand LoadAllPatientsCommand { get; }
@@ -130,6 +176,12 @@ namespace HospitalManagement.ViewModel
             UpdatePatientCommand = new RelayCommand(UpdatePatient);
 
             SearchPatientCommand = new RelayCommand(SearchPatient);
+
+            FilterPatientCommand = new RelayCommand(ExecuteFilter);
+            ClearFilterCommand = new RelayCommand(ClearFilters);
+
+            MarkAsDeceasedCommand = new RelayCommand(MarkAsDeceased);
+            NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
 
 
         }
@@ -332,8 +384,10 @@ namespace HospitalManagement.ViewModel
                 // 2. Fuzzy Logic: Identify if Query is CNP or Name
                 if (SearchQuery.All(char.IsDigit))
                 {
-                    // If it's all numbers, map to the CNP field
-                    filter.CNP = SearchQuery;
+                    if (SearchQuery.All(char.IsDigit) && SearchQuery.Length == 13)
+                    {
+                        filter.CNP = SearchQuery; // Safe to send to Service
+                    }
                 }
                 else
                 {
@@ -362,6 +416,118 @@ namespace HospitalManagement.ViewModel
             NoResultsFound = (Patients.Count == 0 && !string.IsNullOrWhiteSpace(SearchQuery));
         }
 
+        // --- VM13: Execute High-Precision Filter ---
+        private void ExecuteFilter()
+        {
+            try
+            {
+                // 1. Map Age and Sex to the filter
+                var filter = new PatientFilter
+                {
+                    minAge = MinAge,
+                    maxAge = MaxAge,
+                    sex = SelectedSexFilter
+                };
+
+                // 2. Re-apply SearchQuery with the "13-digit shield"
+                if (!string.IsNullOrWhiteSpace(SearchQuery))
+                {
+                    // Only use CNP field if it satisfies the Service's 13-digit rule
+                    if (SearchQuery.All(char.IsDigit) && SearchQuery.Length == 13)
+                    {
+                        filter.CNP = SearchQuery;
+                    }
+                    else
+                    {
+                        // If it's partial numbers or text, treat as namePart
+                        filter.namePart = SearchQuery;
+                    }
+                }
+
+                // 3. Fetch from Service (Service validates Min/Max Age here)
+                var results = _patientService.SearchPatients(filter);
+
+                // 4. Sync Collection (Active only)
+                Patients.Clear();
+                // Use a basic filter to ensure we only show active patients in this view
+                var activeResults = results.Where(x => x.IsArchived == false);
+
+                foreach (var p in activeResults)
+                {
+                    // Ensure formatting is applied to the results
+                    p.PhoneNo = FormatPhoneNumber(p.PhoneNo);
+                    p.EmergencyContact = FormatPhoneNumber(p.EmergencyContact);
+                    Patients.Add(p);
+                }
+
+                // 5. Update Visual State
+                NoResultsFound = (Patients.Count == 0 && !string.IsNullOrWhiteSpace(SearchQuery));
+            }
+            catch (ArgumentException ex)
+            {
+                // This catches the "Min age > Max age" or "Negative age" errors 
+                // thrown by the PatientService and shows them to the user.
+                ShowAlertAction?.Invoke(ex.Message);
+            }
+        }
+
+        // --- VM13: Clear/Reset ---
+        private void ClearFilters()
+        {
+            // Reset the specific filter fields
+            MinAge = null;
+            MaxAge = null;
+            SelectedSexFilter = null;
+
+            // Optional: Also clear the search query to return to a 100% clean list
+            SearchQuery = string.Empty;
+
+            LoadAllPatients(); // Returns to the full active list
+            NoResultsFound = false;
+        }
+
+
+        // --- VM15: Mark As Deceased ---
+        private void MarkAsDeceased()
+        {
+            if (SelectedPatient == null) return;
+
+            // 1. Trigger the Specialized Dialog (UI Callback)
+            // We'll reuse our ShowDialog pattern to get the Date from the View
+            DateTime? chosenDate = RequestDateAction?.Invoke("Enter Date of Death:", "Mark as Deceased");
+
+            if (chosenDate == null) return; // User cancelled
+
+            // 2. Validation: Cannot be in the future
+            if (chosenDate > DateTime.Now)
+            {
+                ShowAlertAction?.Invoke("Date of death cannot be in the future.");
+                return;
+            }
+
+            // 3. Validation: Cannot be before Date of Birth
+            if (chosenDate < SelectedPatient.Dob)
+            {
+                ShowAlertAction?.Invoke("Date of death cannot be earlier than the Date of Birth.");
+                return;
+            }
+
+            // 4. Update the Record
+            SelectedPatient.Dod = chosenDate; // Setting the Date of Death
+            SelectedPatient.IsArchived = true; // Securely move to locked archive state
+
+            // 5. Call Service to Save
+            _patientService.UpdatePatient(SelectedPatient);
+
+            // 6. Refresh and Notify
+            LoadAllPatients();
+            LoadArchivedPatients();
+
+            // This forces the "Edit" buttons to re-check if they should be disabled
+            OnPropertyChanged(nameof(IsNotDeceased));
+
+            ShowAlertAction?.Invoke($"{SelectedPatient.FirstName} has been marked as deceased. The record is now locked.");
+        }       
 
 
         // --- INotifyPropertyChanged Implementation ---
