@@ -167,8 +167,9 @@
 
         <!-- PAGINATION SECTION -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="30" Margin="0,20,0,0">
-            <!-- PREVIOUS BUTTON -->
-            <Button Command="{Binding PreviousPageCommand}" Click="OnPrevClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
+            <!-- PREVIOUS BUTTON  -->
+            <Button Click="OnPrevClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
+
                 <Button.Resources>
                     <SolidColorBrush x:Key="ButtonBackground" Color="#00a896"/>
                     <SolidColorBrush x:Key="ButtonForeground" Color="White"/>
@@ -190,9 +191,10 @@
                 </TextBlock>
             </Border>
 
-            <!-- NEXT BUTTON -->
-            <Button Command="{Binding NextPageCommand}" Click="OnNextClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
-                <Button.Resources>
+            <!--NEXT BUTTON-->
+                <Button Click="OnNextClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
+
+                    <Button.Resources>
                     <SolidColorBrush x:Key="ButtonBackground" Color="#00a896"/>
                     <SolidColorBrush x:Key="ButtonForeground" Color="White"/>
                     <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#028090"/>

@@ -39,7 +39,7 @@
                         BorderThickness="1"
                         Padding="10"/>
 
-                <Button Content="Addict Monitor" 
+                <Button Content="See All Addicts" 
                         Command="{Binding ShowAddictsCommand}"
                         Background="Transparent" 
                         Foreground="White" 

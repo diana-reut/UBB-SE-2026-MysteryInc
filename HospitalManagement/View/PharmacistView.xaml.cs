@@ -54,18 +54,13 @@ namespace HospitalManagement.View
                 case "Prescriptions":
                     var prescriptionView = new PrescriptionView();
                     
-                    // 1. Instan?iem DbContext-ul folosind namespace-ul corect
                     var dbContext = new HospitalDbContext();
-                    
-                    // 2. Instan?iem Repository-urile necesare
                     var prescriptRepo = new PrescriptionRepository(dbContext);
                     var medHistoryRepo = new MedicalHistoryRepository(dbContext);
                     
-                    // 3. Instan?iem Serviciile
-                    var pService = new PrescriptionService(prescriptRepo); // Presupunând cã ia doar repository-ul
+                    var pService = new PrescriptionService(prescriptRepo); 
                     var aService = new AddictDetectionService(prescriptRepo, medHistoryRepo);
                     
-                    // 4. Instan?iem ViewModel-ul
                     var prescriptionVM = new PrescriptionViewModel(pService, aService);
                     
                     prescriptionView.ViewModel = prescriptionVM;
@@ -75,14 +70,26 @@ namespace HospitalManagement.View
                     break;
 
                 case "Addicts":
-                    // MainContentArea.Content = new AddictView();
-                    MainContentArea.Content = new TextBlock 
-                    { 
-                        Text = "Addict Monitor View Coming Soon...", 
-                        FontSize = 24, 
-                        HorizontalAlignment = HorizontalAlignment.Center, 
-                        VerticalAlignment = VerticalAlignment.Center 
-                    };
+                    // 1. Instan?iem View-ul de Addicts (în locul The Placeholder-ului de tip TextBlock)
+                    var addictView = new AddictView();
+                    
+                    // 2. Re-generãm conexiunile la BD ca la Presciptions
+                    var dbContextAddict = new HospitalDbContext();
+                    var prescriptRepoAddict = new PrescriptionRepository(dbContextAddict);
+                    var medHistoryRepoAddict = new MedicalHistoryRepository(dbContextAddict);
+                    
+                    // 3. Creãm Serviciul pentru adic?ii
+                    var addictDetectionService = new AddictDetectionService(prescriptRepoAddict, medHistoryRepoAddict);
+                    
+                    // 4. Instan?iem automat ViewModel-ul pt AddictView
+                    var addictViewModel = new AddictViewModel(addictDetectionService);
+                    
+                    // 5. Legãm model-ul de XAML
+                    addictView.ViewModel = addictViewModel;
+                    addictView.DataContext = addictViewModel;
+
+                    // 6. Afi?eazã efectiv controlul pe ecran
+                    MainContentArea.Content = addictView;
                     break;
             }
         }

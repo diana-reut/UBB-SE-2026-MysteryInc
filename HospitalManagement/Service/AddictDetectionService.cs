@@ -20,12 +20,16 @@ namespace HospitalManagement.Service
         
         public List<Patient> GetAddictCandidates()
         {
-            
             List<Patient> flaggedPatients = _prescriptionRepository.GetAddictCandidatePatients();
 
             foreach (var patient in flaggedPatients)
             {
                 patient.MedicalHistory = _medicalHistoryRepository.GetByPatientId(patient.Id);
+                
+                if (patient.MedicalHistory != null)
+                {
+                    patient.MedicalHistory.ChronicConditions = _medicalHistoryRepository.GetChronicConditions(patient.MedicalHistory.Id);
+                }
             }
 
             return flaggedPatients;
@@ -38,7 +42,17 @@ namespace HospitalManagement.Service
 
             var history = _medicalHistoryRepository.GetByPatientId(patientId);
 
-            if (history == null || history.ChronicConditions == null || !history.ChronicConditions.Any())
+            if (history == null)
+            {
+                return "None reported.";
+            }
+
+            if (history.ChronicConditions == null || !history.ChronicConditions.Any())
+            {
+                history.ChronicConditions = _medicalHistoryRepository.GetChronicConditions(history.Id);
+            }
+
+            if (history.ChronicConditions == null || !history.ChronicConditions.Any())
             {
                 return "None reported.";
             }
