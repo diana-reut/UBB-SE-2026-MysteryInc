@@ -82,7 +82,7 @@ namespace HospitalManagement.Service
                 .ToList();
         }
 
-        private int CalculateScore(Patient donor, Patient recipient)
+        public int CalculateScore(Patient donor, Patient recipient)
         {
             int total = 0;
 
@@ -105,7 +105,7 @@ namespace HospitalManagement.Service
             return total;
         }
 
-        private bool IsBloodMatch(BloodType? donor, BloodType receiver)
+        public bool IsBloodMatch(BloodType? donor, BloodType receiver)
         {
             if (donor == null) return false;
             if (donor == BloodType.O) return true;
@@ -115,7 +115,7 @@ namespace HospitalManagement.Service
             return false;
         }
 
-        private bool IsRhMatch(RhEnum? donor, RhEnum receiver)
+        public bool IsRhMatch(RhEnum? donor, RhEnum receiver)
         {
             if (donor == null) return false;
             // Rh- can only receive from Rh-

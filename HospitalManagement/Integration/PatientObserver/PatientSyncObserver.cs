@@ -41,8 +41,8 @@ namespace HospitalManagement.Integration.PatientObserver
                 LastName = dto.LastName,
                 Cnp = dto.CNP,
                 Sex = dto.Sex
-                // Injury → goes to MedicalRecord.Symptoms, not Patient
-                // EmergencyTimestamp → goes to MedicalRecord.ConsultationDate
+                // Injury -> goes to MedicalRecord.Symptoms, not Patient
+                // EmergencyTimestamp -> goes to MedicalRecord.ConsultationDate
             };
         }
     }

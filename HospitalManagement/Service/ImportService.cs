@@ -50,7 +50,12 @@ namespace HospitalManagement.Service
       
             var patient = _patientService.GetPatientDetails(patientId);
 
-            var record = BuildRecordFromDTO(dto, patient.MedicalHistory.Id);
+            if (patient.MedicalHistory == null)
+            {
+                throw new InvalidOperationException("Patient medical history must be initialized before importing records.");
+
+            }
+                var record = BuildRecordFromDTO(dto, patient.MedicalHistory.Id);
 
             //save Record and get the new ID
             int recordId = _recordRepo.Add(record);

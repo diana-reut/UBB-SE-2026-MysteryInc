@@ -117,5 +117,37 @@ namespace HospitalManagement.Repository
             }
             return list;
         }
+
+
+        //Added - for transplant Service
+        public Transplant? GetById(int id)
+        {
+            string sql = $"SELECT * FROM Transplants WHERE TransplantID = {id}";
+
+            using (var reader = _context.ExecuteQuery(sql))
+            {
+                if (reader.Read())
+                {
+                    return new Transplant
+                    {
+                        TransplantId = (int)reader["TransplantID"],
+                        ReceiverId = (int)reader["ReceiverID"],
+                        DonorId = reader["DonorID"] == DBNull.Value ? (int?)null : (int)reader["DonorID"],
+                        OrganType = reader["OrganType"].ToString(),
+                        RequestDate = (DateTime)reader["RequestDate"],
+                        TransplantDate = reader["TransplantDate"] == DBNull.Value ? (DateTime?)null : (DateTime)reader["TransplantDate"],
+                        Status = (Entity.Enums.TransplantStatus)Enum.Parse(
+                            typeof(Entity.Enums.TransplantStatus),
+                            reader["Status"].ToString()
+                        ),
+                        CompatibilityScore = Convert.ToSingle(reader["CompatibilityScore"])
+                    };
+                }
+            }
+
+            return null;
+        }
     }
+
+
 }
