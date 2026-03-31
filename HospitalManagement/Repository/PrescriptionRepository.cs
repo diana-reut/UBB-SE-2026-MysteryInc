@@ -206,7 +206,7 @@ namespace HospitalManagement.Repository
                 JOIN MedicalRecord mr ON p.RecordID = mr.RecordID
                 JOIN MedicalHistory mh ON mr.HistoryID = mh.HistoryID
                 JOIN Patient pat ON mh.PatientID = pat.PatientID
-                ORDER BY p.[Date] DESC
+                ORDER BY p.[Date] DESC, p.PrescriptionID DESC
                 OFFSET {offset} ROWS FETCH NEXT {n} ROWS ONLY";
 
             var list = new List<Prescription>();
