@@ -8,7 +8,7 @@ namespace HospitalManagement.ViewModel
     public class PharmacistViewModel : INotifyPropertyChanged
     {
         private string _currentView;
-
+        //cand voi avea ghost: private readonly GhostService _ghostService;
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string CurrentView
@@ -23,14 +23,14 @@ namespace HospitalManagement.ViewModel
 
         public ICommand ShowPrescriptionsCommand { get; }
         public ICommand ShowAddictsCommand { get; }
-
+        public ICommand ReportGhostCommand { get; }
         public PharmacistViewModel()
         {
-            // Inițializăm comenzile
+            // _ghostService = new GhostService(); 
             ShowPrescriptionsCommand = new RelayCommand(ShowPrescriptions);
             ShowAddictsCommand = new RelayCommand(ShowAddicts);
 
-            // Setăm View-ul default la deschidere
+            ReportGhostCommand = new RelayCommand(ReportGhost);
             CurrentView = "Prescriptions";
         }
 
@@ -40,6 +40,12 @@ namespace HospitalManagement.ViewModel
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        private void ReportGhost()
+        {
+            //_ghostService.RegisterGhostSighting(DateTime.Now);
+            System.Diagnostics.Debug.WriteLine($">> GHOST REPORTED FROM PHARMACIST AT {DateTime.Now} <<");
         }
     }
 }
