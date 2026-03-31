@@ -23,8 +23,55 @@ namespace HospitalManagement.ViewModel
             {
                 _selectedPatient = value;
                 OnPropertyChanged();
+
+                if (_selectedPatient != null)
+                {
+                    // Create the shallow copy for editing
+                    EditingPatient = new Patient
+                    {
+                        Id = _selectedPatient.Id,
+                        FirstName = _selectedPatient.FirstName, // Read-only in UI
+                        LastName = _selectedPatient.LastName,   // Read-only in UI
+                        Cnp = _selectedPatient.Cnp,             // Read-only in UI
+                        Sex = _selectedPatient.Sex,             // Editable
+                        PhoneNo = _selectedPatient.PhoneNo,     // Editable
+                        EmergencyContact = _selectedPatient.EmergencyContact // Editable
+                    };
+                }
             }
         }
+
+        private Patient _editingPatient;
+        public Patient EditingPatient
+        {
+            get => _editingPatient;
+            set { _editingPatient = value; OnPropertyChanged(); }
+        }
+
+        public ICommand UpdatePatientCommand { get; }
+
+        // --- VM12: Search Properties ---
+        private string _searchQuery;
+        public string SearchQuery
+        {
+            get => _searchQuery;
+            set
+            {
+                _searchQuery = value;
+                OnPropertyChanged();
+                // We trigger the search automatically as they type!
+                SearchPatient();
+            }
+        }
+
+        private bool _noResultsFound;
+        public bool NoResultsFound
+        {
+            get => _noResultsFound;
+            set { _noResultsFound = value; OnPropertyChanged(); }
+        }
+
+        public ICommand SearchPatientCommand { get; }
 
         // --- Properties bound to the View ---
         public ObservableCollection<Patient> Patients { get; set; }
@@ -79,6 +126,10 @@ namespace HospitalManagement.ViewModel
 
             ArchivePatientCommand = new RelayCommand(ArchivePatient);
             DearchivePatientCommand = new RelayCommand(DearchivePatient);
+
+            UpdatePatientCommand = new RelayCommand(UpdatePatient);
+
+            SearchPatientCommand = new RelayCommand(SearchPatient);
 
 
         }
@@ -238,6 +289,77 @@ namespace HospitalManagement.ViewModel
             // 3. Refresh both lists so the patient moves back to the active grid!
             LoadAllPatients();
             LoadArchivedPatients();
+        }
+
+        // --- VM10: Update Patient ---
+        private void UpdatePatient()
+        {
+            if (EditingPatient == null || SelectedPatient == null) return;
+
+            // 1. (Optional) Re-run phone formatting before saving
+            EditingPatient.PhoneNo = FormatPhoneNumber(EditingPatient.PhoneNo);
+            EditingPatient.EmergencyContact = FormatPhoneNumber(EditingPatient.EmergencyContact);
+
+            // 2. Send the updated copy to the Service
+            try
+            {
+                _patientService.UpdatePatient(EditingPatient);
+
+                // 3. Sync: Refresh the main list to show the new data
+                LoadAllPatients();
+
+                // 4. Clear the selection/edit form
+                EditingPatient = null;
+                SelectedPatient = null;
+
+                ShowAlertAction?.Invoke("Patient updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                ShowAlertAction?.Invoke($"Update failed: {ex.Message}");
+            }
+        }
+
+        // --- VM12: Search Patient (Fuzzy Logic) ---
+        // --- VM12: Search Patient (Fuzzy Logic Updated) ---
+        public void SearchPatient()
+        {
+            // 1. Initialize the filter from your colleague's class
+            var filter = new PatientFilter();
+
+            if (!string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                // 2. Fuzzy Logic: Identify if Query is CNP or Name
+                if (SearchQuery.All(char.IsDigit))
+                {
+                    // If it's all numbers, map to the CNP field
+                    filter.CNP = SearchQuery;
+                }
+                else
+                {
+                    // If it contains letters, map to the namePart field
+                    filter.namePart = SearchQuery;
+                }
+            }
+
+            // 3. Call the Service
+            // Note: Since PatientFilter doesn't have IsArchived, 
+            // the service likely returns everyone. We filter for active only here.
+            var results = _patientService.SearchPatients(filter);
+
+            // 4. UI Collection Sync
+            Patients.Clear();
+            var activeResults = results.Where(p => p.IsArchived == false);
+
+            foreach (var p in activeResults)
+            {
+                p.PhoneNo = FormatPhoneNumber(p.PhoneNo);
+                p.EmergencyContact = FormatPhoneNumber(p.EmergencyContact);
+                Patients.Add(p);
+            }
+
+            // 5. Update Visual State for "No Results"
+            NoResultsFound = (Patients.Count == 0 && !string.IsNullOrWhiteSpace(SearchQuery));
         }
 
 
