@@ -34,22 +34,28 @@ namespace HospitalManagement.Repository
 
             string sql = $"SELECT * FROM Prescription WHERE RecordID = {recordId}";
 
+            Prescription? prescription = null;
             using (var reader = _context.ExecuteQuery(sql))
             {
                 if (!reader.Read())
                     return null;
 
-                var prescription = new Prescription
+                prescription = new Prescription
                 {
                     Id = (int)reader["PrescriptionID"],
                     RecordId = (int)reader["RecordID"],
                     DoctorNotes = reader["DoctorNotes"] == DBNull.Value ? null : reader["DoctorNotes"].ToString(),
                     Date = (DateTime)reader["Date"]
                 };
-
-                prescription.MedicationList = GetItems(prescription.Id);
-                return prescription;
             }
+
+            // Load medication items after reader is closed
+            if (prescription != null)
+            {
+                prescription.MedicationList = GetItems(prescription.Id);
+            }
+
+            return prescription;
         }
 
         // RP19
@@ -374,6 +380,7 @@ namespace HospitalManagement.Repository
 
             string query = $"SELECT * FROM Prescription";
 
+            // First pass: retrieve prescription headers without items
             using (var reader = _context.ExecuteQuery(query))
             {
                 while (reader.Read())
@@ -383,12 +390,18 @@ namespace HospitalManagement.Repository
                         Id = (int)reader["PrescriptionID"],
                         RecordId = (int)reader["RecordID"],
                         DoctorNotes = reader["DoctorNotes"] == DBNull.Value ? null : reader["DoctorNotes"].ToString(),
-                        Date = (DateTime)reader["Date"]
+                        Date = (DateTime)reader["Date"],
+                        MedicationList = new List<PrescriptionItem>() // Initialize empty list
                     };
 
-                    prescription.MedicationList = GetItems(prescription.Id);
                     prescriptions.Add(prescription);
                 }
+            }
+
+            // Second pass: load medication items for each prescription (after reader is closed)
+            foreach (var prescription in prescriptions)
+            {
+                prescription.MedicationList = GetItems(prescription.Id);
             }
 
             return prescriptions;

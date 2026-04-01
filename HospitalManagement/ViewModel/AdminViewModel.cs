@@ -13,10 +13,20 @@ namespace HospitalManagement.ViewModel
 {
     public class AdminViewModel : INotifyPropertyChanged
     {
+        private string _currentView;
 
+        public string CurrentView
+        {
+            get => _currentView;
+            set
+            {
+                _currentView = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ICommand NavigateToHomeCommand { get; set; }
-
+        public ICommand NavigateToStatisticsCommand { get; }
 
         private readonly PatientService _patientService;
 
@@ -160,6 +170,8 @@ namespace HospitalManagement.ViewModel
         {
             _patientService = patientService;
 
+            this.NavigateToStatisticsCommand = new RelayCommand(NavigateToStatistics);
+
             Patients = new ObservableCollection<Patient>();
             LoadAllPatientsCommand = new RelayCommand(LoadAllPatients);
 
@@ -186,6 +198,7 @@ namespace HospitalManagement.ViewModel
             LoadAllPatients();
 
 
+            CurrentView = "AdminDashboard";
         }
 
         // --- VM6: Load All Patients (The Method) ---
@@ -546,6 +559,11 @@ namespace HospitalManagement.ViewModel
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void NavigateToStatistics()
+        {
+            CurrentView = "Statistics";
         }
     }
 }

@@ -2,8 +2,8 @@ using System;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using HospitalManagement.ViewModel; 
-
+using HospitalManagement.ViewModel;
+using HospitalManagement.View;
 namespace HospitalManagement
 {
     public sealed partial class MainWindow : Window
@@ -45,6 +45,7 @@ namespace HospitalManagement
                 //AICI VA CONECTATI VOI CU IF ELSE
                 else if (_viewModel.CurrentView?.ToString() == "AdminDashboard")
                 {
+
                     var adminWindow = new View.AdminView();
 
                     // 1. Get the ViewModel from the window we just created
