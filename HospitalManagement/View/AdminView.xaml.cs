@@ -1,31 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using HospitalManagement.ViewModel;
-using Microsoft.UI.Windowing;
-using HospitalManagement.Database;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using HospitalManagement.Database;
 
 namespace HospitalManagement.View
 {
-    /// <summary>
-    /// Admin view window for managing patients and accessing statistics
-    /// </summary>
     public sealed partial class AdminView : Window, IDisposable
     {
         private AdminViewModel _viewModel;
@@ -35,6 +18,7 @@ namespace HospitalManagement.View
         {
             this.InitializeComponent();
 
+            // 1. Maximize Logic
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
@@ -43,24 +27,63 @@ namespace HospitalManagement.View
                 presenter.Maximize();
             }
 
+            // 2. Dependency Injection
             _dbContext = new HospitalDbContext();
             var pRepo = new PatientRepository(_dbContext);
             var hRepo = new MedicalHistoryRepository(_dbContext);
             var rRepo = new MedicalRecordRepository(_dbContext);
-
             var service = new PatientService(pRepo, hRepo, rRepo);
 
-            this._viewModel = new AdminViewModel(service);
+            // 3. Initialize ViewModel & Bindings
+            _viewModel = new AdminViewModel(service);
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
             this.Closed += AdminView_Closed;
+
+            // 4. Set DataContext
+            if (this.Content is FrameworkElement rootElement)
+            {
+                rootElement.DataContext = _viewModel;
+                
+                // YOUR CODE: Alert Logic
+                rootElement.Loaded += (s, e) =>
+                {
+                    if (rootElement.DataContext is AdminViewModel vm)
+                    {
+                        vm.ShowAlertAction = async (message) =>
+                        {
+                            ContentDialog alert = new ContentDialog
+                            {
+                                Title = "System Message",
+                                Content = message,
+                                CloseButtonText = "OK",
+                                XamlRoot = rootElement.XamlRoot
+                            };
+                            await alert.ShowAsync();
+                        };
+                    }
+                };
+            }
+
             UpdateView(_viewModel.CurrentView);
         }
 
-        private void AdminView_Closed(object sender, WindowEventArgs args)
+        // YOUR CODE: Add Patient Dialog Logic
+        private async void OpenAddPatientDialog(object sender, RoutedEventArgs e)
         {
-            Dispose();
+            AddPatientDialog dialog = new AddPatientDialog();
+            dialog.XamlRoot = this.Content.XamlRoot;
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary && dialog.NewPatient != null)
+            {
+                _viewModel.NewPatient = dialog.NewPatient;
+                _viewModel.AddPatientCommand.Execute(null);
+            }
         }
+
+        // COLLEAGUE'S CODE: Navigation & Statistics Logic
+        private void AdminView_Closed(object sender, WindowEventArgs args) => Dispose();
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -72,42 +95,20 @@ namespace HospitalManagement.View
 
         private void UpdateView(string viewName)
         {
-            switch (viewName)
+            if (viewName == "Statistics")
             {
-                case "AdminDashboard":
-                    break;
-
-                case "Statistics":
-                    OpenStatisticsWindow();
-                    break;
+                OpenStatisticsWindow();
             }
         }
 
-        /// <summary>
-        /// Opens the Statistics window as a separate window
-        /// </summary>
         private void OpenStatisticsWindow()
         {
             var statisticsWindow = new StatisticsWindow(_dbContext);
             statisticsWindow.Activate();
         }
 
-        public Page GetCurrentPage()
-        {
-            return _viewModel.CurrentView switch
-            {
-                _ => new Page() // Return a default Page instance instead of null to avoid CS8603
-            };
-        }
+        private void OpenPage_Click(object sender, RoutedEventArgs e) => OpenStatisticsWindow();
 
-        private void OpenPage_Click(object sender, RoutedEventArgs e)
-        {
-            OpenStatisticsWindow();
-        }
-
-        public void Dispose()
-        {
-            _dbContext?.Dispose();
-        }
+        public void Dispose() => _dbContext?.Dispose();
     }
 }

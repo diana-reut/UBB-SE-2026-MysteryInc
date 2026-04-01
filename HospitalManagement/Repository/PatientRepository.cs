@@ -247,15 +247,32 @@ namespace HospitalManagement.Repository
             _context.ExecuteNonQuery(query);
         }
 
-        public void Add(Patient patientToAdd)
+        //public void Add(Patient patientToAdd)
+        //{
+        //    string query = $"INSERT INTO Patient VALUES({patientToAdd.FirstName}, {patientToAdd.LastName}," +
+        //        $"{patientToAdd.Cnp}, {patientToAdd.Dob}, {patientToAdd.Dod}, {patientToAdd.Sex}," +
+        //        $"{patientToAdd.PhoneNo}, {patientToAdd.EmergencyContact}, {patientToAdd.IsArchived}, {patientToAdd.IsDonor})";
+
+        //    _context.ExecuteNonQuery(query);
+        //}
+        public void Add(Patient p)
         {
-            string query = $"INSERT INTO Patient VALUES({patientToAdd.FirstName}, {patientToAdd.LastName}," +
-                $"{patientToAdd.Cnp}, {patientToAdd.Dob}, {patientToAdd.Dod}, {patientToAdd.Sex}," +
-                $"{patientToAdd.PhoneNo}, {patientToAdd.EmergencyContact}, {patientToAdd.IsArchived}, {patientToAdd.IsDonor})";
+            // 1. List the columns explicitly (Highly Recommended)
+            // 2. Wrap all text/dates in '{value}'
+            string query = "INSERT INTO Patient (FirstName, LastName, Cnp, DateOfBirth, Sex, Phone, EmergencyContact, Archived, IsDonor) " +
+                           "VALUES (" +
+                           $"'{p.FirstName}', " +       // Quote
+                           $"'{p.LastName}', " +        // Quote
+                           $"'{p.Cnp}', " +             // Quote
+                           $"'{p.Dob:yyyy-MM-dd}', " +  // Quote + Format
+                           $"'{p.Sex}', " +             // Quote
+                           $"'{p.PhoneNo}', " +         // Quote
+                           $"'{p.EmergencyContact}', " +// Quote
+                           $"{(p.IsArchived ? 1 : 0)}, " + // No quotes for numbers
+                           $"{(p.IsDonor ? 1 : 0)})";      // No quotes for numbers
 
             _context.ExecuteNonQuery(query);
         }
-
         public void Update(Patient patientToUpdate)
         {
             string query = $"UPDATE Patient SET FirstName={patientToUpdate.FirstName}, LastName={patientToUpdate.LastName}," +

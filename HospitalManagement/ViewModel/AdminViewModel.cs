@@ -180,8 +180,8 @@ namespace HospitalManagement.ViewModel
 
             NewPatient = new Patient { Dob = DateTime.Today };
             ValidationErrors = new ObservableCollection<string>();
+            // No parameters in the lambda here
             AddPatientCommand = new RelayCommand(AddPatient);
-
             ArchivePatientCommand = new RelayCommand(ArchivePatient);
             DearchivePatientCommand = new RelayCommand(DearchivePatient);
 
@@ -194,6 +194,9 @@ namespace HospitalManagement.ViewModel
 
             MarkAsDeceasedCommand = new RelayCommand(MarkAsDeceased);
             NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
+
+            LoadAllPatients();
+
 
             CurrentView = "AdminDashboard";
         }
@@ -252,69 +255,78 @@ namespace HospitalManagement.ViewModel
         }
 
         // --- VM8: Add Patient Logic ---
+
         private void AddPatient()
         {
-            // 1. Reset previous errors
+            // 1. Safety Check: If the dialog somehow sent us nothing, stop.
+            if (NewPatient == null) return;
+
+            // 2. Clear previous errors and prepare the "Validation List"
             ValidationErrors.Clear();
-            CnpError = string.Empty;
-            PhoneError = string.Empty;
-            DobError = string.Empty;
             bool isValid = true;
 
-            // 2. Validate CNP (13 digits + Secondary Service Check)
+            // --- Check Name (Strings) ---
+            if (string.IsNullOrWhiteSpace(NewPatient.FirstName) || string.IsNullOrWhiteSpace(NewPatient.LastName))
+            {
+                ValidationErrors.Add("First and Last Name cannot be empty.");
+                isValid = false;
+            }
+
+            // --- Check CNP (13 Digits & Business Logic) ---
             if (string.IsNullOrWhiteSpace(NewPatient.Cnp) || NewPatient.Cnp.Length != 13 || !NewPatient.Cnp.All(char.IsDigit))
             {
-                CnpError = "CNP must be exactly 13 digits.";
-                ValidationErrors.Add(CnpError);
+                ValidationErrors.Add("CNP must be exactly 13 digits.");
                 isValid = false;
             }
-            else if (!_patientService.ValidateCNP(NewPatient.Cnp, NewPatient.Sex, NewPatient.Dob)) // Secondary check
+            // This cross-references the CNP digits against the Sex/DOB fields
+            else if (!_patientService.ValidateCNP(NewPatient.Cnp, NewPatient.Sex, NewPatient.Dob))
             {
-                CnpError = "CNP does not match the selected sex or date of birth.";
-                ValidationErrors.Add(CnpError);
+                ValidationErrors.Add("CNP logic error: It doesn't match the Sex or Birth Date provided.");
                 isValid = false;
             }
 
-            // 3. Validate Phone (10 digits)
-            if (string.IsNullOrWhiteSpace(NewPatient.PhoneNo) || NewPatient.PhoneNo.Length != 10 || !NewPatient.PhoneNo.All(char.IsDigit))
+            // --- Check Phone (10 Digits) ---
+            if (string.IsNullOrWhiteSpace(NewPatient.PhoneNo) || NewPatient.PhoneNo.Length != 10)
             {
-                PhoneError = "Phone must be exactly 10 digits.";
-                ValidationErrors.Add(PhoneError);
+                ValidationErrors.Add("Phone number must be exactly 10 digits.");
                 isValid = false;
             }
 
-            // 4. Validate Date of Birth (Must be in the past)
+            // --- Check Date (Logic) ---
             if (NewPatient.Dob >= DateTime.Today)
             {
-                DobError = "Date of Birth must be in the past.";
-                ValidationErrors.Add(DobError);
+                ValidationErrors.Add("Birth Date must be in the past.");
                 isValid = false;
             }
 
-            // 5. Check if we should stop
+            // 3. STOP if any check failed and show the user WHY
             if (!isValid)
             {
-                // We update this property to force the UI to refresh the error list
-                OnPropertyChanged(nameof(ValidationErrors));
+                string allErrors = string.Join("\n", ValidationErrors);
+                ShowAlertAction?.Invoke($"Cannot Save Patient:\n{allErrors}");
                 return;
             }
 
-            // --- SUCCESS PATH ---
+            // 4. DATABASE HAND-OFF (Only happens if all checks pass!)
+            try
+            {
+                _patientService.CreatePatient(NewPatient);
 
-            // 6. Map and Create (Assumes your teammate named the method CreatePatient)
-            _patientService.CreatePatient(NewPatient);
+                // Refresh the list so the new patient appears immediately
+                LoadAllPatients();
 
-            // 7. Refresh the main patient list so the new patient appears instantly
-            LoadAllPatients();
+                ShowAlertAction?.Invoke("Success: Patient added to the system.");
 
-            // 8. Reset the form for the next time it opens
-            NewPatient = new Patient { Dob = DateTime.Today };
-            OnPropertyChanged(nameof(NewPatient));
-
-            // 9. Trigger the CloseWindow notification
-            CloseAddPatientWindow?.Invoke();
+                // Clear the form data for the next patient
+                NewPatient = new Patient { Dob = DateTime.Today.AddYears(-20) };
+                OnPropertyChanged(nameof(NewPatient));
+            }
+            catch (Exception ex)
+            {
+                // This catches SQL connection errors or table name typos
+                ShowAlertAction?.Invoke($"Database Error: {ex.Message}");
+            }
         }
-
         private void ArchivePatient()
         {
             if (SelectedPatient == null) return; // Nobody is selected!
