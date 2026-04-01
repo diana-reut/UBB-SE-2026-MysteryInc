@@ -121,9 +121,20 @@ namespace HospitalManagement.Service
                 throw new ArgumentException("Identity Mismatch: CNP does not align with Sex or DOB.");
             }
 
+            if (string.IsNullOrWhiteSpace(data.PhoneNo) || data.PhoneNo.Length != 10 || !data.PhoneNo.All(char.IsDigit))
+            {
+                throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
+            }
+
+            
+            //if (string.IsNullOrWhiteSpace(data.EmergencyContact) || !data.EmergencyContact.All(char.IsDigit) || data.EmergencyContact.Length != 10)
+            //{
+            //    throw new ArgumentException("Validation Error: Emergency contact must contain only numbers.");
+            //}
+
             // 5. Repository Call: Pass the clean object to the repository
             // TODO: Uncomment once the Update method in PatientRepository
-             _patientRepo.Update(data);
+            _patientRepo.Update(data);
         }
 
         /// <summary>

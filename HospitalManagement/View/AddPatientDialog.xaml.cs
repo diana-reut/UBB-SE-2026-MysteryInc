@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml.Controls;
 using HospitalManagement.Entity;
 using System;
 using Visibility = Microsoft.UI.Xaml.Visibility; // Fixes the Visibility error
+using System.Linq;
 
 namespace HospitalManagement.View
 {
@@ -44,13 +45,13 @@ namespace HospitalManagement.View
                 hasError = true;
             }
 
-            if (string.IsNullOrWhiteSpace(PhoneEntry.Text) || PhoneEntry.Text.Length != 10)
+            if (string.IsNullOrWhiteSpace(PhoneEntry.Text) || PhoneEntry.Text.Length != 10 || !PhoneEntry.Text.All(char.IsDigit))
             {
                 PhoneError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 hasError = true;
             }
 
-            if (string.IsNullOrWhiteSpace(EmergencyEntry.Text))
+            if (string.IsNullOrWhiteSpace(EmergencyEntry.Text) || EmergencyEntry.Text.Length != 10 || !EmergencyEntry.Text.All(char.IsDigit))
             {
                 EmergencyError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 hasError = true;

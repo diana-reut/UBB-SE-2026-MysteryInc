@@ -48,10 +48,12 @@ namespace HospitalManagement.ViewModel
                         Id = _selectedPatient.Id,
                         FirstName = _selectedPatient.FirstName, // Read-only in UI
                         LastName = _selectedPatient.LastName,   // Read-only in UI
-                        Cnp = _selectedPatient.Cnp,             // Read-only in UI
+                        Cnp = _selectedPatient.Cnp,
+                        Dob = _selectedPatient.Dob,              // Read-only in UI
                         Sex = _selectedPatient.Sex,             // Editable
                         PhoneNo = _selectedPatient.PhoneNo,     // Editable
-                        EmergencyContact = _selectedPatient.EmergencyContact // Editable
+                        EmergencyContact = _selectedPatient.EmergencyContact, // Editable
+                        Dod = _selectedPatient.Dod
                     };
                 }
             }
@@ -286,7 +288,7 @@ namespace HospitalManagement.ViewModel
             }
 
             // --- Check Phone (10 Digits) ---
-            if (string.IsNullOrWhiteSpace(NewPatient.PhoneNo) || NewPatient.PhoneNo.Length != 10)
+            if (string.IsNullOrWhiteSpace(NewPatient.PhoneNo) || NewPatient.PhoneNo.Length != 10 || !NewPatient.PhoneNo.All(char.IsDigit))
             {
                 ValidationErrors.Add("Phone number must be exactly 10 digits.");
                 isValid = false;
@@ -370,16 +372,20 @@ namespace HospitalManagement.ViewModel
         // --- VM10: Update Patient ---
         private void UpdatePatient()
         {
+           
             if (EditingPatient == null || SelectedPatient == null) return;
 
             // 1. (Optional) Re-run phone formatting before saving
-            EditingPatient.PhoneNo = FormatPhoneNumber(EditingPatient.PhoneNo);
-            EditingPatient.EmergencyContact = FormatPhoneNumber(EditingPatient.EmergencyContact);
+            //EditingPatient.PhoneNo = FormatPhoneNumber(EditingPatient.PhoneNo);
+            //EditingPatient.EmergencyContact = FormatPhoneNumber(EditingPatient.EmergencyContact);
 
             // 2. Send the updated copy to the Service
             try
             {
                 _patientService.UpdatePatient(EditingPatient);
+
+                EditingPatient.PhoneNo = FormatPhoneNumber(EditingPatient.PhoneNo);
+                EditingPatient.EmergencyContact = FormatPhoneNumber(EditingPatient.EmergencyContact);
 
                 // 3. Sync: Refresh the main list to show the new data
                 LoadAllPatients();

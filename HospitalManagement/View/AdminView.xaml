@@ -10,113 +10,231 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid Padding="20">
+    <Grid>
+
         <Grid.Resources>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:DateToStringConverter x:Key="DateToStringConverter"/>
         </Grid.Resources>
-        
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
 
+        <!-- 3 COLUMN LAYOUT -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="320"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="20" Margin="0,0,0,20">
-            <Button Content="Logout / Home" Command="{Binding NavigateToHomeCommand}" Style="{StaticResource AccentButtonStyle}"/>
+        <!-- ================================= -->
+        <!-- LEFT SIDEBAR -->
+        <!-- ================================= -->
 
-            <TextBox PlaceholderText="Search by Name or CNP..." Width="300" 
-                     Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <Border Grid.Column="0"
+            Background="#1F2A37"
+            Padding="20">
 
-            <Button Content="Add New Patient" Click="OpenAddPatientDialog"/>
+            <StackPanel Spacing="15">
 
-            <Button Click="OpenPage_Click" Style="{StaticResource AccentButtonStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <SymbolIcon Symbol="FourBars" Margin="0,0,8,0"/>
-                    <TextBlock Text="View Statistics"/>
+                <TextBlock Text="HOSPITAL"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       Margin="0,0,0,20"/>
+
+                <Button Content="Home"
+                    Command="{Binding NavigateToHomeCommand}"
+                    Height="40"
+                    CornerRadius="8"/>
+
+                <Button Click="OpenPage_Click"
+                    Height="40"
+                    CornerRadius="8">
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="FourBars"/>
+                        <TextBlock Text="Statistics"/>
+                    </StackPanel>
+
+                </Button>
+
+                <Border Height="1"
+        Background="#3A4758"
+        Margin="0,20,0,20"/>
+
+                <TextBlock Text="Quick Info"
+                       FontSize="16"
+                       Foreground="LightGray"
+                       Margin="0,10,0,0"/>
+
+                <Border Background="#2C3A4A"
+                    CornerRadius="8"
+                    Padding="10">
+
+                    <StackPanel>
+                        <TextBlock Text="Patients"
+                               FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Patients.Count}"/>
+                    </StackPanel>
+
+                </Border>
+
+            </StackPanel>
+
+        </Border>
+
+
+        <!-- ================================= -->
+        <!-- MAIN SECTION -->
+        <!-- ================================= -->
+
+        <Grid Grid.Column="1"
+          Padding="20">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+
+            <!-- SEARCH BAR -->
+            <Border Background="#2C3A4A"
+                Padding="15"
+                CornerRadius="10"
+                Margin="0,0,0,15">
+
+                <StackPanel Orientation="Horizontal"
+                        Spacing="15">
+
+                    <TextBox PlaceholderText="Search by Name or CNP..."
+                         Width="250"
+                         Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Button Content="Add New Patient"
+                        Click="OpenAddPatientDialog"
+                        CornerRadius="6"/>
+
                 </StackPanel>
-            </Button>
-        </StackPanel>
 
-        <ListView Grid.Row="1" Grid.Column="0" 
-          ItemsSource="{Binding Patients}" 
-          SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
-          SelectionMode="Single"
-          Margin="0,10,0,0"
-          Padding="10"
-          BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" 
-          BorderThickness="1"
-          CornerRadius="8">
-            <ListView.Header>
-                <Grid Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" 
-                      Padding="12,8" CornerRadius="4" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="100"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="120"/>
-                        <ColumnDefinition Width="140"/>
-                        <ColumnDefinition Width="130"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="FIRST NAME" FontWeight="Bold" FontSize="12" Foreground="Gray" Grid.Column="0" Margin="10,0,0,0"/>
-                    <TextBlock Text="LAST NAME" FontWeight="Bold" FontSize="12" Foreground="Gray" Grid.Column="1" Margin="10,0,0,0"/>
-                    <TextBlock Text="SEX" FontWeight="Bold" FontSize="12" Foreground="Gray" Grid.Column="2" HorizontalAlignment="Center" Margin="10,0,0,0"/>
-                    <TextBlock Text="DOB" FontWeight="Bold" FontSize="11" Foreground="Gray" Grid.Column="3" Margin="40,0,0,0"/>
-                    <TextBlock Text="CNP" FontWeight="Bold" FontSize="11" Foreground="Gray" Grid.Column="4" Margin="45,0,0,0"/>
-                    <TextBlock Text="PHONE" FontWeight="Bold" FontSize="11" Foreground="Gray" Grid.Column="5" Margin="45,0,0,0"/>
-                    <TextBlock Text="EMERGENCY" FontWeight="Bold" FontSize="11" Foreground="Gray" Grid.Column="6" Margin="30,0,0,0"/>
-                </Grid>
-            </ListView.Header>
+            </Border>
 
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="entity:Patient">
-                    <Grid Padding="12,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="60"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="140"/>
-                            <ColumnDefinition Width="130"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding FirstName}" VerticalAlignment="Center" Grid.Column="0" Margin="10,0,0,0"/>
-                        <TextBlock Text="{Binding LastName}" VerticalAlignment="Center" Grid.Column="1" Margin="10,0,0,0"/>
-                        <TextBlock Text="{Binding Sex}" VerticalAlignment="Center" Grid.Column="2" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="10,0,0,0"/>
-                        <TextBlock Text="{Binding Dob, Converter={StaticResource DateToStringConverter}}" VerticalAlignment="Center"  Grid.Column="3" Margin="10,0,0,0" />
-                        <TextBlock Text="{Binding Cnp}" VerticalAlignment="Center" Grid.Column="4" FontSize="12" Margin="10,0,0,0"/>
-                        <TextBlock Text="{Binding PhoneNo}" VerticalAlignment="Center" Grid.Column="5" Margin="10,0,0,0"/>
-                        <TextBlock Text="{Binding EmergencyContact}" VerticalAlignment="Center" Grid.Column="6" FontStyle="Italic" Margin="10,0,0,0" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
 
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="Margin" Value="0,2"/>
-                    <Setter Property="BorderBrush" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
-                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                </Style>
-            </ListView.ItemContainerStyle>
-        </ListView>
+            <!-- PATIENT TABLE -->
 
-        <ScrollViewer Grid.Row="1" Grid.Column="1" Margin="20,0,0,0" Visibility="{Binding SelectedPatient, Converter={StaticResource NullToVisibilityConverter}}" >
+            <Border Grid.Row="1"
+                Background="#F8FAFC"
+                CornerRadius="10"
+                Padding="10">
+
+                <ListView
+                ItemsSource="{Binding Patients}"
+                SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
+                SelectionMode="Single">
+
+                    <ListView.Header>
+
+                        <Grid Padding="10"
+                          Background="#E5E7EB">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="FIRST NAME" FontWeight="Bold" Grid.Column="0" Foreground="Black"/>
+                            <TextBlock Text="LAST NAME" FontWeight="Bold" Grid.Column="1" Foreground="Black"/>
+                            <TextBlock Text="SEX" FontWeight="Bold" Grid.Column="2" Foreground="Black"/>
+                            <TextBlock Text="DOB" FontWeight="Bold" Grid.Column="3" Foreground="Black"/>
+                            <TextBlock Text="CNP" FontWeight="Bold" Grid.Column="4" Foreground="Black"/>
+                            <TextBlock Text="PHONE" FontWeight="Bold" Grid.Column="5" Foreground="Black"/>
+                            <TextBlock Text="EMERGENCY" FontWeight="Bold" Grid.Column="6" Foreground="Black"/>
+
+                        </Grid>
+
+                    </ListView.Header>
+
+
+                    <ListView.ItemTemplate>
+
+                        <DataTemplate x:DataType="entity:Patient">
+
+                            <Grid Padding="10">
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="{Binding FirstName}" Grid.Column="0" Foreground="Black"/>
+                                <TextBlock Text="{Binding LastName}" Grid.Column="1" Foreground="Black"/>
+                                <TextBlock Text="{Binding Sex}" Grid.Column="2" Foreground="Black"/>
+                                <TextBlock Text="{Binding Dob, Converter={StaticResource DateToStringConverter}}" Grid.Column="3" Foreground="Black"/>
+                                <TextBlock Text="{Binding Cnp}" Grid.Column="4" Foreground="Black"/>
+                                <TextBlock Text="{Binding PhoneNo}" Grid.Column="5" Foreground="Black"/>
+                                <TextBlock Text="{Binding EmergencyContact}" Grid.Column="6" Foreground="Black"/>
+
+                            </Grid>
+
+                        </DataTemplate>
+
+                    </ListView.ItemTemplate>
+
+                </ListView>
+
+            </Border>
+
+        </Grid>
+
+
+
+        <!-- ================================= -->
+        <!-- RIGHT EDIT PANEL -->
+        <!-- ================================= -->
+
+        <Border Grid.Column="2"
+           Background="#1F2A37"
+            Padding="20"
+            Visibility="{Binding SelectedPatient, Converter={StaticResource NullToVisibilityConverter}}">
+
             <StackPanel Spacing="10">
-                <TextBlock Text="Edit Patient Details" FontSize="20" FontWeight="SemiBold"/>
+
+                <TextBlock Text="Patient Details"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Margin="0,0,0,15"/>
+
                 <TextBlock Text="Phone Number"/>
                 <TextBox Text="{Binding EditingPatient.PhoneNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
                 <TextBlock Text="Emergency Contact"/>
                 <TextBox Text="{Binding EditingPatient.EmergencyContact, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <Button Content="Update Patient" Command="{Binding UpdatePatientCommand}" HorizontalAlignment="Stretch" Margin="0,10,0,0"/>
-                <Button Content="Archive Patient" Command="{Binding ArchivePatientCommand}" Foreground="Red" HorizontalAlignment="Stretch"/>
-                <Button Content="Mark as Deceased" Command="{Binding MarkAsDeceasedCommand}" IsEnabled="{Binding IsNotDeceased}" HorizontalAlignment="Stretch"/>
+
+                <Button Content="Update Patient"
+                    Command="{Binding UpdatePatientCommand}"
+                    Margin="0,15,0,0"
+                    CornerRadius="6"/>
+
+                <Button Content="Archive Patient"
+                    Command="{Binding ArchivePatientCommand}"
+                    Foreground="Red"
+                    CornerRadius="6"/>
+
+                <Button Content="Mark as Deceased"
+                    Command="{Binding MarkAsDeceasedCommand}"
+                    IsEnabled="{Binding IsNotDeceased}"
+                    CornerRadius="6"/>
+
             </StackPanel>
-        </ScrollViewer>
+
+        </Border>
+
     </Grid>
 </Window>

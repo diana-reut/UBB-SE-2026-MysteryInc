@@ -38,7 +38,7 @@
         <TextBlock x:Name="PhoneError" Text="Phone must be 10 digits" Foreground="Red" FontSize="11" Visibility="Collapsed" Margin="0,-4,0,0"/>
         <TextBox x:Name="EmergencyEntry" Header="Emergency Contact"/>
         <TextBlock x:Name="EmergencyError" 
-           Text="Emergency contact is required" 
+           Text="Emergency contact must be 10 digits" 
            Foreground="Red" FontSize="11" 
            Visibility="Collapsed" Margin="0,-4,0,0"/>
     </StackPanel>
