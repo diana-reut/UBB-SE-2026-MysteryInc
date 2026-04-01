@@ -15,7 +15,12 @@ namespace HospitalManagement.Utils
             string selected = value as string;
             string target = parameter as string;
 
-            if (string.IsNullOrEmpty(selected) || string.IsNullOrEmpty(target))
+            // If no parameter provided, show if selected has a value
+            if (string.IsNullOrEmpty(target))
+                return !string.IsNullOrEmpty(selected) ? Visibility.Visible : Visibility.Collapsed;
+
+            // If parameter provided, show if selected contains or equals the parameter
+            if (string.IsNullOrEmpty(selected))
                 return Visibility.Collapsed;
 
             return target.Contains(selected) ? Visibility.Visible : Visibility.Collapsed;
@@ -27,3 +32,4 @@ namespace HospitalManagement.Utils
         }
     }
 }
+

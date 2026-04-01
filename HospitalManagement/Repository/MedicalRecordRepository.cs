@@ -48,17 +48,25 @@ namespace HospitalManagement.Repository
             if (record.HistoryId <= 0 || record.StaffId <= 0)
                 throw new ArgumentException("HistoryId and StaffId must be greater than 0.");
 
+            // Convert enum to database string values
+            string sourceTypeStr = record.SourceType switch
+            {
+                SourceType.ER => "ER Visit",
+                SourceType.App => "Appointment",
+                SourceType.Admin => "Admin",
+                _ => throw new InvalidOperationException($"Unknown SourceType: {record.SourceType}")
+            };
+
             string query = $@"
         INSERT INTO MedicalRecord
         (HistoryID, SourceType, SourceID, StaffID, Symptoms, Diagnosis, ConsultationDate,
-         PrescriptionID, BasePrice, FinalPrice, DiscountApplied, PoliceNotified, TransplantID)
+         BasePrice, FinalPrice, DiscountApplied, PoliceNotified, TransplantID)
         OUTPUT INSERTED.RecordID
         VALUES
-        ({record.HistoryId}, '{record.SourceType}', {record.SourceId}, {record.StaffId},
+        ({record.HistoryId}, '{sourceTypeStr}', {record.SourceId}, {record.StaffId},
          {(record.Symptoms != null ? $"'{record.Symptoms}'" : "NULL")},
          {(record.Diagnosis != null ? $"'{record.Diagnosis}'" : "NULL")},
          '{record.ConsultationDate:yyyy-MM-dd HH:mm:ss}',
-         {(record.PrescriptionId.HasValue ? record.PrescriptionId.ToString() : "NULL")},
          {record.BasePrice}, {record.FinalPrice},
          {(record.DiscountApplied.HasValue ? record.DiscountApplied.ToString() : "NULL")},
          {(record.PoliceNotified ? 1 : 0)},
@@ -117,7 +125,7 @@ namespace HospitalManagement.Repository
             string query = $"SELECT COUNT(*) FROM MedicalRecord mr " +
                            $"JOIN MedicalHistory mh ON mr.HistoryID = mh.HistoryID " +
                            $"WHERE mh.PatientID = {patientId} " +
-                           $"AND mr.SourceType = '{SourceType.ER}' " +
+                           $"AND mr.SourceType = 'ER Visit' " +
                            $"AND mr.ConsultationDate >= '{fromDate:yyyy-MM-dd}'";
             using (SqlDataReader reader = _context.ExecuteQuery(query))
             {
@@ -129,19 +137,28 @@ namespace HospitalManagement.Repository
 
         private MedicalRecord MapToMedicalRecord(SqlDataReader reader)
         {
+            // Convert database string values to enum
+            // Database stores: 'ER Visit' → ER, 'Appointment' → App
+            string sourceTypeStr = reader["SourceType"].ToString()!;
+            SourceType sourceType = sourceTypeStr switch
+            {
+                "ER Visit" => SourceType.ER,
+                "Appointment" => SourceType.App,
+                "Admin" => SourceType.Admin,
+                _ => throw new InvalidOperationException($"Unknown SourceType value in database: {sourceTypeStr}")
+            };
+
             return new MedicalRecord
             {
                 Id = Convert.ToInt32(reader["RecordID"]),
                 HistoryId = Convert.ToInt32(reader["HistoryID"]),
-                SourceType = Enum.Parse<SourceType>(reader["SourceType"].ToString()!),
+                SourceType = sourceType,
                 SourceId = Convert.ToInt32(reader["SourceID"]),
                 StaffId = Convert.ToInt32(reader["StaffID"]),
                 Symptoms = reader["Symptoms"]?.ToString(),
                 Diagnosis = reader["Diagnosis"]?.ToString(),
                 ConsultationDate = Convert.ToDateTime(reader["ConsultationDate"]),
-                PrescriptionId = reader["PrescriptionID"] == DBNull.Value
-                                 ? (int?)null
-                                 : Convert.ToInt32(reader["PrescriptionID"]),
+                PrescriptionId = null, // Prescription.RecordID references MedicalRecord, not the other way around
                 BasePrice = Convert.ToDecimal(reader["BasePrice"]),
                 FinalPrice = Convert.ToDecimal(reader["FinalPrice"]),
                 DiscountApplied = reader["DiscountApplied"] == DBNull.Value

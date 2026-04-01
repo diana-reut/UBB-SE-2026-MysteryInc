@@ -1,43 +1,337 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using HospitalManagement.ViewModel;
-using HospitalManagement.Service;
-using HospitalManagement.Repository;
+using Microsoft.UI.Windowing;
 using HospitalManagement.Database;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using HospitalManagement.Repository;
+using HospitalManagement.Service;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HospitalManagement.View
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class Statistics : Page
+    public sealed partial class StatisticsWindow : Window
     {
-        public StatisticsViewModel _statisticsViewModel { get;  }
-        public Statistics()
+        private HospitalDbContext _dbContext;
+        private StatisticsService _statisticsService;
+        private string _currentStatistic;
+
+        public StatisticsWindow(HospitalDbContext dbContext = null)
         {
             this.InitializeComponent();
 
-            var dbContext = new HospitalDbContext();
-            var pRepo = new PatientRepository(dbContext);
-            var prRepo = new PrescriptionRepository(dbContext);
-            var rRepo = new MedicalRecordRepository(dbContext);
-            var service = new StatisticsService(pRepo, rRepo, prRepo);
-            this._statisticsViewModel = new StatisticsViewModel(service);
+            // Use provided context or create new one
+            _dbContext = dbContext ?? new HospitalDbContext();
+            
+            // Initialize service
+            var pRepo = new PatientRepository(_dbContext);
+            var prRepo = new PrescriptionRepository(_dbContext);
+            var rRepo = new MedicalRecordRepository(_dbContext);
+            _statisticsService = new StatisticsService(pRepo, rRepo, prRepo);
+
+            ConfigureWindow();
+            LoadInitialStatistics();
+        }
+
+        private void ConfigureWindow()
+        {
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+
+            if (appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.Restore();
+            }
+
+            this.Closed += StatisticsWindow_Closed;
+        }
+
+        private void StatisticsWindow_Closed(object sender, WindowEventArgs args)
+        {
+            _dbContext?.Dispose();
+        }
+
+        private void LoadInitialStatistics()
+        {
+            _currentStatistic = "Patient Distribution";
+            StatisticTitle.Text = _currentStatistic;
+            LoadPatientDistribution();
+        }
+
+        private void StatisticsMenu_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (StatisticsMenu.SelectedItem is string selected)
+            {
+                _currentStatistic = selected;
+                StatisticTitle.Text = selected;
+                LoadStatisticByType(selected);
+            }
+        }
+
+        private void LoadStatisticByType(string statisticType)
+        {
+            try
+            {
+                HideAllCharts();
+                ErrorInfoBar.IsOpen = false;
+
+                switch (statisticType)
+                {
+                    case "Patient Distribution":
+                        LoadPatientDistribution();
+                        break;
+                    case "Consultation Source":
+                        LoadConsultationSources();
+                        break;
+                    case "Top Diagnoses":
+                        LoadTopDiagnoses();
+                        break;
+                    case "Top Medications":
+                        LoadTopMedications();
+                        break;
+                    case "Demographics":
+                        LoadDemographics();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Error loading statistics: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// VM1: Load Patient Distribution - Active vs Archived ratio pie chart
+        /// </summary>
+        private void LoadPatientDistribution()
+        {
+            try
+            {
+                var data = _statisticsService.GetActiveVsArchivedRatio();
+                var series = new List<ISeries>();
+
+                foreach (var kvp in data.Where(kvp => kvp.Value >= 0))
+                {
+                    series.Add(new PieSeries<int>
+                    {
+                        Name = kvp.Key,
+                        Values = new[] { kvp.Value }
+                    });
+                }
+
+                PieChartControl.Series = series;
+                PieChartControl.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to load patient distribution: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// VM2: Load Consultation Sources - ER vs Appointments pie chart
+        /// </summary>
+        private void LoadConsultationSources()
+        {
+            try
+            {
+                var data = _statisticsService.GetConsultationDistribution();
+                var series = new List<ISeries>();
+
+                foreach (var kvp in data.Where(kvp => kvp.Value >= 0))
+                {
+                    var label = kvp.Key switch
+                    {
+                        "ER" => "Emergency Department",
+                        "App" => "Scheduled Appointments",
+                        "Admin" => "Administrative",
+                        _ => kvp.Key
+                    };
+
+                    series.Add(new PieSeries<int>
+                    {
+                        Name = label,
+                        Values = new[] { kvp.Value }
+                    });
+                }
+
+                PieChartControl.Series = series;
+                PieChartControl.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to load consultation sources: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// VM3: Load Top Diagnoses - Bar chart of most common diagnoses
+        /// </summary>
+        private void LoadTopDiagnoses()
+        {
+            try
+            {
+                var data = _statisticsService.GetTopDiagnoses();
+
+                if (data == null || data.Count == 0)
+                {
+                    ShowError("No diagnosis data available");
+                    return;
+                }
+
+                var validatedData = data
+                    .Where(kvp => kvp.Value >= 0 && !string.IsNullOrWhiteSpace(kvp.Key))
+                    .OrderByDescending(kvp => kvp.Value)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                var xAxes = new[] 
+                {
+                    new Axis 
+                    { 
+                        Labels = validatedData.Keys.ToArray(),
+                        LabelsRotation = 15
+                    }
+                };
+
+                var series = new ISeries[]
+                {
+                    new ColumnSeries<int>
+                    {
+                        Name = "Diagnoses",
+                        Values = validatedData.Values.ToArray()
+                    }
+                };
+
+                CartesianChartControl.XAxes = xAxes;
+                CartesianChartControl.Series = series;
+                CartesianChartControl.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to load top diagnoses: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// VM4: Load Top Medications - Bar chart of most prescribed medications
+        /// </summary>
+        private void LoadTopMedications()
+        {
+            try
+            {
+                var data = _statisticsService.GetMostPrescribedMeds();
+
+                if (data == null || data.Count == 0)
+                {
+                    ShowError("No medication data available");
+                    return;
+                }
+
+                var validatedData = data
+                    .Where(kvp => kvp.Value >= 0 && !string.IsNullOrWhiteSpace(kvp.Key))
+                    .OrderByDescending(kvp => kvp.Value)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                var xAxes = new[] 
+                {
+                    new Axis 
+                    { 
+                        Labels = validatedData.Keys.ToArray()
+                    }
+                };
+
+                var series = new ISeries[]
+                {
+                    new ColumnSeries<int>
+                    {
+                        Name = "Prescriptions",
+                        Values = validatedData.Values.ToArray()
+                    }
+                };
+
+                CartesianChartControl.XAxes = xAxes;
+                CartesianChartControl.Series = series;
+                CartesianChartControl.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to load top medications: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// VM5: Load Demographics - Gender pie chart and age bar chart
+        /// </summary>
+        private void LoadDemographics()
+        {
+            try
+            {
+                // Load gender distribution
+                var genderData = _statisticsService.GetPatientGenderDistribution();
+                var genderSeries = new List<ISeries>();
+
+                foreach (var entry in genderData.Where(kvp => kvp.Value >= 0))
+                {
+                    genderSeries.Add(new PieSeries<int>
+                    {
+                        Name = entry.Key,
+                        Values = new[] { entry.Value }
+                    });
+                }
+
+                GenderChart.Series = genderSeries;
+
+                // Load age distribution
+                var ageData = _statisticsService.GetAgeDistribution();
+                if (ageData != null && ageData.Count > 0)
+                {
+                    var validatedAgeData = ageData
+                        .Where(kvp => kvp.Value >= 0 && !string.IsNullOrWhiteSpace(kvp.Key))
+                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+                    var xAxes = new[] 
+                    {
+                        new Axis 
+                        { 
+                            Labels = validatedAgeData.Keys.ToArray()
+                        }
+                    };
+
+                    var series = new ISeries[]
+                    {
+                        new ColumnSeries<int>
+                        {
+                            Name = "Patients",
+                            Values = validatedAgeData.Values.ToArray()
+                        }
+                    };
+
+                    AgeChart.XAxes = xAxes;
+                    AgeChart.Series = series;
+                }
+
+                DemographicsGrid.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Failed to load demographics: {ex.Message}");
+            }
+        }
+
+        private void HideAllCharts()
+        {
+            PieChartControl.Visibility = Visibility.Collapsed;
+            CartesianChartControl.Visibility = Visibility.Collapsed;
+            DemographicsGrid.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowError(string message)
+        {
+            ErrorInfoBar.Message = message;
+            ErrorInfoBar.IsOpen = true;
         }
     }
 }

@@ -24,11 +24,13 @@ using HospitalManagement.Service;
 namespace HospitalManagement.View
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Admin view window for managing patients and accessing statistics
     /// </summary>
-    public sealed partial class AdminView : Window
+    public sealed partial class AdminView : Window, IDisposable
     {
         private AdminViewModel _viewModel;
+        private HospitalDbContext _dbContext;
+
         public AdminView()
         {
             this.InitializeComponent();
@@ -41,17 +43,23 @@ namespace HospitalManagement.View
                 presenter.Maximize();
             }
 
-            var dbContext = new HospitalDbContext();
-            var pRepo = new PatientRepository(dbContext);
-            var hRepo = new MedicalHistoryRepository(dbContext);
-            var rRepo = new MedicalRecordRepository(dbContext);
+            _dbContext = new HospitalDbContext();
+            var pRepo = new PatientRepository(_dbContext);
+            var hRepo = new MedicalHistoryRepository(_dbContext);
+            var rRepo = new MedicalRecordRepository(_dbContext);
 
             var service = new PatientService(pRepo, hRepo, rRepo);
 
             this._viewModel = new AdminViewModel(service);
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
+            this.Closed += AdminView_Closed;
             UpdateView(_viewModel.CurrentView);
+        }
+
+        private void AdminView_Closed(object sender, WindowEventArgs args)
+        {
+            Dispose();
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -67,40 +75,39 @@ namespace HospitalManagement.View
             switch (viewName)
             {
                 case "AdminDashboard":
-                    //var adminView = new AdminView();
-
-                    // Replace 'Show()' with 'Activate()' as 'Show()' is not defined for AdminView.
-                    //MainContentArea.Content = adminView;
                     break;
 
                 case "Statistics":
-                    Console.WriteLine("hello");
-                    var statisticsView = new Statistics();
-
-                    // Replace 'Show()' with 'Activate()' as 'Show()' is not defined for Statistics.
-                    MainContentArea.Navigate(typeof( Statistics));
+                    OpenStatisticsWindow();
                     break;
             }
+        }
+
+        /// <summary>
+        /// Opens the Statistics window as a separate window
+        /// </summary>
+        private void OpenStatisticsWindow()
+        {
+            var statisticsWindow = new StatisticsWindow(_dbContext);
+            statisticsWindow.Activate();
         }
 
         public Page GetCurrentPage()
         {
             return _viewModel.CurrentView switch
             {
-                "Statistics" => new Statistics(),
-                
+                _ => new Page() // Return a default Page instance instead of null to avoid CS8603
             };
         }
 
         private void OpenPage_Click(object sender, RoutedEventArgs e)
         {
-            // Check if the page is already shown to avoid redundant loading
-            if (MainContentArea.CurrentSourcePageType != typeof(Statistics))
-            {
-                MainContentArea.Navigate(typeof(Statistics));
-            }
+            OpenStatisticsWindow();
         }
 
-
+        public void Dispose()
+        {
+            _dbContext?.Dispose();
+        }
     }
 }

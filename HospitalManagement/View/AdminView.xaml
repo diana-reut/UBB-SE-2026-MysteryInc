@@ -24,9 +24,5 @@
                <TextBlock Text="View Statistics"/>  
            </StackPanel>  
        </Button>  
-       <ContentControl x:Name="ContentArea" Grid.Column="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>  
-       <Grid>  
-           <Frame x:Name="MainContentArea" Width="800" Height="600" BorderBrush="Gray" BorderThickness="1"/>  
-       </Grid>  
    </Grid>  
 </Window>
