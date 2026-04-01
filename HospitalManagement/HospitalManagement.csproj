@@ -17,6 +17,7 @@
   <ItemGroup>
     <None Remove="configuration\appsettings.template.json" />
     <None Remove="Database\script1_create_database.sql" />
+    <None Remove="View\AddPatientDialog.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,12 +55,15 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="View\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="configuration\appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="View\AddPatientDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="View\AdminView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
