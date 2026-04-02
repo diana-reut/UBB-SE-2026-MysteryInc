@@ -7,6 +7,7 @@ using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.Database;
 using HospitalManagement.Entity;
+using HospitalManagement.Integration.Export;
 
 namespace HospitalManagement.View
 {
@@ -36,10 +37,13 @@ namespace HospitalManagement.View
             var pRepo = new PatientRepository(_dbContext);
             var hRepo = new MedicalHistoryRepository(_dbContext);
             var rRepo = new MedicalRecordRepository(_dbContext);
+            var prescRepo = new PrescriptionRepository(_dbContext);
             var service = new PatientService(pRepo, hRepo, rRepo);
+            var pdfGen = new PDFGenerator();
+            var exportService = new ExportService(pdfGen, rRepo, prescRepo, pRepo, hRepo);
 
             // 3. Initialize ViewModel
-            _viewModel = new PatientViewModel(service);
+            _viewModel = new PatientViewModel(service, exportService);
             _viewModel.GoBackAction = GoBack;
             _viewModel.SelectedPatient = patient;
 

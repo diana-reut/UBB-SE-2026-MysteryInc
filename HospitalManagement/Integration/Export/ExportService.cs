@@ -8,7 +8,7 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Integration.Export
 {
-    internal class ExportService
+    public class ExportService
     {
         private readonly PDFGenerator _pdfGen;
         private readonly MedicalRecordRepository _recordRepo;
@@ -37,8 +37,8 @@ namespace HospitalManagement.Integration.Export
             if (record == null)
                 throw new ExportException($"MedicalRecord with ID={recordId} not found.");
 
-            // Get patient via history
-            MedicalHistory? history = _historyRepo.GetByPatientId(record.HistoryId);
+            // Get history using HistoryId from record
+            MedicalHistory? history = _historyRepo.GetById(record.HistoryId);
             if (history == null)
                 throw new ExportException($"MedicalHistory for record ID={recordId} not found.");
 

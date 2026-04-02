@@ -140,7 +140,17 @@
             <Border Grid.Column="1" Background="#2C3A4A" CornerRadius="10" Padding="20" Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource NullToVisibilityConverter}}">
                 <ScrollViewer>
                     <StackPanel Spacing="15">
-                        <TextBlock Text="Consultation Details" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Consultation Details" FontSize="18" FontWeight="Bold" Foreground="White" Grid.Column="0"/>
+                            <Button Content="Export to PDF" 
+                                    Command="{Binding ExportRecordCommand}" 
+                                    Background="#0D7377" Foreground="White" 
+                                    CornerRadius="6" Padding="15,8" Grid.Column="1"/>
+                        </Grid>
 
                         <!-- Patient Name -->
                         <StackPanel Spacing="5">

@@ -6,12 +6,14 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using HospitalManagement.Entity;
 using HospitalManagement.Service;
+using HospitalManagement.Integration.Export;
 
 namespace HospitalManagement.ViewModel
 {
     public class PatientViewModel : INotifyPropertyChanged
     {
         private readonly PatientService _patientService;
+        private readonly ExportService _exportService;
 
         private Patient _selectedPatient;
         public Patient SelectedPatient
@@ -70,15 +72,18 @@ namespace HospitalManagement.ViewModel
         }
 
         public ICommand BackCommand { get; }
+        public ICommand ExportRecordCommand { get; }
 
         public Action GoBackAction { get; set; }
 
-        public PatientViewModel(PatientService patientService)
+        public PatientViewModel(PatientService patientService, ExportService exportService = null)
         {
             _patientService = patientService;
+            _exportService = exportService;
             MedicalRecords = new ObservableCollection<MedicalRecord>();
             Allergies = new ObservableCollection<string>();
             BackCommand = new RelayCommand(GoBack);
+            ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
         }
 
         private void LoadMedicalHistory()
@@ -136,6 +141,27 @@ namespace HospitalManagement.ViewModel
         private void GoBack()
         {
             GoBackAction?.Invoke();
+        }
+
+        private bool CanExportRecord()
+        {
+            return SelectedMedicalRecord != null && _exportService != null;
+        }
+
+        private void ExportSelectedRecord()
+        {
+            if (SelectedMedicalRecord == null || _exportService == null)
+                return;
+
+            try
+            {
+                _exportService.ExportRecordToPDF(SelectedMedicalRecord.Id);
+                System.Diagnostics.Debug.WriteLine($"Successfully exported record {SelectedMedicalRecord.Id} to PDF");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error exporting record: {ex.Message}");
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
