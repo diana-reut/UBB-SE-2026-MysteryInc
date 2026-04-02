@@ -14,13 +14,15 @@ namespace HospitalManagement.Service
 
         private readonly MedicalHistoryRepository _historyRepo;
         private readonly MedicalRecordRepository _recordRepo;
+        private readonly PrescriptionRepository _prescriptionRepo;
 
         public PatientService(PatientRepository patientRepo, MedicalHistoryRepository historyRepo,
-            MedicalRecordRepository recordRepo)
+            MedicalRecordRepository recordRepo, PrescriptionRepository prescriptionRepo = null)
         {
             _patientRepo = patientRepo;
             _historyRepo = historyRepo;
             _recordRepo = recordRepo;
+            _prescriptionRepo = prescriptionRepo;
         }
 
         /// Validates that the CNP matches the provided Sex and Date of Birth.
@@ -387,6 +389,17 @@ namespace HospitalManagement.Service
                 System.Diagnostics.Debug.WriteLine($"Error fetching allergies: {ex.Message}");
                 return new List<string>();
             }
+        }
+
+        /// <summary>
+        /// Get prescription by medical record ID
+        /// </summary>
+        public Prescription GetPrescriptionByRecordId(int recordId)
+        {
+            if (_prescriptionRepo == null)
+                throw new InvalidOperationException("PrescriptionRepository is not available.");
+            
+            return _prescriptionRepo.GetByRecordId(recordId);
         }
        
     }

@@ -71,8 +71,16 @@ namespace HospitalManagement.ViewModel
             set { _allergies = value; OnPropertyChanged(); }
         }
 
+        private Prescription _selectedPrescription;
+        public Prescription SelectedPrescription
+        {
+            get => _selectedPrescription;
+            set { _selectedPrescription = value; OnPropertyChanged(); }
+        }
+
         public ICommand BackCommand { get; }
         public ICommand ExportRecordCommand { get; }
+        public ICommand ViewPrescriptionCommand { get; }
 
         public Action GoBackAction { get; set; }
 
@@ -84,6 +92,7 @@ namespace HospitalManagement.ViewModel
             Allergies = new ObservableCollection<string>();
             BackCommand = new RelayCommand(GoBack);
             ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
+            ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
         }
 
         private void LoadMedicalHistory()
@@ -146,6 +155,28 @@ namespace HospitalManagement.ViewModel
         private bool CanExportRecord()
         {
             return SelectedMedicalRecord != null && _exportService != null;
+        }
+
+        private bool CanViewPrescription()
+        {
+            return SelectedMedicalRecord != null && SelectedMedicalRecord.PrescriptionId.HasValue;
+        }
+
+        private void ViewSelectedPrescription()
+        {
+            if (SelectedMedicalRecord?.PrescriptionId == null)
+                return;
+
+            try
+            {
+                SelectedPrescription = _patientService.GetPrescriptionByRecordId(SelectedMedicalRecord.Id);
+                if (SelectedPrescription == null)
+                    System.Diagnostics.Debug.WriteLine($"No prescription found for record {SelectedMedicalRecord.Id}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading prescription: {ex.Message}");
+            }
         }
 
         private void ExportSelectedRecord()

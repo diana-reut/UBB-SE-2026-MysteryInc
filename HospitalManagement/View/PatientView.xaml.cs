@@ -38,7 +38,7 @@ namespace HospitalManagement.View
             var hRepo = new MedicalHistoryRepository(_dbContext);
             var rRepo = new MedicalRecordRepository(_dbContext);
             var prescRepo = new PrescriptionRepository(_dbContext);
-            var service = new PatientService(pRepo, hRepo, rRepo);
+            var service = new PatientService(pRepo, hRepo, rRepo, prescRepo);
             var pdfGen = new PDFGenerator();
             var exportService = new ExportService(pdfGen, rRepo, prescRepo, pRepo, hRepo);
 
