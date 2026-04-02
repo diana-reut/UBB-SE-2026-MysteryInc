@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using HospitalManagement.ViewModel;
 using HospitalManagement.Entity;
+using System;
 
 namespace HospitalManagement.View
 {
@@ -29,5 +30,68 @@ namespace HospitalManagement.View
                 ViewModel.SelectedRecord = clickedRecord;
             }
         }
+
+        // Catches the button click to open the prescription details
+        private async void ViewPrescription_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.SelectedRecord != null)
+            {
+                // 1. Set up the database connection
+                var dbContext = new HospitalManagement.Database.HospitalDbContext();
+                var recordRepo = new HospitalManagement.Repository.MedicalRecordRepository(dbContext);
+
+                // 2. Actually query the database to find the prescription using the Record ID!
+                var actualPrescription = recordRepo.GetPrescription(ViewModel.SelectedRecord.Id);
+
+                // 3. Check if the database found one
+                if (actualPrescription != null)
+                {
+                    var prescriptionWindow = new Window();
+                    prescriptionWindow.Title = "Prescription Details";
+
+                    var prescriptionRepo = new HospitalManagement.Repository.PrescriptionRepository(dbContext);
+                    var medicalHistoryRepo = new HospitalManagement.Repository.MedicalHistoryRepository(dbContext);
+
+                    var prescriptionService = new HospitalManagement.Service.PrescriptionService(prescriptionRepo);
+                    var addictService = new HospitalManagement.Service.AddictDetectionService(prescriptionRepo, medicalHistoryRepo);
+
+                    var prescriptionVM = new HospitalManagement.ViewModel.PrescriptionViewModel(prescriptionService, addictService);
+
+                    // 4. Use the ID from the prescription we just pulled from the DB!
+                    prescriptionVM.ApplyFilterCommand(
+                        searchId: actualPrescription.Id,
+                        medName: null,
+                        dateFrom: null,
+                        dateTo: null,
+                        patientName: null,
+                        doctorName: null
+                    );
+
+                    var prescriptionPage = new HospitalManagement.View.PrescriptionView();
+
+                    prescriptionPage.ViewModel = prescriptionVM;
+                    if (prescriptionPage.Content is FrameworkElement root)
+                    {
+                        root.DataContext = prescriptionVM;
+                    }
+
+                    prescriptionWindow.Content = prescriptionPage;
+                    prescriptionWindow.Activate();
+                }
+                else
+                {
+                    // If the DB query returns null, there genuinely is no prescription.
+                    var dialog = new ContentDialog()
+                    {
+                        Title = "No Prescription",
+                        Content = "This consultation does not have an associated prescription.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+            }
+        }
+
     }
 }
