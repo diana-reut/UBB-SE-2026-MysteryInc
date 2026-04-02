@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls; // Add this for Page
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using HospitalManagement.ViewModel;
+using HospitalManagement.Entity;
 
 namespace HospitalManagement.View
 {
@@ -10,16 +12,21 @@ namespace HospitalManagement.View
 
         public PatientProfileView(int patientId)
         {
-            // 1. CREATE THE VIEWMODEL FIRST!
             ViewModel = new PatientProfileViewModel(patientId);
-
-            // 2. INITIALIZE THE UI SECOND!
             this.InitializeComponent();
 
-            // 3. Set the DataContext
             if (this.Content is FrameworkElement rootElement)
             {
                 rootElement.DataContext = ViewModel;
+            }
+        }
+
+        // Catches the double-click from the Expander list and loads the details on the right
+        private void RecordList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (sender is ListView listView && listView.SelectedItem is MedicalRecord clickedRecord)
+            {
+                ViewModel.SelectedRecord = clickedRecord;
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using HospitalManagement.Database;
@@ -11,12 +12,60 @@ namespace HospitalManagement.ViewModel
     public class PatientProfileViewModel : INotifyPropertyChanged
     {
         private Patient _patient;
+        private MedicalRecord _selectedRecord;
         private readonly PatientService _patientService;
 
         public Patient CurrentPatient
         {
             get => _patient;
-            set { _patient = value; OnPropertyChanged(); }
+            set
+            {
+                _patient = value;
+                OnPropertyChanged();
+                // Notify UI that the formatted lists have updated
+                OnPropertyChanged(nameof(FormattedChronicConditions));
+                OnPropertyChanged(nameof(FormattedAllergies));
+            }
+        }
+
+        // Holds the record selected when double-clicking the list
+        public MedicalRecord SelectedRecord
+        {
+            get => _selectedRecord;
+            set
+            {
+                _selectedRecord = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // Formats the List<string> into readable text
+        public string FormattedChronicConditions
+        {
+            get
+            {
+                if (CurrentPatient?.MedicalHistory?.ChronicConditions == null || CurrentPatient.MedicalHistory.ChronicConditions.Count == 0)
+                    return "None";
+                return string.Join(", ", CurrentPatient.MedicalHistory.ChronicConditions);
+            }
+        }
+
+        // Formats the Tuple List<(Allergy, Severity)> into readable text
+        public string FormattedAllergies
+        {
+            get
+            {
+                if (CurrentPatient?.MedicalHistory?.Allergies == null || CurrentPatient.MedicalHistory.Allergies.Count == 0)
+                    return "None";
+
+                var stringList = new List<string>();
+                foreach (var item in CurrentPatient.MedicalHistory.Allergies)
+                {
+                    // Changed item.Allergy.Name to item.Allergy.AllergyName
+                    stringList.Add($"{item.Allergy.AllergyName} ({item.SeverityLevel})");
+                }
+                return string.Join(", ", stringList);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -30,12 +79,12 @@ namespace HospitalManagement.ViewModel
 
             _patientService = new PatientService(patientRepo, historyRepo, recordRepo);
 
-            // 1. FIX: Ensure the dummy payload has NO null collections
+            // Dummy payload to prevent XAML crash
             CurrentPatient = new Patient
             {
                 MedicalHistory = new MedicalHistory
                 {
-                    MedicalRecords = new System.Collections.Generic.List<MedicalRecord>()
+                    MedicalRecords = new List<MedicalRecord>()
                 }
             };
 
@@ -49,14 +98,13 @@ namespace HospitalManagement.ViewModel
                 var p = _patientService.GetPatientDetails(id);
                 if (p != null)
                 {
-                    // 2. FIX: Protect against incomplete database data
                     if (p.MedicalHistory == null)
                     {
                         p.MedicalHistory = new MedicalHistory();
                     }
                     if (p.MedicalHistory.MedicalRecords == null)
                     {
-                        p.MedicalHistory.MedicalRecords = new System.Collections.Generic.List<MedicalRecord>();
+                        p.MedicalHistory.MedicalRecords = new List<MedicalRecord>();
                     }
 
                     CurrentPatient = p;
