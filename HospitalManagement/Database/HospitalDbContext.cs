@@ -36,6 +36,7 @@ namespace HospitalManagement.Database
 
         public int ExecuteNonQuery(string sql)
         {
+            EnsureConnectionOpen();
             SqlCommand command = new SqlCommand(sql, _connection);
 
             if (_transaction != null)

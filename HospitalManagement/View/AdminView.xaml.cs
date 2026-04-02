@@ -63,6 +63,49 @@ namespace HospitalManagement.View
                             await alert.ShowAsync();
                         };
 
+                        vm.ConfirmAction = async (message, title) =>
+                        {
+                            ContentDialog confirmDialog = new ContentDialog
+                            {
+                                Title = title,
+                                Content = message,
+                                PrimaryButtonText = "Yes, Archive",
+                                CloseButtonText = "Cancel",
+                                DefaultButton = ContentDialogButton.Close,
+                                XamlRoot = rootElement.XamlRoot
+                            };
+
+                            var result = await confirmDialog.ShowAsync();
+                            return result == ContentDialogResult.Primary;
+                        };
+
+                        vm.RequestDateAction = async (message, title) =>
+                        {
+                            DatePicker datePicker = new DatePicker
+                            {
+                                Header = message,
+                                HorizontalAlignment = HorizontalAlignment.Stretch
+                            };
+
+                            ContentDialog dialog = new ContentDialog
+                            {
+                                Title = title,
+                                Content = datePicker,
+                                PrimaryButtonText = "Confirm",
+                                CloseButtonText = "Cancel",
+                                XamlRoot = rootElement.XamlRoot
+                            };
+
+                            var result = await dialog.ShowAsync();
+
+                            if (result == ContentDialogResult.Primary)
+                            {
+                                return datePicker.Date.DateTime;
+                            }
+
+                            return null;
+                        };
+
                         // Organ Donor Dialog Logic
                         vm.OpenOrganDonorDialogAction = async (deceasedPatient) =>
                         {
@@ -109,55 +152,8 @@ namespace HospitalManagement.View
                             {
                                 vm.ShowAlertAction?.Invoke($"Error opening organ donor dialog: {ex.Message}");
                             }
-                            vm.ConfirmAction = async (message, title) => // Added 'async' here
-                            {
-                                ContentDialog confirmDialog = new ContentDialog
-                                {
-                                    Title = title,
-                                    Content = message,
-                                    PrimaryButtonText = "Yes, Archive",
-                                    CloseButtonText = "Cancel",
-                                    DefaultButton = ContentDialogButton.Close,
-                                    XamlRoot = rootElement.XamlRoot
-                                };
-
-                                var result = await confirmDialog.ShowAsync();
-
-                                // This returns a bool, but because the method is 'async', 
-                                // C# automatically wraps it in a Task<bool> for you!
-                                return result == ContentDialogResult.Primary;
-                            };
-                            vm.RequestDateAction = async (message, title) =>
-                            {
-                                // Create a simple dialog with a DatePicker inside it
-                                DatePicker datePicker = new DatePicker
-                                {
-                                    Header = message,
-                                    HorizontalAlignment = HorizontalAlignment.Stretch
-                                };
-
-                                ContentDialog dialog = new ContentDialog
-                                {
-                                    Title = title,
-                                    Content = datePicker,
-                                    PrimaryButtonText = "Confirm",
-                                    CloseButtonText = "Cancel",
-                                    XamlRoot = rootElement.XamlRoot
-                                };
-
-                                var result = await dialog.ShowAsync();
-
-                                if (result == ContentDialogResult.Primary)
-                                {
-                                    // Return the selected date as a DateTime
-                                    return datePicker.Date.DateTime;
-                                }
-
-                                return null; // User cancelled
-                            };
                         };
                     }
-                    ;
                 };
 
                 UpdateView(_viewModel.CurrentView);

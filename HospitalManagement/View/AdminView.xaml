@@ -92,80 +92,8 @@
 
             </Border>
 
-            <Button Content="Assign Organ Donor" Command="{Binding OpenOrganDonorCommand}" Style="{StaticResource AccentButtonStyle}"/>
+            <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="10" Padding="10" Margin="0,15,0,0">
 
-            <Button Command="{Binding ReportGhostCommand}"
-                    Background="#FFE779" 
-                    BorderBrush="Transparent"
-                    Padding="10,8" 
-                    CornerRadius="4"
-                    ToolTipService.ToolTip="Report Paranormal Activity">
-
-                <Button.Resources>
-                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFD54F"/>
-                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#1E2A38"/>
-                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FFC107"/>
-                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#1E2A38"/>
-                </Button.Resources>
-
-                <Button.ContentTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <FontIcon Glyph="&#xE7BA;" Margin="0,0,8,0" FontSize="14" Foreground="#1E2A38"/>
-                            <TextBlock Text="I saw a ghost!" Foreground="#1E2A38" FontWeight="Bold"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </Button.ContentTemplate>
-            </Button>
-            <!--</StackPanel> -->
-
-            <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="10" Padding="10">
-            <!--     <ListView ItemsSource="{Binding Patients}" SelectedItem="{Binding SelectedPatient, Mode=TwoWay}" SelectionMode="Single">
-                    <ListView.Header>
-                        <Grid Padding="10" Background="#E5E7EB">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="60"/>
-                                <ColumnDefinition Width="120"/>
-                                <ColumnDefinition Width="140"/>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="FIRST NAME" FontWeight="Bold" Grid.Column="0" Foreground="Black"/>
-                            <TextBlock Text="LAST NAME" FontWeight="Bold" Grid.Column="1" Foreground="Black"/>
-                            <TextBlock Text="SEX" FontWeight="Bold" Grid.Column="2" Foreground="Black"/>
-                            <TextBlock Text="DOB" FontWeight="Bold" Grid.Column="3" Foreground="Black"/>
-                            <TextBlock Text="CNP" FontWeight="Bold" Grid.Column="4" Foreground="Black"/>
-                            <TextBlock Text="PHONE" FontWeight="Bold" Grid.Column="5" Foreground="Black"/>
-                            <TextBlock Text="EMERGENCY" FontWeight="Bold" Grid.Column="6" Foreground="Black"/>
-                        </Grid>
-                    </ListView.Header>
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="entity:Patient">
-                            <Grid Padding="10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="60"/>
-                                    <ColumnDefinition Width="120"/>
-                                    <ColumnDefinition Width="140"/>
-                                    <ColumnDefinition Width="130"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding FirstName}" Grid.Column="0" Foreground="Black"/>
-                                <TextBlock Text="{Binding LastName}" Grid.Column="1" Foreground="Black"/>
-                                <TextBlock Text="{Binding Sex}" Grid.Column="2" Foreground="Black"/>
-                                <TextBlock Text="{Binding Dob, Converter={StaticResource DateToStringConverter}}" Grid.Column="3" Foreground="Black"/>
-                                <TextBlock Text="{Binding Cnp}" Grid.Column="4" Foreground="Black"/>
-                                <TextBlock Text="{Binding PhoneNo}" Grid.Column="5" Foreground="Black"/>
-                                <TextBlock Text="{Binding EmergencyContact}" Grid.Column="6" Foreground="Black"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView> -->
-                
-                
                 <ListView Grid.Row="1" Grid.Column="0" 
               ItemsSource="{Binding Patients}" 
               SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
@@ -209,13 +137,13 @@
                                     <ColumnDefinition Width="130"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding FirstName}" VerticalAlignment="Center" Grid.Column="0" Margin="10,0,0,0"/>
-                                <TextBlock Text="{Binding LastName}" VerticalAlignment="Center" Grid.Column="1" Margin="10,0,0,0"/>
-                                <TextBlock Text="{Binding Sex}" VerticalAlignment="Center" Grid.Column="2" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="10,0,0,0"/>
-                                <TextBlock Text="{Binding Dob, Converter={StaticResource DateToStringConverter}}" VerticalAlignment="Center"  Grid.Column="3" Margin="10,0,0,0" />
-                                <TextBlock Text="{Binding Cnp}" VerticalAlignment="Center" Grid.Column="4" FontSize="12" Margin="10,0,0,0"/>
-                                <TextBlock Text="{Binding PhoneNo}" VerticalAlignment="Center" Grid.Column="5" Margin="10,0,0,0"/>
-                                <TextBlock Text="{Binding EmergencyContact}" VerticalAlignment="Center" Grid.Column="6" FontStyle="Italic" Margin="10,0,0,0" />
+                                <TextBlock Text="{Binding FirstName}" VerticalAlignment="Center" Grid.Column="0" Foreground="Black" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding LastName}" VerticalAlignment="Center" Grid.Column="1" Foreground="Black" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding Sex}" VerticalAlignment="Center" Grid.Column="2" Foreground="Black" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding Dob, Converter={StaticResource DateToStringConverter}}" Foreground="Black" VerticalAlignment="Center"  Grid.Column="3" Margin="10,0,0,0" />
+                                <TextBlock Text="{Binding Cnp}" VerticalAlignment="Center" Grid.Column="4" Foreground="Black" FontSize="12" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding PhoneNo}" VerticalAlignment="Center" Grid.Column="5" Foreground="Black" Margin="10,0,0,0"/>
+                                <TextBlock Text="{Binding EmergencyContact}" VerticalAlignment="Center" Grid.Column="6" Foreground="Black" FontStyle="Italic" Margin="10,0,0,0" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -245,6 +173,7 @@
                 <Button Content="Update Patient" Command="{Binding UpdatePatientCommand}" HorizontalAlignment="Stretch" Margin="0,15,0,0" CornerRadius="6"/>
                 <Button Content="Archive Patient" Command="{Binding ArchivePatientCommand}" HorizontalAlignment="Stretch" Foreground="Red" CornerRadius="6"/>
                 <Button Content="Mark as Deceased" Command="{Binding MarkAsDeceasedCommand}" HorizontalAlignment="Stretch" IsEnabled="{Binding IsNotDeceased}" CornerRadius="6"/>
+                <Button Content="Mark as Organ Donor" Command="{Binding MarkAsOrganDonorCommand}" HorizontalAlignment="Stretch" Visibility="{Binding SelectedPatient.IsDeceased, Converter={StaticResource BoolToVis}}" CornerRadius="6"/>
             </StackPanel>
         </Border>
 
