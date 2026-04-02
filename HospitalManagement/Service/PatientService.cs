@@ -332,6 +332,62 @@ namespace HospitalManagement.Service
         {
             return _patientRepo.Exists(CNP);
         }
+
+        /// <summary>
+        /// Get the medical history for a patient
+        /// </summary>
+        public MedicalHistory GetMedicalHistory(int patientId)
+        {
+            try
+            {
+                return _historyRepo.GetByPatientId(patientId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching medical history: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get all medical records for a patient
+        /// </summary>
+        public List<MedicalRecord> GetMedicalRecords(int historyId)
+        {
+            try
+            {
+                return _recordRepo.GetByHistoryId(historyId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching medical records: {ex.Message}");
+                return new List<MedicalRecord>();
+            }
+        }
+
+        /// <summary>
+        /// Get all allergies for a patient as formatted strings
+        /// </summary>
+        public List<string> GetPatientAllergies(int patientId)
+        {
+            try
+            {
+                var history = _historyRepo.GetByPatientId(patientId);
+                if (history == null)
+                    return new List<string>();
+
+                var allergyTuples = _historyRepo.GetAllergiesByHistoryId(history.Id);
+                
+                // Convert tuples to formatted strings: "AllergyName - Severity"
+                return allergyTuples.Select(tuple => $"{tuple.Allergy.AllergyName} - {tuple.SeverityLevel}")
+                                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching allergies: {ex.Message}");
+                return new List<string>();
+            }
+        }
        
     }
 }
