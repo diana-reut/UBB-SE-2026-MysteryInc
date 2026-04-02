@@ -170,6 +170,7 @@ namespace HospitalManagement.ViewModel
         public bool IsNotDeceased => SelectedPatient != null && !SelectedPatient.IsDeceased;
 
         public ICommand MarkAsDeceasedCommand { get; }
+        public ICommand MarkAsOrganDonorCommand { get; }
 
         // --- UI Callbacks ---
         public Func<string, string, Task<bool>> ConfirmAction { get; set; }
@@ -217,6 +218,7 @@ namespace HospitalManagement.ViewModel
             ClearFilterCommand = new RelayCommand(ClearFilters);
 
             MarkAsDeceasedCommand = new RelayCommand(MarkAsDeceased);
+            MarkAsOrganDonorCommand = new RelayCommand(MarkAsOrganDonor);
             OpenOrganDonorCommand = new RelayCommand(OpenOrganDonorDialog);
             ReportGhostCommand = new RelayCommand(ReportGhost);
             NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
@@ -628,6 +630,43 @@ namespace HospitalManagement.ViewModel
             }
 
             OpenOrganDonorDialogAction?.Invoke(SelectedPatient);
+        }
+
+        /// <summary>
+        /// Mark the selected patient as an organ donor
+        /// </summary>
+        private void MarkAsOrganDonor()
+        {
+            if (SelectedPatient == null)
+            {
+                ShowAlertAction?.Invoke("Please select a patient first.");
+                return;
+            }
+
+            if (!SelectedPatient.IsDeceased)
+            {
+                ShowAlertAction?.Invoke("Patient must be marked as deceased before registering as an organ donor.");
+                return;
+            }
+
+            try
+            {
+                // Mark as organ donor
+                SelectedPatient.IsDonor = true;
+
+                // Update the database
+                _patientService.UpdatePatient(SelectedPatient);
+
+                // Refresh the lists
+                LoadAllPatients();
+                LoadArchivedPatients();
+
+                ShowAlertAction?.Invoke("Patient has been registered as an organ donor.");
+            }
+            catch (Exception ex)
+            {
+                ShowAlertAction?.Invoke($"Error marking patient as organ donor: {ex.Message}");
+            }
         }
 
         /// <summary>
