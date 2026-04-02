@@ -23,7 +23,6 @@ namespace HospitalManagement.Service
             _recordRepo = recordRepo;
         }
 
-
         /// Validates that the CNP matches the provided Sex and Date of Birth.
         public bool ValidateCNP(string cnp, Sex sex, DateTime dob)
         {
