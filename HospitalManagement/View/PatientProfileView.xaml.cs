@@ -93,5 +93,52 @@ namespace HospitalManagement.View
             }
         }
 
+
+        private async void ExportPDF_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.SelectedRecord != null)
+            {
+                try
+                {
+                    var dbContext = new HospitalManagement.Database.HospitalDbContext();
+                    var recordRepo = new HospitalManagement.Repository.MedicalRecordRepository(dbContext);
+                    var prescriptionRepo = new HospitalManagement.Repository.PrescriptionRepository(dbContext);
+                    var patientRepo = new HospitalManagement.Repository.PatientRepository(dbContext);
+                    var historyRepo = new HospitalManagement.Repository.MedicalHistoryRepository(dbContext);
+
+                    var pdfGen = new HospitalManagement.Integration.Export.PDFGenerator();
+
+                    var exportService = new HospitalManagement.Integration.Export.ExportService(
+                        pdfGen, recordRepo, prescriptionRepo, patientRepo, historyRepo);
+
+                    // 1. Generate the PDF straight to the Desktop
+                    string savedFilePath = exportService.ExportRecordToPDF(ViewModel.SelectedRecord.Id);
+
+                    // 2. THE FIX: Use standard .NET to launch the file (bulletproof for unpackaged apps)
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = savedFilePath,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    var dialog = new ContentDialog()
+                    {
+                        Title = "Export Failed",
+                        Content = $"An error occurred during export: {ex.Message}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+            }
+        }
+
+
+
+
+
+
     }
 }

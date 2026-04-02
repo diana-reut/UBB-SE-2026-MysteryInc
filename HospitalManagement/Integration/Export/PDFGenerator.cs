@@ -2,50 +2,42 @@
 using System.Collections.Generic;
 using System.IO;
 using HospitalManagement.Entity;
-
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
-
 using Paragraph = iText.Layout.Element.Paragraph;
-
 
 namespace HospitalManagement.Integration.Export
 {
     public class PDFGenerator
     {
-        public FileInfo GenerateRecordPDF(
+        public string GenerateRecordPDF(
             MedicalRecord record,
             Patient patient,
             Prescription? prescription,
             List<PrescriptionItem> items)
         {
             string fileName = $"MedicalRecord_{patient.FirstName}{patient.LastName}_{record.ConsultationDate:yyyyMMdd}.pdf";
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
+
+            // THE FIX: Use standard .NET Desktop path! This prevents the "Operation is not valid" crash.
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string filePath = Path.Combine(desktopPath, fileName);
 
             using (PdfWriter writer = new PdfWriter(filePath))
             using (PdfDocument pdf = new PdfDocument(writer))
             using (Document doc = new Document(pdf))
             {
-                // Header
-                doc.Add(new Paragraph($"Patient: {patient.FirstName} {patient.LastName}")
-                    .SetFontSize(16));
+                doc.Add(new Paragraph($"Patient: {patient.FirstName} {patient.LastName}").SetFontSize(16));
                 doc.Add(new Paragraph($"CNP: {patient.Cnp}"));
                 doc.Add(new Paragraph($"Consultation Date: {record.ConsultationDate:dd-MM-yyyy HH:mm}"));
-
                 doc.Add(new Paragraph("\n"));
 
-                // Section 1 — Clinical findings
-                doc.Add(new Paragraph("Section 1: Clinical Findings")
-                    .SetFontSize(14));
+                doc.Add(new Paragraph("Section 1: Clinical Findings").SetFontSize(14));
                 doc.Add(new Paragraph($"Symptoms: {record.Symptoms ?? "N/A"}"));
                 doc.Add(new Paragraph($"Diagnosis: {record.Diagnosis ?? "N/A"}"));
-
                 doc.Add(new Paragraph("\n"));
 
-                // Section 2 — Prescribed treatment
-                doc.Add(new Paragraph("Section 2: Prescribed Treatment")
-                    .SetFontSize(14));
+                doc.Add(new Paragraph("Section 2: Prescribed Treatment").SetFontSize(14));
 
                 if (prescription == null || items.Count == 0)
                 {
@@ -62,7 +54,7 @@ namespace HospitalManagement.Integration.Export
                 }
             }
 
-            return new FileInfo(filePath);
+            return filePath;
         }
     }
 }

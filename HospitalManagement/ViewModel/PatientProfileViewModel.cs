@@ -37,24 +37,11 @@ namespace HospitalManagement.ViewModel
             {
                 _selectedRecord = value;
                 OnPropertyChanged();
-                // Tell the UI to check if we should show the button!
-                OnPropertyChanged(nameof(PrescriptionVisibility));
+                
             }
         }
 
-        // Calculates whether the button should be visible based on the ID
-        public Visibility PrescriptionVisibility
-        {
-            get
-            {
-                // If it is null OR 0, hide the button. Otherwise, show it!
-                if (SelectedRecord?.PrescriptionId == null || SelectedRecord.PrescriptionId == 0)
-                {
-                    return Visibility.Collapsed;
-                }
-                return Visibility.Visible;
-            }
-        }
+     
 
         // Formats the List<string> into readable text
         public string FormattedChronicConditions
