@@ -607,7 +607,13 @@ namespace HospitalManagement.ViewModel
                 LoadAllPatients();
                 LoadArchivedPatients();
 
-            ShowAlertAction?.Invoke($"{SelectedPatient.FirstName} has been marked as deceased. The record is now locked.");
+                OnPropertyChanged(nameof(IsNotDeceased));
+                ShowAlertAction?.Invoke("The patient has been marked as deceased. The record is now locked and moved to the archive.");
+            }
+            catch (Exception ex)
+            {
+                ShowAlertAction?.Invoke($"Error: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -629,15 +635,18 @@ namespace HospitalManagement.ViewModel
         /// </summary>
         private void ReportGhost()
         {
+            // part of this was deleting during merge so idk what comes here
             System.Diagnostics.Debug.WriteLine($">> GHOST REPORTED FROM ADMIN AT {DateTime.Now} <<");
-        }
-                // This forces the "Edit" buttons to re-check if they should be disabled
+        
+            try { 
+            // This forces the "Edit" buttons to re-check if they should be disabled
                 OnPropertyChanged(nameof(IsNotDeceased));
                 ShowAlertAction?.Invoke("The patient has been marked as deceased. The record is now locked and moved to the archive.");
             }
             catch (Exception ex) { 
             ShowAlertAction?.Invoke($"Error: {ex.Message}"); }
-            }       
+        
+        }       
 
 
         // --- INotifyPropertyChanged Implementation ---
