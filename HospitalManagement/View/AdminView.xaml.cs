@@ -79,6 +79,34 @@ namespace HospitalManagement.View
                             // C# automatically wraps it in a Task<bool> for you!
                             return result == ContentDialogResult.Primary;
                         };
+                        vm.RequestDateAction = async (message, title) =>
+                        {
+                            // Create a simple dialog with a DatePicker inside it
+                            DatePicker datePicker = new DatePicker
+                            {
+                                Header = message,
+                                HorizontalAlignment = HorizontalAlignment.Stretch
+                            };
+
+                            ContentDialog dialog = new ContentDialog
+                            {
+                                Title = title,
+                                Content = datePicker,
+                                PrimaryButtonText = "Confirm",
+                                CloseButtonText = "Cancel",
+                                XamlRoot = rootElement.XamlRoot
+                            };
+
+                            var result = await dialog.ShowAsync();
+
+                            if (result == ContentDialogResult.Primary)
+                            {
+                                // Return the selected date as a DateTime
+                                return datePicker.Date.DateTime;
+                            }
+
+                            return null; // User cancelled
+                        };
                     }
                 };
             }

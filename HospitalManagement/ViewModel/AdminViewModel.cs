@@ -41,6 +41,8 @@ namespace HospitalManagement.ViewModel
                 _selectedPatient = value;
                 OnPropertyChanged();
 
+                OnPropertyChanged(nameof(IsNotDeceased));
+
                 if (_selectedPatient != null)
                 {
                     // Create the shallow copy for editing
@@ -148,7 +150,7 @@ namespace HospitalManagement.ViewModel
         }
 
         // This property will be used in XAML to disable buttons: IsEnabled="{Binding IsNotDeceased}"
-        public Func<string, string, DateTime?> RequestDateAction { get; set; }
+        public Func<string, string,Task<DateTime?>> RequestDateAction { get; set; }
         public bool IsNotDeceased => SelectedPatient != null && !SelectedPatient.IsDeceased;
 
         public ICommand MarkAsDeceasedCommand { get; }
@@ -532,14 +534,13 @@ namespace HospitalManagement.ViewModel
 
 
         // --- VM15: Mark As Deceased ---
-        private void MarkAsDeceased()
+        private async void MarkAsDeceased()
         {
             if (SelectedPatient == null) return;
 
             // 1. Trigger the Specialized Dialog (UI Callback)
             // We'll reuse our ShowDialog pattern to get the Date from the View
-            DateTime? chosenDate = RequestDateAction?.Invoke("Enter Date of Death:", "Mark as Deceased");
-
+            DateTime? chosenDate = await (RequestDateAction?.Invoke("Enter Date of Death:", "Mark as Deceased") ?? Task.FromResult<DateTime?>(null));
             if (chosenDate == null) return; // User cancelled
 
             // 2. Validation: Cannot be in the future
@@ -556,22 +557,32 @@ namespace HospitalManagement.ViewModel
                 return;
             }
 
+            string cleanPhone = SelectedPatient.PhoneNo.Replace(" ", "").Replace("-", "").Replace("+40", "0");
+            string cleanEmergency = SelectedPatient.EmergencyContact.Replace(" ", "").Replace("-", "").Replace("+40", "0");
+
+            SelectedPatient.PhoneNo = cleanPhone;
+            SelectedPatient.EmergencyContact = cleanEmergency;
+
             // 4. Update the Record
             SelectedPatient.Dod = chosenDate; // Setting the Date of Death
             SelectedPatient.IsArchived = true; // Securely move to locked archive state
 
-            // 5. Call Service to Save
-            _patientService.UpdatePatient(SelectedPatient);
+            try
+            {
+                // 5. Call Service to Save
+                _patientService.UpdatePatient(SelectedPatient);
 
-            // 6. Refresh and Notify
-            LoadAllPatients();
-            LoadArchivedPatients();
+                // 6. Refresh and Notify
+                LoadAllPatients();
+                LoadArchivedPatients();
 
-            // This forces the "Edit" buttons to re-check if they should be disabled
-            OnPropertyChanged(nameof(IsNotDeceased));
-
-            ShowAlertAction?.Invoke($"{SelectedPatient.FirstName} has been marked as deceased. The record is now locked.");
-        }       
+                // This forces the "Edit" buttons to re-check if they should be disabled
+                OnPropertyChanged(nameof(IsNotDeceased));
+                ShowAlertAction?.Invoke("The patient has been marked as deceased. The record is now locked and moved to the archive.");
+            }
+            catch (Exception ex) { 
+            ShowAlertAction?.Invoke($"Error: {ex.Message}"); }
+            }       
 
 
         // --- INotifyPropertyChanged Implementation ---
