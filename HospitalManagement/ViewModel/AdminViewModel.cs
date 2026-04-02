@@ -648,7 +648,7 @@ namespace HospitalManagement.ViewModel
         }
 
         /// <summary>
-        /// Mark the selected patient as an organ donor
+        /// Mark the selected patient as an organ donor and open the organ donor assignment dialog
         /// </summary>
         private void MarkAsOrganDonor()
         {
@@ -674,11 +674,12 @@ namespace HospitalManagement.ViewModel
                 // Update the database
                 _patientService.UpdatePatient(SelectedPatient);
 
-                // Refresh the lists
+                // Open the Organ Donor Dialog BEFORE refreshing lists (to avoid stale data)
+                OpenOrganDonorDialog();
+
+                // Refresh the lists after dialog completes
                 LoadAllPatients();
                 LoadArchivedPatients();
-
-                ShowAlertAction?.Invoke("Patient has been registered as an organ donor.");
             }
             catch (Exception ex)
             {

@@ -19,6 +19,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -38,14 +39,19 @@
                 PlaceholderText="Choose an organ..."/>
         </StackPanel>
 
+        <!-- Error Message Display -->
+        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="Red" 
+                   TextWrapping="Wrap" FontSize="12"
+                   Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+
         <!-- Loading State -->
-        <StackPanel Grid.Row="2" Visibility="{Binding IsLoading}" Spacing="8" HorizontalAlignment="Center">
+        <StackPanel Grid.Row="3" Visibility="{Binding IsLoading}" Spacing="8" HorizontalAlignment="Center">
             <ProgressRing IsActive="{Binding IsLoading}"/>
             <TextBlock Text="{Binding LoadingMessage}" Foreground="Gray" TextAlignment="Center"/>
         </StackPanel>
 
         <!-- Top 5 Matches Grid -->
-        <StackPanel Grid.Row="3" Spacing="10">
+        <StackPanel Grid.Row="4" Spacing="10">
             <TextBlock Text="Top 5 Compatible Recipients" FontWeight="SemiBold"/>
             
             <ListView

@@ -68,6 +68,13 @@ namespace HospitalManagement.ViewModel
             set { _loadingMessage = value; OnPropertyChanged(); }
         }
 
+        private string _errorMessage;
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set { _errorMessage = value; OnPropertyChanged(); }
+        }
+
         // Commands
         public ICommand ConfirmAssignmentCommand { get; }
 

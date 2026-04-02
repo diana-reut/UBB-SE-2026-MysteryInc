@@ -27,23 +27,34 @@ namespace HospitalManagement.View
             ViewModel.OnAssignmentConfirmed = onAssigned;
 
             // Wire up primary button
-            this.PrimaryButtonClick += async (s, e) =>
+            this.PrimaryButtonClick += (s, e) =>
             {
                 try
                 {
+                    // Clear previous errors
+                    ViewModel.ErrorMessage = "";
+
+                    // Validate selection before confirming
+                    if (ViewModel.SelectedMatch == null)
+                    {
+                        e.Cancel = true; // Keep dialog open
+                        ViewModel.ErrorMessage = "Please select a recipient from the list before confirming.";
+                        return;
+                    }
+
+                    if (string.IsNullOrEmpty(ViewModel.SelectedOrgan))
+                    {
+                        e.Cancel = true; // Keep dialog open
+                        ViewModel.ErrorMessage = "Please select an organ before confirming.";
+                        return;
+                    }
+
                     ViewModel.ConfirmAssignment();
                 }
                 catch (System.Exception ex)
                 {
-                    ContentDialog errorDialog = new ContentDialog
-                    {
-                        Title = "Confirmation Error",
-                        Content = ex.Message,
-                        CloseButtonText = "OK",
-                        XamlRoot = this.XamlRoot
-                    };
-                    await errorDialog.ShowAsync().AsTask();
                     e.Cancel = true; // Keep dialog open
+                    ViewModel.ErrorMessage = $"Error: {ex.Message}";
                 }
             };
         }
