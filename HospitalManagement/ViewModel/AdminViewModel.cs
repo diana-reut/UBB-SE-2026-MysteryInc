@@ -8,6 +8,7 @@ using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.ViewModel
 {
@@ -92,22 +93,22 @@ namespace HospitalManagement.ViewModel
         public ICommand SearchPatientCommand { get; }
 
         // --- VM13: Filter Properties ---
-        private int? _minAge;
-        public int? MinAge
+        private double? _minAge;
+        public double? MinAge
         {
             get => _minAge;
             set { _minAge = value; OnPropertyChanged(); }
         }
 
-        private int? _maxAge;
-        public int? MaxAge
+        private double? _maxAge;
+        public double? MaxAge
         {
             get => _maxAge;
             set { _maxAge = value; OnPropertyChanged(); }
         }
 
-        private Sex? _selectedSexFilter;
-        public Sex? SelectedSexFilter
+        private object _selectedSexFilter;
+        public object SelectedSexFilter
         {
             get => _selectedSexFilter;
             set { _selectedSexFilter = value; OnPropertyChanged(); }
@@ -153,7 +154,7 @@ namespace HospitalManagement.ViewModel
         public ICommand MarkAsDeceasedCommand { get; }
 
         // --- UI Callbacks ---
-        public Func<string, string, bool> ConfirmAction { get; set; }
+        public Func<string, string, Task<bool>> ConfirmAction { get; set; }
         public Action<string> ShowAlertAction { get; set; } // For the deceased warning
 
 
@@ -329,15 +330,19 @@ namespace HospitalManagement.ViewModel
                 ShowAlertAction?.Invoke($"Database Error: {ex.Message}");
             }
         }
-        private void ArchivePatient()
+        private async void ArchivePatient()
         {
             if (SelectedPatient == null) return; // Nobody is selected!
 
             // 1. Trigger the mandatory confirmation layer
             // If the View isn't hooked up yet, or they click 'No', we abort.
-            bool isConfirmed = ConfirmAction?.Invoke(
+            // 1. Invoke the action (might be null)
+            var confirmTask = ConfirmAction?.Invoke(
                 $"Are you sure you want to archive {SelectedPatient.FirstName} {SelectedPatient.LastName}?",
-                "Confirm Archive") ?? false;
+                "Confirm Archive");
+
+            // 2. If it's not null, wait for the result. If it IS null, default to false.
+            bool isConfirmed = confirmTask != null ? await confirmTask : false;
 
             if (!isConfirmed) return;
 
@@ -451,52 +456,61 @@ namespace HospitalManagement.ViewModel
         {
             try
             {
-                // 1. Map Age and Sex to the filter
+                // 1. Extract and Convert the Sex value
+                Sex? finalSexEnum = null; // Start as null (no filter)
+
+                if (SelectedSexFilter is Microsoft.UI.Xaml.Controls.ComboBoxItem item)
+                {
+                    string content = item.Content.ToString();
+
+                    // Try to convert "M" or "F" string to the Sex Enum
+                    if (Enum.TryParse<Sex>(content, out Sex result))
+                    {
+                        finalSexEnum = result;
+                    }
+                }
+
+                // 2. Map values to the filter
                 var filter = new PatientFilter
                 {
-                    minAge = MinAge,
-                    maxAge = MaxAge,
-                    sex = SelectedSexFilter
+                    minAge = (int?)MinAge,
+                    maxAge = (int?)MaxAge,
+                    sex = finalSexEnum // Now the types match perfectly!
                 };
 
-                // 2. Re-apply SearchQuery with the "13-digit shield"
+                // 3. Re-apply SearchQuery with the "13-digit shield"
                 if (!string.IsNullOrWhiteSpace(SearchQuery))
                 {
-                    // Only use CNP field if it satisfies the Service's 13-digit rule
                     if (SearchQuery.All(char.IsDigit) && SearchQuery.Length == 13)
                     {
                         filter.CNP = SearchQuery;
                     }
                     else
                     {
-                        // If it's partial numbers or text, treat as namePart
                         filter.namePart = SearchQuery;
                     }
                 }
 
-                // 3. Fetch from Service (Service validates Min/Max Age here)
+                // 4. Fetch from Service
                 var results = _patientService.SearchPatients(filter);
 
-                // 4. Sync Collection (Active only)
+                // 5. Sync Collection (Active only)
                 Patients.Clear();
-                // Use a basic filter to ensure we only show active patients in this view
                 var activeResults = results.Where(x => x.IsArchived == false);
 
                 foreach (var p in activeResults)
                 {
-                    // Ensure formatting is applied to the results
                     p.PhoneNo = FormatPhoneNumber(p.PhoneNo);
                     p.EmergencyContact = FormatPhoneNumber(p.EmergencyContact);
                     Patients.Add(p);
                 }
 
-                // 5. Update Visual State
+                // 6. Update Visual State
                 NoResultsFound = (Patients.Count == 0 && !string.IsNullOrWhiteSpace(SearchQuery));
             }
             catch (ArgumentException ex)
             {
-                // This catches the "Min age > Max age" or "Negative age" errors 
-                // thrown by the PatientService and shows them to the user.
+                // This catches "Min > Max" errors from your Service logic
                 ShowAlertAction?.Invoke(ex.Message);
             }
         }
