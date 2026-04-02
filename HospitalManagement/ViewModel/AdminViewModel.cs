@@ -635,6 +635,7 @@ namespace HospitalManagement.ViewModel
         /// </summary>
         private void ReportGhost()
         {
+            // part of this was deleting during merge so idk what comes here
             System.Diagnostics.Debug.WriteLine($">> GHOST REPORTED FROM ADMIN AT {DateTime.Now} <<");
         
             try { 
