@@ -11,194 +11,92 @@
     </Window.SystemBackdrop>
 
     <Grid>
-
         <Grid.Resources>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:DateToStringConverter x:Key="DateToStringConverter"/>
-            
             <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
         </Grid.Resources>
 
-        <!-- 3 COLUMN LAYOUT -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="320"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ================================= -->
-        <!-- LEFT SIDEBAR -->
-        <!-- ================================= -->
-
-        <Border Grid.Column="0"
-            Background="#1F2A37"
-            Padding="20">
-
+        <Border Grid.Column="0" Background="#1F2A37" Padding="20">
             <StackPanel Spacing="15">
+                <TextBlock Text="HOSPITAL" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
 
-                <TextBlock Text="HOSPITAL"
-                       FontSize="22"
-                       FontWeight="Bold"
-                       Foreground="White"
-                       Margin="0,0,0,20"/>
+                <Button Content="Home" Command="{Binding NavigateToHomeCommand}" Height="40" HorizontalAlignment="Stretch" CornerRadius="8"/>
 
-                <Button Content="Home"
-                    Command="{Binding NavigateToHomeCommand}"
-                    Height="40"
-                    CornerRadius="8"/>
-
-                <Button Click="OpenPage_Click"
-                    Height="40"
-                    CornerRadius="8">
-
+                <Button Click="OpenPage_Click" Height="40" HorizontalAlignment="Stretch" CornerRadius="8">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <SymbolIcon Symbol="FourBars"/>
                         <TextBlock Text="Statistics"/>
                     </StackPanel>
-
                 </Button>
 
-                <Border Height="1"
-        Background="#3A4758"
-        Margin="0,20,0,20"/>
+                <Border Height="1" Background="#3A4758" Margin="0,20,0,20"/>
+                <TextBlock Text="Quick Info" FontSize="16" Foreground="LightGray" Margin="0,10,0,0"/>
 
-                <TextBlock Text="Quick Info"
-                       FontSize="16"
-                       Foreground="LightGray"
-                       Margin="0,10,0,0"/>
-
-                <Border Background="#2C3A4A"
-                    CornerRadius="8"
-                    Padding="10">
-
+                <Border Background="#2C3A4A" CornerRadius="8" Padding="10">
                     <StackPanel>
-                        <TextBlock Text="Patients"
-                               FontWeight="Bold"/>
-                        <TextBlock Text="{Binding Patients.Count}"/>
+                        <TextBlock Text="Patients" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{Binding Patients.Count}" Foreground="White"/>
                     </StackPanel>
-
                 </Border>
-
             </StackPanel>
-
         </Border>
 
+        <Grid Grid.Column="1" Padding="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <Button Content="Add New Patient" Click="OpenAddPatientDialog"/>
+            <Border Background="#2C3A4A" Padding="15" CornerRadius="10" Margin="0,0,0,15">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <TextBox PlaceholderText="Search by Name or CNP..." Width="250"
+                             Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-            <Button Click="OpenPage_Click" Style="{StaticResource AccentButtonStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <SymbolIcon Symbol="FourBars" Margin="0,0,8,0"/>
-                    <TextBlock Text="View Statistics"/>
-                </StackPanel>
-            </Button>
+                    <Button Content="Add New Patient" Click="OpenAddPatientDialog" CornerRadius="6"/>
 
-            <Button Content="I saw a ghost!"
-            Command="{Binding GhostSightingCommand}"
-            Background="#FFE779"
-            Foreground="#1E2A38"
-            FontWeight="Bold"
-            CornerRadius="4"
-            Padding="12,8"/>
-        </StackPanel>
+                   
 
-        <ListView Grid.Row="1" Grid.Column="0" 
-          ItemsSource="{Binding Patients}" 
-          SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
-          SelectionMode="Single"
-          Margin="0,10,0,0"
-          Padding="10"
-          BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}" 
-          BorderThickness="1"
-          CornerRadius="8">
-            <ListView.Header>
-                <Grid Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" 
-                      Padding="12,8" CornerRadius="4" Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                    <Button Content="I saw a ghost!" Command="{Binding GhostSightingCommand}"
+                            Background="#FFE779" Foreground="#1E2A38" FontWeight="Bold" CornerRadius="4" Padding="12,8"/>
 
-                    <StackPanel Orientation="Horizontal" Spacing="15" Grid.Column="0">
-                        <TextBox PlaceholderText="Search by Name or CNP..."
-                     Width="250"
-                     Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
-                        <Button Content="Add New Patient"
-                    Click="OpenAddPatientDialog"
-                    CornerRadius="6"/>
-                    </StackPanel>
-                    <Button Grid.Column="1" 
-        Content="" 
-        FontFamily="Segoe MDL2 Assets" 
-        Background="Transparent"
-        VerticalAlignment="Center">
+                    <Button Content="" FontFamily="Segoe MDL2 Assets" Background="Transparent" VerticalAlignment="Center">
                         <Button.Flyout>
                             <Flyout Placement="BottomEdgeAlignedRight">
                                 <StackPanel Width="220" Spacing="10" Padding="10">
-                                    <TextBlock Text="Advanced Filters" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
-
-                                    <NumberBox Header="Min Age" 
-                           Value="{Binding MinAge, Mode=TwoWay}" 
-                           PlaceholderText="e.g. 18"
-                           SpinButtonPlacementMode="Compact" />
-
-                                    <NumberBox Header="Max Age" 
-                           Value="{Binding MaxAge, Mode=TwoWay}" 
-                           PlaceholderText="e.g. 99"
-                           SpinButtonPlacementMode="Compact" />
-
-                                    <ComboBox Header="Sex" 
-                          HorizontalAlignment="Stretch"
-                          SelectedItem="{Binding SelectedSexFilter, Mode=TwoWay}">
+                                    <TextBlock Text="Advanced Filters" FontWeight="Bold" Margin="0,0,0,5"/>
+                                    <NumberBox Header="Min Age" Value="{Binding MinAge, Mode=TwoWay}" SpinButtonPlacementMode="Compact" />
+                                    <NumberBox Header="Max Age" Value="{Binding MaxAge, Mode=TwoWay}" SpinButtonPlacementMode="Compact" />
+                                    <ComboBox Header="Sex" HorizontalAlignment="Stretch" SelectedItem="{Binding SelectedSexFilter, Mode=TwoWay}">
                                         <ComboBoxItem Content="M"/>
                                         <ComboBoxItem Content="F"/>
                                     </ComboBox>
-
                                     <Rectangle Height="1" Fill="Gray" Margin="0,5"/>
-
                                     <Grid ColumnSpacing="10">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-
-                                        <Button Content="Clear" 
-                            Command="{Binding ClearFilterCommand}" 
-                            HorizontalAlignment="Stretch" 
-                            Grid.Column="0"/>
-
-                                        <Button Content="Apply" 
-                            Command="{Binding FilterPatientCommand}" 
-                            Style="{StaticResource AccentButtonStyle}"
-                            HorizontalAlignment="Stretch" 
-                            Grid.Column="1"/>
+                                        <Button Content="Clear" Command="{Binding ClearFilterCommand}" HorizontalAlignment="Stretch" Grid.Column="0"/>
+                                        <Button Content="Apply" Command="{Binding FilterPatientCommand}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Grid.Column="1"/>
                                     </Grid>
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>
                     </Button>
-                </Grid>
+                </StackPanel>
             </Border>
 
-
-            <!-- PATIENT TABLE -->
-
-            <Border Grid.Row="1"
-                Background="#F8FAFC"
-                CornerRadius="10"
-                Padding="10">
-
-                <ListView
-                ItemsSource="{Binding Patients}"
-                SelectedItem="{Binding SelectedPatient, Mode=TwoWay}"
-                SelectionMode="Single">
-
+            <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="10" Padding="10">
+                <ListView ItemsSource="{Binding Patients}" SelectedItem="{Binding SelectedPatient, Mode=TwoWay}" SelectionMode="Single">
                     <ListView.Header>
-
-                        <Grid Padding="10"
-                          Background="#E5E7EB">
-
+                        <Grid Padding="10" Background="#E5E7EB">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="100"/>
@@ -208,7 +106,6 @@
                                 <ColumnDefinition Width="130"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-
                             <TextBlock Text="FIRST NAME" FontWeight="Bold" Grid.Column="0" Foreground="Black"/>
                             <TextBlock Text="LAST NAME" FontWeight="Bold" Grid.Column="1" Foreground="Black"/>
                             <TextBlock Text="SEX" FontWeight="Bold" Grid.Column="2" Foreground="Black"/>
@@ -216,18 +113,11 @@
                             <TextBlock Text="CNP" FontWeight="Bold" Grid.Column="4" Foreground="Black"/>
                             <TextBlock Text="PHONE" FontWeight="Bold" Grid.Column="5" Foreground="Black"/>
                             <TextBlock Text="EMERGENCY" FontWeight="Bold" Grid.Column="6" Foreground="Black"/>
-
                         </Grid>
-
                     </ListView.Header>
-
-
                     <ListView.ItemTemplate>
-
                         <DataTemplate x:DataType="entity:Patient">
-
                             <Grid Padding="10">
-
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="100"/>
@@ -237,7 +127,6 @@
                                     <ColumnDefinition Width="130"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-
                                 <TextBlock Text="{Binding FirstName}" Grid.Column="0" Foreground="Black"/>
                                 <TextBlock Text="{Binding LastName}" Grid.Column="1" Foreground="Black"/>
                                 <TextBlock Text="{Binding Sex}" Grid.Column="2" Foreground="Black"/>
@@ -245,77 +134,34 @@
                                 <TextBlock Text="{Binding Cnp}" Grid.Column="4" Foreground="Black"/>
                                 <TextBlock Text="{Binding PhoneNo}" Grid.Column="5" Foreground="Black"/>
                                 <TextBlock Text="{Binding EmergencyContact}" Grid.Column="6" Foreground="Black"/>
-
                             </Grid>
-
                         </DataTemplate>
-
                     </ListView.ItemTemplate>
-
                 </ListView>
-
             </Border>
-
         </Grid>
 
-
-
-        <!-- ================================= -->
-        <!-- RIGHT EDIT PANEL -->
-        <!-- ================================= -->
-
-        <Border Grid.Column="2"
-           Background="#1F2A37"
-            Padding="20"
-            Visibility="{Binding SelectedPatient, Converter={StaticResource NullToVisibilityConverter}}">
-
+        <Border Grid.Column="2" Background="#1F2A37" Padding="20" 
+                Visibility="{Binding SelectedPatient, Converter={StaticResource NullToVisibilityConverter}}">
             <StackPanel Spacing="10">
-
-                <TextBlock Text="Patient Details"
-                       FontSize="22"
-                       FontWeight="Bold"
-                       Margin="0,0,0,15"/>
-
-                <TextBlock Text="Phone Number"/>
+                <TextBlock Text="Patient Details" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                <TextBlock Text="Phone Number" Foreground="White"/>
                 <TextBox Text="{Binding EditingPatient.PhoneNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
-                <TextBlock Text="Emergency Contact"/>
+                <TextBlock Text="Emergency Contact" Foreground="White"/>
                 <TextBox Text="{Binding EditingPatient.EmergencyContact, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
-                <Button Content="Update Patient"
-                    Command="{Binding UpdatePatientCommand}"
-                    Margin="0,15,0,0"
-                    CornerRadius="6"/>
-
-                <Button Content="Archive Patient"
-                    Command="{Binding ArchivePatientCommand}"
-                    Foreground="Red"
-                    CornerRadius="6"/>
-
-                <Button Content="Mark as Deceased"
-                    Command="{Binding MarkAsDeceasedCommand}"
-                    IsEnabled="{Binding IsNotDeceased}"
-                    CornerRadius="6"/>
-
+                <Button Content="Update Patient" Command="{Binding UpdatePatientCommand}" HorizontalAlignment="Stretch" Margin="0,15,0,0" CornerRadius="6"/>
+                <Button Content="Archive Patient" Command="{Binding ArchivePatientCommand}" HorizontalAlignment="Stretch" Foreground="Red" CornerRadius="6"/>
+                <Button Content="Mark as Deceased" Command="{Binding MarkAsDeceasedCommand}" HorizontalAlignment="Stretch" IsEnabled="{Binding IsNotDeceased}" CornerRadius="6"/>
             </StackPanel>
-        </ScrollViewer>
-        
-        <Grid Grid.Row="0" Grid.RowSpan="2"
-          Grid.Column="0" Grid.ColumnSpan="2"
-          Background="#F0000000"
-          IsHitTestVisible="True"
-          Visibility="{Binding IsExorcismAlertVisible, Converter={StaticResource BoolToVis}}">
-            <Border MaxWidth="600" CornerRadius="16"
-            Background="#1A0000" BorderBrush="#CC0000" BorderThickness="3"
-            Padding="48,40" VerticalAlignment="Center" HorizontalAlignment="Center">
+        </Border>
+
+        <Grid Grid.ColumnSpan="3" Background="#F0000000" IsHitTestVisible="True" 
+              Visibility="{Binding IsExorcismAlertVisible, Converter={StaticResource BoolToVis}}">
+            <Border MaxWidth="600" CornerRadius="16" Background="#1A0000" BorderBrush="#CC0000" BorderThickness="3" Padding="48,40" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel Spacing="20" HorizontalAlignment="Center">
-                    <FontIcon Glyph="&#xE7BA;" FontSize="72" HorizontalAlignment="Center"/>
-                    <TextBlock Text="CRITICAL PARANORMAL ACTIVITY DETECTED"
-                       Foreground="#FF3333" FontSize="20" FontWeight="Bold"
-                       TextAlignment="Center" TextWrapping="Wrap"/>
-                    <TextBlock Text="Multiple sightings confirmed. Please CALL THE PRIEST immediately."
-                       Foreground="White" FontSize="16"
-                       TextAlignment="Center" TextWrapping="Wrap"/>
+                    <FontIcon Glyph="&#xE7BA;" FontSize="72" Foreground="#CC0000" HorizontalAlignment="Center"/>
+                    <TextBlock Text="CRITICAL PARANORMAL ACTIVITY DETECTED" Foreground="#FF3333" FontSize="20" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="Multiple sightings confirmed. Please CALL THE PRIEST immediately." Foreground="White" FontSize="16" TextAlignment="Center" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
         </Grid>

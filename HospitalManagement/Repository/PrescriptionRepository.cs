@@ -250,6 +250,8 @@ namespace HospitalManagement.Repository
             if (prescriptionId <= 0)
                 return items;
 
+            _context.EnsureConnectionOpen();
+
             string sql = $"SELECT * FROM PrescriptionItems WHERE PrescriptionID = {prescriptionId}";
 
             using (var reader = _context.ExecuteQuery(sql))
@@ -376,6 +378,7 @@ namespace HospitalManagement.Repository
 
         public List<Prescription> GetAll()
         {
+            _context.EnsureConnectionOpen();
             List<Prescription> prescriptions = new List<Prescription>();
 
             string query = $"SELECT * FROM Prescription";

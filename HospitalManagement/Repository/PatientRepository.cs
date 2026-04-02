@@ -68,6 +68,8 @@ namespace HospitalManagement.Repository
                 query += " WHERE Archived = 0";
             }
 
+            _context.EnsureConnectionOpen();
+
             using (SqlDataReader reader = _context.ExecuteQuery(query))
             {
                 while (reader.Read())
