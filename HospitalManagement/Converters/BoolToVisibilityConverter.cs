@@ -12,7 +12,15 @@ namespace HospitalManagement.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return value is bool b && b ? Visibility.Visible : Visibility.Collapsed;
+            bool isVisible = value is bool b && b;
+            
+            // Check if parameter is "Invert" or "invert"
+            if (parameter is string param && param.Equals("Invert", StringComparison.OrdinalIgnoreCase))
+            {
+                isVisible = !isVisible;
+            }
+            
+            return isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

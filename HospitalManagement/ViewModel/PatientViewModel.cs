@@ -14,6 +14,7 @@ namespace HospitalManagement.ViewModel
     {
         private readonly PatientService _patientService;
         private readonly ExportService _exportService;
+        private readonly BillingService _billingService;
 
         private Patient _selectedPatient;
         public Patient SelectedPatient
@@ -61,7 +62,25 @@ namespace HospitalManagement.ViewModel
         public MedicalRecord SelectedMedicalRecord
         {
             get => _selectedMedicalRecord;
-            set { _selectedMedicalRecord = value; OnPropertyChanged(); }
+            set 
+            { 
+                _selectedMedicalRecord = value; 
+                OnPropertyChanged();
+                // Calculate base price when record is selected
+                if (_selectedMedicalRecord != null && _billingService != null && SelectedPatient != null)
+                {
+                    try
+                    {
+                        BasePrice = _billingService.computeBasePrice(SelectedPatient.Id, _selectedMedicalRecord.Id);
+                        FinalPrice = _selectedMedicalRecord.FinalPrice > 0 ? _selectedMedicalRecord.FinalPrice : BasePrice;
+                        DiscountApplied = _selectedMedicalRecord.DiscountApplied.HasValue;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error calculating base price: {ex.Message}");
+                    }
+                }
+            }
         }
 
         private ObservableCollection<string> _allergies;
@@ -78,21 +97,46 @@ namespace HospitalManagement.ViewModel
             set { _selectedPrescription = value; OnPropertyChanged(); }
         }
 
+        private decimal _basePrice;
+        public decimal BasePrice
+        {
+            get => _basePrice;
+            set { _basePrice = value; OnPropertyChanged(); }
+        }
+
+        private decimal _finalPrice;
+        public decimal FinalPrice
+        {
+            get => _finalPrice;
+            set { _finalPrice = value; OnPropertyChanged(); }
+        }
+
+        private bool _discountApplied;
+        public bool DiscountApplied
+        {
+            get => _discountApplied;
+            set { _discountApplied = value; OnPropertyChanged(); }
+        }
+
         public ICommand BackCommand { get; }
         public ICommand ExportRecordCommand { get; }
         public ICommand ViewPrescriptionCommand { get; }
+        public ICommand ApplyDiscountCommand { get; }
 
         public Action GoBackAction { get; set; }
+        public Action<decimal, Action<int, decimal>> OpenRouletteAction { get; set; }
 
-        public PatientViewModel(PatientService patientService, ExportService exportService = null)
+        public PatientViewModel(PatientService patientService, ExportService exportService = null, BillingService billingService = null)
         {
             _patientService = patientService;
             _exportService = exportService;
+            _billingService = billingService;
             MedicalRecords = new ObservableCollection<MedicalRecord>();
             Allergies = new ObservableCollection<string>();
             BackCommand = new RelayCommand(GoBack);
             ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
             ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
+            ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
         }
 
         private void LoadMedicalHistory()
@@ -162,6 +206,11 @@ namespace HospitalManagement.ViewModel
             return SelectedMedicalRecord != null && SelectedMedicalRecord.PrescriptionId.HasValue;
         }
 
+        private bool CanApplyDiscount()
+        {
+            return SelectedMedicalRecord != null && !DiscountApplied && _billingService != null;
+        }
+
         private void ViewSelectedPrescription()
         {
             if (SelectedMedicalRecord?.PrescriptionId == null)
@@ -177,6 +226,33 @@ namespace HospitalManagement.ViewModel
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading prescription: {ex.Message}");
             }
+        }
+
+        private void ApplyDiscount()
+        {
+            if (SelectedMedicalRecord == null || _billingService == null)
+                return;
+
+            OpenRouletteAction?.Invoke(BasePrice, (discount, finalPrice) =>
+            {
+                try
+                {
+                    // Update the medical record with discount and final price
+                    SelectedMedicalRecord.DiscountApplied = discount;
+                    SelectedMedicalRecord.FinalPrice = finalPrice;
+                    
+                    // Update the UI
+                    FinalPrice = finalPrice;
+                    DiscountApplied = true;
+                    OnPropertyChanged(nameof(SelectedMedicalRecord));
+
+                    System.Diagnostics.Debug.WriteLine($"Discount applied: {discount}% | Final Price: {finalPrice}");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error applying discount: {ex.Message}");
+                }
+            });
         }
 
         private void ExportSelectedRecord()

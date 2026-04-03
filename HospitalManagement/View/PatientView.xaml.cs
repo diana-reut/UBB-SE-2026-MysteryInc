@@ -38,16 +38,29 @@ namespace HospitalManagement.View
             var hRepo = new MedicalHistoryRepository(_dbContext);
             var rRepo = new MedicalRecordRepository(_dbContext);
             var prescRepo = new PrescriptionRepository(_dbContext);
+            var tRepo = new TransplantRepository(_dbContext);
             var service = new PatientService(pRepo, hRepo, rRepo, prescRepo);
             var pdfGen = new PDFGenerator();
             var exportService = new ExportService(pdfGen, rRepo, prescRepo, pRepo, hRepo);
+            var billingService = new BillingService(hRepo, rRepo, prescRepo, tRepo);
 
             // 3. Initialize ViewModel
-            _viewModel = new PatientViewModel(service, exportService);
+            _viewModel = new PatientViewModel(service, exportService, billingService);
             _viewModel.GoBackAction = GoBack;
+            
+            // 4. Set up Roulette Dialog handler
+            _viewModel.OpenRouletteAction = async (basePrice, onComplete) =>
+            {
+                var rouletteDialog = new DiscountRouletteDialog();
+                rouletteDialog.XamlRoot = this.Content.XamlRoot;
+                rouletteDialog.Initialize(basePrice);
+                rouletteDialog.OnSpinComplete = onComplete;
+                await rouletteDialog.ShowAsync();
+            };
+            
             _viewModel.SelectedPatient = patient;
 
-            // 4. Set DataContext
+            // 5. Set DataContext
             if (this.Content is FrameworkElement rootElement)
             {
                 rootElement.DataContext = _viewModel;
