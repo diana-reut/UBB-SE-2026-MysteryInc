@@ -79,6 +79,30 @@
                         <TextBox PlaceholderText="Search by Name or CNP..." Width="250" Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         <Button Content="Add New Patient" Click="OpenAddPatientDialog" CornerRadius="6"/>
                         <Button Content="I saw a ghost!" Command="{Binding GhostSightingCommand}" Background="#FFE779" Foreground="#1E2A38" FontWeight="Bold" CornerRadius="4" Padding="12,8"/>
+                        <Button Content="" FontFamily="Segoe MDL2 Assets" Background="Transparent" VerticalAlignment="Center">
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <StackPanel Width="220" Spacing="10" Padding="10">
+                                        <TextBlock Text="Advanced Filters" FontWeight="Bold" Margin="0,0,0,5"/>
+                                        <NumberBox Header="Min Age" Value="{Binding MinAge, Mode=TwoWay}" SpinButtonPlacementMode="Compact" />
+                                        <NumberBox Header="Max Age" Value="{Binding MaxAge, Mode=TwoWay}" SpinButtonPlacementMode="Compact" />
+                                        <ComboBox Header="Sex" HorizontalAlignment="Stretch" SelectedItem="{Binding SelectedSexFilter, Mode=TwoWay}">
+                                            <ComboBoxItem Content="M"/>
+                                            <ComboBoxItem Content="F"/>
+                                        </ComboBox>
+                                        <Rectangle Height="1" Fill="Gray" Margin="0,5"/>
+                                        <Grid ColumnSpacing="10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Content="Clear" Command="{Binding ClearFilterCommand}" HorizontalAlignment="Stretch" Grid.Column="0"/>
+                                            <Button Content="Apply" Command="{Binding FilterPatientCommand}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Grid.Column="1"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
                     </StackPanel>
                 </Border>
 
