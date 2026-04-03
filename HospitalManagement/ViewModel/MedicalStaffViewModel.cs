@@ -133,7 +133,15 @@ namespace HospitalManagement.ViewModel
         private void RequestTransplant()
         {
             if (SelectedPatient == null) return;
-            // Logic to handle transplant requests will go here
+
+            var requestWindow = new Window();
+            requestWindow.Title = $"Organ Transplant Request - {SelectedPatient.FirstName} {SelectedPatient.LastName}";
+
+            // Launch the correctly named page!
+            var requestPage = new HospitalManagement.View.TransplantRequestView(SelectedPatient.Id, requestWindow);
+
+            requestWindow.Content = requestPage;
+            requestWindow.Activate();
         }
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
