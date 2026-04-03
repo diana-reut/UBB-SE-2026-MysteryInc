@@ -121,7 +121,8 @@ namespace HospitalManagement.View
                                 // Create Services
                                 var prRepo = new PrescriptionRepository(_dbContext);
                                 var tRepo = new TransplantRepository(_dbContext);
-                                var transplantService = new TransplantService(tRepo, pRepo, rRepo, new BloodCompatibilityService(pRepo));
+                                var hRepo = new MedicalHistoryRepository(_dbContext);
+                                var transplantService = new TransplantService(tRepo, pRepo, rRepo, new BloodCompatibilityService(pRepo, hRepo), hRepo);
 
                                 // Create ViewModel
                                 var organDonorViewModel = new OrganDonorViewModel(transplantService);
