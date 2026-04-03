@@ -60,11 +60,17 @@
     <None Update="configuration\appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="configuration\appsettings.local.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Page Update="View\AddPatientDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="View\AdminView.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="View\PatientProfileView.xaml">
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
 
