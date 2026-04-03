@@ -3,7 +3,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using HospitalManagement.ViewModel;
-using HospitalManagement.View;
+using HospitalManagement.View;  
 namespace HospitalManagement
 {
     public sealed partial class MainWindow : Window

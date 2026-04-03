@@ -14,15 +14,16 @@ namespace HospitalManagement.Service
 
         private readonly MedicalHistoryRepository _historyRepo;
         private readonly MedicalRecordRepository _recordRepo;
+        private readonly PrescriptionRepository _prescriptionRepo;
 
         public PatientService(PatientRepository patientRepo, MedicalHistoryRepository historyRepo,
-            MedicalRecordRepository recordRepo)
+            MedicalRecordRepository recordRepo, PrescriptionRepository prescriptionRepo = null)
         {
             _patientRepo = patientRepo;
             _historyRepo = historyRepo;
             _recordRepo = recordRepo;
+            _prescriptionRepo = prescriptionRepo;
         }
-
 
         /// Validates that the CNP matches the provided Sex and Date of Birth.
         public bool ValidateCNP(string cnp, Sex sex, DateTime dob)
@@ -103,10 +104,10 @@ namespace HospitalManagement.Service
 
             // 2. Audit Check: Prevent updates if the patient is currently Archived
             // Your diagram shows archivePatient(), so we check the IsArchived property
-            if (existingPatient.IsArchived)
-            {
-                throw new InvalidOperationException("Audit Error: This patient is archived. De-archive before updating.");
-            }
+            //if (existingPatient.IsArchived)
+            //{
+            //    throw new InvalidOperationException("Audit Error: This patient is archived. De-archive before updating.");
+            //}
 
             // 3. Identity Consistency Check: CNP and DOB must not change
             if (existingPatient.Cnp != data.Cnp || existingPatient.Dob.Date != data.Dob.Date)
@@ -121,9 +122,20 @@ namespace HospitalManagement.Service
                 throw new ArgumentException("Identity Mismatch: CNP does not align with Sex or DOB.");
             }
 
+            if (string.IsNullOrWhiteSpace(data.PhoneNo) || data.PhoneNo.Length != 10 || !data.PhoneNo.All(char.IsDigit))
+            {
+                throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
+            }
+
+            
+            //if (string.IsNullOrWhiteSpace(data.EmergencyContact) || !data.EmergencyContact.All(char.IsDigit) || data.EmergencyContact.Length != 10)
+            //{
+            //    throw new ArgumentException("Validation Error: Emergency contact must contain only numbers.");
+            //}
+
             // 5. Repository Call: Pass the clean object to the repository
             // TODO: Uncomment once the Update method in PatientRepository
-             _patientRepo.Update(data);
+            _patientRepo.Update(data);
         }
 
         /// <summary>
@@ -321,6 +333,73 @@ namespace HospitalManagement.Service
         public bool Exists(string CNP)
         {
             return _patientRepo.Exists(CNP);
+        }
+
+        /// <summary>
+        /// Get the medical history for a patient
+        /// </summary>
+        public MedicalHistory GetMedicalHistory(int patientId)
+        {
+            try
+            {
+                return _historyRepo.GetByPatientId(patientId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching medical history: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get all medical records for a patient
+        /// </summary>
+        public List<MedicalRecord> GetMedicalRecords(int historyId)
+        {
+            try
+            {
+                return _recordRepo.GetByHistoryId(historyId);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching medical records: {ex.Message}");
+                return new List<MedicalRecord>();
+            }
+        }
+
+        /// <summary>
+        /// Get all allergies for a patient as formatted strings
+        /// </summary>
+        public List<string> GetPatientAllergies(int patientId)
+        {
+            try
+            {
+                var history = _historyRepo.GetByPatientId(patientId);
+                if (history == null)
+                    return new List<string>();
+
+                var allergyTuples = _historyRepo.GetAllergiesByHistoryId(history.Id);
+                
+                // Convert tuples to formatted strings: "AllergyName - Severity"
+                return allergyTuples.Select(tuple => $"{tuple.Allergy.AllergyName} - {tuple.SeverityLevel}")
+                                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching allergies: {ex.Message}");
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// Get prescription by medical record ID
+        /// </summary>
+        public Prescription GetPrescriptionByRecordId(int recordId)
+        {
+            if (_prescriptionRepo == null)
+                throw new InvalidOperationException("PrescriptionRepository is not available.");
+            
+            return _prescriptionRepo.GetByRecordId(recordId);
         }
        
     }

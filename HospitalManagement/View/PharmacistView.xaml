@@ -6,6 +6,7 @@
     xmlns:local="using:HospitalManagement.View"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:HospitalManagement.Converters"
     mc:Ignorable="d"
     Title="Pharmacist Dashboard">
 
@@ -13,7 +14,14 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
+
+
     <Grid Background="#F4F6F8">
+
+        <Grid.Resources>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        </Grid.Resources>
+        
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="250"/> 
             <ColumnDefinition Width="*"/>   
@@ -105,5 +113,26 @@
         </Grid>
 
         <ContentControl x:Name="MainContentArea" Grid.Column="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+
+        <Grid Grid.Column="0" Grid.ColumnSpan="2"
+              Background="#F0000000"
+              IsHitTestVisible="True"
+              Visibility="{Binding IsExorcismAlertVisible, Converter={StaticResource BoolToVis}}">
+            <Border MaxWidth="600" CornerRadius="16"
+            Background="#1A0000" BorderBrush="#CC0000" BorderThickness="3"
+            Padding="48,40" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel Spacing="20" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE7BA;" FontSize="72" HorizontalAlignment="Center"/>
+                    <TextBlock Text="CRITICAL PARANORMAL ACTIVITY DETECTED"
+                       Foreground="#FF3333" FontSize="20" FontWeight="Bold"
+                       TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="Multiple sightings confirmed. Please CALL THE PRIEST immediately."
+                       Foreground="White" FontSize="16"
+                       TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+        
+
     </Grid>
 </Window>

@@ -29,6 +29,19 @@ namespace HospitalManagement.Repository
             return null;
         }
 
+        public MedicalHistory? GetById(int historyId) //RP 13
+        {
+            string query = $"SELECT * FROM MedicalHistory WHERE HistoryID={historyId}";
+            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            {
+                if (reader.Read())
+                {
+                    return MapToMedicalHistory(reader);
+                }
+            }
+            return null;
+        }
+
         public void Create(MedicalHistory history) //RP 14
         {
 

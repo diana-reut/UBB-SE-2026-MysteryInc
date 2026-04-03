@@ -12,6 +12,8 @@ namespace HospitalManagement.View
         public PrescriptionView()
         {
             this.InitializeComponent();
+            DateFromPicker.DateChanged += DateFromPicker_DateChanged;
+            DateToPicker.DateChanged += DateToPicker_DateChanged;
         }
 
         private void OnApplyFilterClicked(object sender, RoutedEventArgs e)
@@ -36,6 +38,30 @@ namespace HospitalManagement.View
         private void OnPrevClicked(object sender, RoutedEventArgs e)
         {
             ViewModel?.PrevPage();
+        }
+
+        private void DateFromPicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+        {
+            if (DateFromPicker.Date.HasValue)
+            {
+                DateToPicker.MinDate = DateFromPicker.Date.Value;
+            }
+            else
+            {
+                DateToPicker.MinDate = new DateTimeOffset(new DateTime(1920, 1, 1));
+            }
+        }
+
+        private void DateToPicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+        {
+            if (DateToPicker.Date.HasValue)
+            {
+                DateFromPicker.MaxDate = DateToPicker.Date.Value;
+            }
+            else
+            {
+                DateFromPicker.MaxDate = new DateTimeOffset(new DateTime(2100, 1, 1));
+            }
         }
     }
 }

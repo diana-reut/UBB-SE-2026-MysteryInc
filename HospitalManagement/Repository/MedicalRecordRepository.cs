@@ -212,6 +212,7 @@ namespace HospitalManagement.Repository
 
         public List<MedicalRecord> GetAll() //for statistics service
         {
+            _context.EnsureConnectionOpen();
             List<MedicalRecord> records = new List<MedicalRecord>();
             string query = $"SELECT * FROM MedicalRecord";
             using (SqlDataReader reader = _context.ExecuteQuery(query))

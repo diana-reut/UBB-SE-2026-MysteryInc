@@ -68,6 +68,8 @@ namespace HospitalManagement.Repository
                 query += " WHERE Archived = 0";
             }
 
+            _context.EnsureConnectionOpen();
+
             using (SqlDataReader reader = _context.ExecuteQuery(query))
             {
                 while (reader.Read())
@@ -273,12 +275,38 @@ namespace HospitalManagement.Repository
 
             _context.ExecuteNonQuery(query);
         }
+        //public void Update(Patient patientToUpdate)
+        //{
+        //    string query = $"UPDATE Patient SET FirstName={patientToUpdate.FirstName}, LastName={patientToUpdate.LastName}," +
+        //        $"Cnp={patientToUpdate.Cnp}, Dob={patientToUpdate.Dob}, Dod={patientToUpdate.Dod}, Sex={patientToUpdate.Sex}," +
+        //        $"PhoneNo={patientToUpdate.PhoneNo}, EmergencyContact={patientToUpdate.EmergencyContact}, IsArchived={patientToUpdate.IsArchived}, IsDonor={patientToUpdate.IsDonor}" +
+        //        $"WHERE PatientID={patientToUpdate.Id}";
+
+        //    _context.ExecuteNonQuery(query);
+        //}
         public void Update(Patient patientToUpdate)
         {
-            string query = $"UPDATE Patient SET FirstName={patientToUpdate.FirstName}, LastName={patientToUpdate.LastName}," +
-                $"Cnp={patientToUpdate.Cnp}, Dob={patientToUpdate.Dob}, Dod={patientToUpdate.Dod}, Sex={patientToUpdate.Sex}," +
-                $"PhoneNo={patientToUpdate.PhoneNo}, EmergencyContact={patientToUpdate.EmergencyContact}, IsArchived={patientToUpdate.IsArchived}, IsDonor={patientToUpdate.IsDonor}" +
-                $"WHERE PatientID={patientToUpdate.Id}";
+            // Handle Nullable Date of Death for SQL string
+            string dodValue = patientToUpdate.Dod.HasValue
+                ? $"'{patientToUpdate.Dod.Value:yyyy-MM-dd HH:mm:ss}'"
+                : "NULL";
+
+            // Format Date of Birth for SQL string
+            string dobValue = $"'{patientToUpdate.Dob:yyyy-MM-dd}'";
+
+            // Construct the query using the exact column names from your SSMS screenshot
+            string query = $@"UPDATE Patient SET 
+        FirstName = '{patientToUpdate.FirstName}', 
+        LastName = '{patientToUpdate.LastName}', 
+        CNP = '{patientToUpdate.Cnp}', 
+        DateOfBirth = {dobValue}, 
+        DateOfDeath = {dodValue}, 
+        Sex = '{(patientToUpdate.Sex == HospitalManagement.Entity.Enums.Sex.M ? "M" : "F")}', 
+        Phone = '{patientToUpdate.PhoneNo}', 
+        EmergencyContact = '{patientToUpdate.EmergencyContact}', 
+        Archived = {(patientToUpdate.IsArchived ? 1 : 0)}, 
+        IsDonor = {(patientToUpdate.IsDonor ? 1 : 0)} 
+        WHERE PatientID = {patientToUpdate.Id}";
 
             _context.ExecuteNonQuery(query);
         }

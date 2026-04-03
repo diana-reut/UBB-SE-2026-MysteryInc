@@ -6,8 +6,10 @@
     xmlns:local="using:HospitalManagement"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:HospitalManagement.Converters"
     mc:Ignorable="d"
     Title="MysteryInc Hospital Management">
+
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -20,6 +22,8 @@
             <SolidColorBrush x:Key="BrandSecondary" Color="#4A90A4"/>
             <SolidColorBrush x:Key="BrandAccent" Color="#5EC499"/>
             <SolidColorBrush x:Key="GhostAccent" Color="#FFE779"/>
+
+            <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
 
             <Style x:Key="AnimatedRoleButtonStyle" TargetType="Button">
                 <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
@@ -74,6 +78,8 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            
+            
         </Grid.Resources>
 
         <Grid.RowDefinitions>
@@ -162,5 +168,25 @@
                 </Border>
             </Button>
         </Grid>
+
+        <Grid Grid.Row="0" Grid.RowSpan="2"
+              Background="#F0000000"
+              IsHitTestVisible="True"
+              Visibility="{Binding IsExorcismAlertVisible, Converter={StaticResource BoolToVis}}">
+            <Border MaxWidth="600" CornerRadius="16"
+            Background="#1A0000" BorderBrush="#CC0000" BorderThickness="3"
+            Padding="48,40" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel Spacing="20" HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE7BA;" FontSize="72" Foreground="#FF3333" HorizontalAlignment="Center"/>
+                    <TextBlock Text="CRITICAL PARANORMAL ACTIVITY DETECTED"
+                       Foreground="#FF3333" FontSize="20" FontWeight="Bold"
+                       TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="Multiple sightings confirmed. Please CALL THE PRIEST immediately."
+                       Foreground="White" FontSize="16"
+                       TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </Window>

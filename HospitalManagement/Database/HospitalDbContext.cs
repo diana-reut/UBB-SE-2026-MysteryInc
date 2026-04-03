@@ -16,12 +16,14 @@ namespace HospitalManagement.Database
                 throw new Exception("Connection string is not loaded.");
             }
 
-            _connection = new SqlConnection(Config.ConnectionString);
+            _connection = new SqlConnection();
+            _connection.ConnectionString = Config.ConnectionString;
             _connection.Open();
         }
 
         public SqlDataReader ExecuteQuery(string sql)
         {
+            EnsureConnectionOpen();
             SqlCommand command = new SqlCommand(sql, _connection);
 
             if (_transaction != null)
@@ -29,11 +31,12 @@ namespace HospitalManagement.Database
                 command.Transaction = _transaction;
             }
 
-            return command.ExecuteReader();
+            return command.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
         }
 
         public int ExecuteNonQuery(string sql)
         {
+            EnsureConnectionOpen();
             SqlCommand command = new SqlCommand(sql, _connection);
 
             if (_transaction != null)
@@ -86,6 +89,29 @@ namespace HospitalManagement.Database
             }
 
             _connection.Dispose();
+        }
+
+        public void EnsureConnectionOpen()
+        {
+            if (_connection == null) return;
+
+            // 1. If the connection forgot its string, re-assign it from Config
+            if (string.IsNullOrEmpty(_connection.ConnectionString))
+            {
+                _connection.ConnectionString = Config.ConnectionString;
+            }
+
+            // 2. Check the state. If it's not open, try to open it.
+            if (_connection.State != System.Data.ConnectionState.Open)
+            {
+                // 3. Double-check again just to be 100% sure we have a string now
+                if (string.IsNullOrEmpty(_connection.ConnectionString))
+                {
+                    throw new Exception("CRITICAL: Connection string is still missing in EnsureConnectionOpen!");
+                }
+
+                _connection.Open();
+            }
         }
     }
 }
