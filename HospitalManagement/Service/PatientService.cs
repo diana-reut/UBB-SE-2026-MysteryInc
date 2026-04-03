@@ -225,31 +225,111 @@ namespace HospitalManagement.Service
         }
 
         /// <summary>
+        /// <summary>
         /// SV3: Initializes the clinical profile for a patient.
+        /// Creates a MedicalHistory record with blood type, Rh factor, and chronic conditions.
         /// </summary>
-        public void CreateMedicalHistory(int patientId, MedicalHistory history, List<Allergy> allergies)
+        public void CreateMedicalHistory(int patientId, MedicalHistory history, List<Allergy> allergies = null)
         {
-            // 1. Validate the patient exists
-            var existingPatient = _patientRepo.GetById(patientId);
-            if (existingPatient == null)
+            try
             {
-                throw new ArgumentException($"Patient with ID {patientId} not found.");
-            }
+                // 1. Validate the patient exists
+                var existingPatient = _patientRepo.GetById(patientId);
+                if (existingPatient == null)
+                {
+                    throw new ArgumentException($"Patient with ID {patientId} not found.");
+                }
 
-            // 2. Prevent duplicate histories
-            var existingHistory = _historyRepo.GetByPatientId(patientId);
-            if (existingHistory != null)
+                // 2. Prevent duplicate histories (each patient can only have one medical history)
+                var existingHistory = _historyRepo.GetByPatientId(patientId);
+                if (existingHistory != null)
+                {
+                    throw new InvalidOperationException($"Patient {patientId} already has a medical history. Use UpdateMedicalHistory to modify it.");
+                }
+
+                // 3. Validate blood type if provided
+                if (history.BloodType.HasValue)
+                {
+                    if (!Enum.IsDefined(typeof(BloodType), history.BloodType.Value))
+                    {
+                        throw new ArgumentException($"Invalid blood type: {history.BloodType}");
+                    }
+                }
+
+                // 4. Validate Rh factor if provided
+                if (history.Rh.HasValue)
+                {
+                    if (!Enum.IsDefined(typeof(RhEnum), history.Rh.Value))
+                    {
+                        throw new ArgumentException($"Invalid Rh factor: {history.Rh}");
+                    }
+                }
+
+                // 5. Link the history to the patient and save to database
+                history.PatientId = patientId;
+                _historyRepo.Create(history);
+
+                // 6. Save associated allergies if provided
+                if (allergies != null && allergies.Count > 0)
+                {
+                    // TODO: When AllergyRepository is implemented, save allergies here
+                    // Loop through the allergies list and link them to the newly created history.Id
+                    System.Diagnostics.Debug.WriteLine($"Medical history created with {allergies.Count} associated allergies pending save.");
+                }
+            }
+            catch (Exception ex)
             {
-                throw new InvalidOperationException($"Patient {patientId} already has a medical history.");
+                System.Diagnostics.Debug.WriteLine($"Error creating medical history for patient {patientId}: {ex.Message}");
+                throw;
             }
+        }
 
-            // 3. Link the history to the patient and save
-            history.PatientId = patientId;
-            _historyRepo.Create(history);
+        /// <summary>
+        /// SV3b: Updates an existing medical history with new blood type, Rh factor, or chronic conditions.
+        /// </summary>
+        public void UpdateMedicalHistory(MedicalHistory history)
+        {
+            try
+            {
+                // 1. Validate the history exists
+                var existingHistory = _historyRepo.GetById(history.Id);
+                if (existingHistory == null)
+                {
+                    throw new KeyNotFoundException($"Medical history with ID {history.Id} not found.");
+                }
 
-            // 4. TODO: Save Allergies
-            // (When your team creates an AllergyRepository, loop through the 'allergies' list 
-            // and save them here, linking them to the newly created history.Id).
+                // 2. Validate that the PatientId hasn't changed (immutable)
+                if (existingHistory.PatientId != history.PatientId)
+                {
+                    throw new InvalidOperationException("Cannot reassign medical history to a different patient.");
+                }
+
+                // 3. Validate blood type if provided
+                if (history.BloodType.HasValue)
+                {
+                    if (!Enum.IsDefined(typeof(BloodType), history.BloodType.Value))
+                    {
+                        throw new ArgumentException($"Invalid blood type: {history.BloodType}");
+                    }
+                }
+
+                // 4. Validate Rh factor if provided
+                if (history.Rh.HasValue)
+                {
+                    if (!Enum.IsDefined(typeof(RhEnum), history.Rh.Value))
+                    {
+                        throw new ArgumentException($"Invalid Rh factor: {history.Rh}");
+                    }
+                }
+
+                // 5. Update the medical history in the database
+                _historyRepo.Update(history);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error updating medical history {history.Id}: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>

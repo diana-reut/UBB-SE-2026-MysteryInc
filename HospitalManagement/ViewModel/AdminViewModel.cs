@@ -191,6 +191,7 @@ namespace HospitalManagement.ViewModel
         public Func<string, string, Task<bool>> ConfirmAction { get; set; }
         public Action<string> ShowAlertAction { get; set; } // For the deceased warning
         public Action<Patient> OpenOrganDonorDialogAction { get; set; } // For opening organ donor dialog
+        public Func<Patient, Task> OpenMedicalHistoryDialogAction { get; set; } // For opening medical history dialog after patient creation
 
 
         // --- Commands bound to the View Buttons ---
@@ -363,7 +364,7 @@ namespace HospitalManagement.ViewModel
             // 4. DATABASE HAND-OFF (Only happens if all checks pass!)
             try
             {
-                _patientService.CreatePatient(NewPatient);
+                Patient createdPatient = _patientService.CreatePatient(NewPatient);
 
                 // Refresh the list so the new patient appears immediately
                 LoadAllPatients();
@@ -373,6 +374,12 @@ namespace HospitalManagement.ViewModel
                 // Clear the form data for the next patient
                 NewPatient = new Patient { Dob = DateTime.Today.AddYears(-20) };
                 OnPropertyChanged(nameof(NewPatient));
+
+                // 5. INVOKE MEDICAL HISTORY DIALOG for the newly created patient
+                if (OpenMedicalHistoryDialogAction != null && createdPatient != null && createdPatient.Id > 0)
+                {
+                    _ = OpenMedicalHistoryDialogAction.Invoke(createdPatient);
+                }
             }
             catch (Exception ex)
             {

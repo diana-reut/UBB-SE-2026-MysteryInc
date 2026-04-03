@@ -6,9 +6,6 @@ using HospitalManagement.ViewModel;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.Database;
-using Microsoft.UI.Xaml.Markup;
-using CommunityToolkit.WinUI;
-using HospitalManagement.ViewModel;
 
 namespace HospitalManagement.View
 {
@@ -155,6 +152,43 @@ namespace HospitalManagement.View
                                 vm.ShowAlertAction?.Invoke($"Error opening organ donor dialog: {ex.Message}");
                             }
                         };
+
+                        // Medical History Dialog Logic - Opens after patient creation
+                        //vm.OpenMedicalHistoryDialogAction = async (newPatient) =>
+                        //{
+                        //    if (newPatient == null || newPatient.Id <= 0)
+                        //    {
+                        //        vm.ShowAlertAction?.Invoke("Invalid patient data.");
+                        //        return;
+                        //    }
+
+                        //    try
+                        //    {
+                        //        MedicalHistoryDialog dialog = new MedicalHistoryDialog();
+                        //        dialog.XamlRoot = rootElement.XamlRoot;
+                        //        dialog.SetPatientInfo(newPatient);
+
+                        //        var result = await dialog.ShowAsync();
+
+                        //        // If user clicked "Save Medical History" (Primary button)
+                        //        if (result == ContentDialogResult.Primary && dialog.MedicalHistory != null)
+                        //        {
+                        //            var hRepo = new MedicalHistoryRepository(_dbContext);
+                        //            var patientService = new PatientService(pRepo, hRepo, rRepo);
+
+                        //            patientService.CreateMedicalHistory(newPatient.Id, dialog.MedicalHistory);
+                        //            vm.ShowAlertAction?.Invoke("Medical history successfully added!");
+                        //        }
+                        //        else if (dialog.WasSkipped)
+                        //        {
+                        //            vm.ShowAlertAction?.Invoke("Medical history skipped. You can add it later from the patient's profile.");
+                        //        }
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        vm.ShowAlertAction?.Invoke($"Error creating medical history: {ex.Message}");
+                        //    }
+                        //};
                     }
                 };
 
