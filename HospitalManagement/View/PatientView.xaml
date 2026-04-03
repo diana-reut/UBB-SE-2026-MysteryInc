@@ -234,14 +234,15 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 
-                                <!-- Discount Section Label -->
-                                <StackPanel Grid.Column="0" Spacing="5">
+                                <!-- Final Price (visible only after discount applied) -->
+                                <StackPanel Grid.Column="0" Spacing="5"
+                                            Visibility="{Binding DiscountApplied, Converter={StaticResource BoolToVis}}">
                                     <TextBlock Text="Final Price" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
                                     <TextBlock Text="{Binding FinalPrice}" 
-                                               Foreground="White" FontSize="14"/>
+                                               Foreground="#00FF00" FontSize="14" FontWeight="Bold"/>
                                 </StackPanel>
                                 
-                                <!-- Apply Discount Button (visible when discount not applied) or Result -->
+                                <!-- Apply Discount Button (visible when discount not applied) -->
                                 <Button Grid.Column="1" 
                                         Content="🎡 Apply Discount" 
                                         Command="{Binding ApplyDiscountCommand}"
