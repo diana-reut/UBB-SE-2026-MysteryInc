@@ -167,6 +167,86 @@ namespace HospitalManagement.View
 
 
 
+        // ==========================================
+        // IMPORT RECORD FEATURE
+        // ==========================================
+
+        private async void ImportER_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleImport(isER: true);
+        }
+
+        private async void ImportStaff_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleImport(isER: false);
+        }
+
+        private async System.Threading.Tasks.Task HandleImport(bool isER)
+        {
+            if (ViewModel.CurrentPatient == null) return;
+
+            try
+            {
+                // 1. Initialize databases & repositories
+                var dbContext = new HospitalManagement.Database.HospitalDbContext();
+                var patientRepo = new HospitalManagement.Repository.PatientRepository(dbContext);
+                var historyRepo = new HospitalManagement.Repository.MedicalHistoryRepository(dbContext);
+                var recordRepo = new HospitalManagement.Repository.MedicalRecordRepository(dbContext);
+                var prescriptionRepo = new HospitalManagement.Repository.PrescriptionRepository(dbContext);
+
+                var patientService = new HospitalManagement.Service.PatientService(patientRepo, historyRepo, recordRepo);
+
+                // 2. Initialize the Mock External Proxies
+                // (We pass 'null' for the publisher since we are only fetching records, not triggering the observer)
+                var externalER = new HospitalManagement.Integration.External.MockERProxy(null); ////////////OBSERVEEEERRRRR!!!!!!!!!!!!!!!!!!!!!1111111111
+                var externalStaff = new HospitalManagement.Integration.External.MockStaffProxy(null); ////////////OBSERVEEEERRRRR!!!!!!!!!!!!!!11
+
+                // 3. Initialize your teammate's Import Service
+                var importService = new HospitalManagement.Service.ImportService(
+                    patientService, recordRepo, prescriptionRepo, externalER, externalStaff);
+
+                int patientId = ViewModel.CurrentPatient.Id;
+
+                // 4. Trigger the Import (we pass '1' as a dummy external ID since the mocks ignore it anyway)
+                if (isER)
+                {
+                    importService.ImportFromER(patientId, 1);
+                }
+                else
+                {
+                    importService.ImportFromAppointment(patientId, 1);
+                }
+
+                // 5. Refresh the ViewModel so the new record instantly appears in the list!
+                ViewModel.LoadFullPatientProfile(patientId);
+
+                // 6. Show Success Dialog
+                var dialog = new ContentDialog
+                {
+                    Title = "Import Successful",
+                    Content = $"Record and associated prescriptions successfully imported from {(isER ? "the ER" : "the Staff App")}.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "Import Failed",
+                    Content = $"An error occurred during import: {ex.Message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
+        }
+
+
+
+
+
 
     }
 }

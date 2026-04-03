@@ -95,7 +95,7 @@ namespace HospitalManagement.ViewModel
             LoadFullPatientProfile(patientId);
         }
 
-        private void LoadFullPatientProfile(int id)
+        public void LoadFullPatientProfile(int id)
         {
             try
             {
