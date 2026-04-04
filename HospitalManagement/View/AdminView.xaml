@@ -229,7 +229,7 @@
                     <TextBlock Text="Archive Actions" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
                     <Button Content="Restore to Active" Command="{Binding DearchivePatientCommand}" IsEnabled="{Binding IsNotDeceased}" HorizontalAlignment="Stretch" CornerRadius="6"/>
                     <Button Content="Mark as Deceased" Command="{Binding MarkAsDeceasedCommand}" IsEnabled="{Binding IsNotDeceased}" Background="#442222" HorizontalAlignment="Stretch" CornerRadius="6"/>
-                    <Button Content="Register Organ Donor" Command="{Binding MarkAsOrganDonorCommand}" Visibility="{Binding SelectedPatient.IsDeceased, Converter={StaticResource BoolToVis}}" Background="#224422" HorizontalAlignment="Stretch" CornerRadius="6"/>
+                   
                 </StackPanel>
             </Grid>
         </Border>
