@@ -109,7 +109,7 @@ namespace HospitalManagement.Repository
 
             if (!string.IsNullOrWhiteSpace(patientFilter.CNP))
             {
-                patients = patients.Where(p => p.Cnp == patientFilter.CNP);
+                patients = patients.Where(p => p.Cnp != null && p.Cnp.StartsWith(patientFilter.CNP));
             }
 
             int currentYear = DateTime.Now.Year;

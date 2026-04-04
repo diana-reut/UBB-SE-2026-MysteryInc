@@ -209,8 +209,8 @@ namespace HospitalManagement.Service
 
                 // --- 2. CNP Validations ---
                 // Since the repo looks for an exact match, it must be valid if provided.
-                if (!string.IsNullOrWhiteSpace(filter.CNP) && filter.CNP.Length != 13)
-                    throw new ArgumentException("Validation Error: CNP must be exactly 13 digits for an exact search.");
+                if (!string.IsNullOrWhiteSpace(filter.CNP) && !filter.CNP.All(char.IsDigit))
+                    throw new ArgumentException("Validation Error: CNP must contain only digits.");
 
                 // --- 3. Date Validations ---
                 if (filter.lastUpdatedFrom.HasValue && filter.lastUpdatedTo.HasValue)

@@ -469,10 +469,8 @@ namespace HospitalManagement.ViewModel
                 // 2. Fuzzy Logic: Identify if Query is CNP or Name
                 if (SearchQuery.All(char.IsDigit))
                 {
-                    if (SearchQuery.All(char.IsDigit) && SearchQuery.Length == 13)
-                    {
+                    
                         filter.CNP = SearchQuery; // Safe to send to Service
-                    }
                 }
                 else
                 {
