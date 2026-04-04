@@ -29,7 +29,12 @@ namespace HospitalManagement.Service
         {
             decimal score = 0;
             var record = recordRepo.GetById(recordId);
-            var prescriptionItems = prescriptionRepo.GetItems(recordId);
+            var prescription = prescriptionRepo.GetByRecordId(recordId);
+            List<PrescriptionItem> prescriptionItems;
+            if (prescription != null)
+                prescriptionItems = prescriptionRepo.GetItems(prescription.Id);
+            else prescriptionItems = new List<PrescriptionItem>();
+
             MedicalHistory? history = historyRepo.GetByPatientId(patientId);
 
             var chronicConditions = historyRepo.GetChronicConditions(history.Id);
