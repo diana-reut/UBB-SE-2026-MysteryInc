@@ -92,6 +92,7 @@ namespace HospitalManagement.View
 
             // Show result
             _showResult = true;
+            DiscountPercentage = SelectedDiscountPercentage;
             OnPropertyChanged(nameof(ShowResult));
             OnPropertyChanged(nameof(DiscountPercentage));
             OnPropertyChanged(nameof(FinalPrice));

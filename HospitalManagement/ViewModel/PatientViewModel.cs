@@ -7,6 +7,7 @@ using System.Windows.Input;
 using HospitalManagement.Entity;
 using HospitalManagement.Service;
 using HospitalManagement.Integration.Export;
+using System.Collections.Generic;
 
 namespace HospitalManagement.ViewModel
 {
@@ -26,7 +27,10 @@ namespace HospitalManagement.ViewModel
                 OnPropertyChanged();
                 if (_selectedPatient != null)
                 {
-                    LoadMedicalHistory();
+                    // Set medical history directly from the patient object
+                    MedicalHistory = _selectedPatient.MedicalHistory;
+                    
+                    // Load medical records and allergies
                     LoadMedicalRecords();
                 }
             }
@@ -46,9 +50,14 @@ namespace HospitalManagement.ViewModel
 
         public string ChronicConditionsFormatted
         {
-            get => _medicalHistory?.ChronicConditions != null && _medicalHistory.ChronicConditions.Count > 0
-                ? string.Join("; ", _medicalHistory.ChronicConditions)
-                : "None";
+            get
+            {
+                if (MedicalHistory == null)
+                    return "None";
+                if (MedicalHistory.ChronicConditions == null || MedicalHistory.ChronicConditions.Count == 0)
+                    return "None";
+                return string.Join(", ", MedicalHistory.ChronicConditions);
+            }
         }
 
         private ObservableCollection<MedicalRecord> _medicalRecords;
@@ -125,6 +134,7 @@ namespace HospitalManagement.ViewModel
 
         public Action GoBackAction { get; set; }
         public Action<decimal, Action<int, decimal>> OpenRouletteAction { get; set; }
+        public Action<Prescription> OpenPrescriptionDialogAction { get; set; }
 
         public PatientViewModel(PatientService patientService, ExportService exportService = null, BillingService billingService = null)
         {
@@ -139,6 +149,31 @@ namespace HospitalManagement.ViewModel
             ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
         }
 
+        public void LoadFullPatientProfile(int id)
+        {
+            try
+            {
+                var p = _patientService.GetPatientDetails(id);
+                if (p != null)
+                {
+                    if (p.MedicalHistory == null)
+                    {
+                        p.MedicalHistory = new MedicalHistory();
+                    }
+                    if (p.MedicalHistory.MedicalRecords == null)
+                    {
+                        p.MedicalHistory.MedicalRecords = new List<MedicalRecord>();
+                    }
+
+                    SelectedPatient = p;
+                }
+            }
+            catch (Exception)
+            {
+                // Keep the dummy data if the database completely fails
+            }
+        }
+
         private void LoadMedicalHistory()
         {
             if (SelectedPatient == null)
@@ -151,6 +186,7 @@ namespace HospitalManagement.ViewModel
             {
                 // Assuming PatientService has a method to get medical history
                 MedicalHistory = _patientService.GetMedicalHistory(SelectedPatient.Id);
+                Console.WriteLine(MedicalHistory.Rh);
             }
             catch (Exception ex)
             {
@@ -203,7 +239,7 @@ namespace HospitalManagement.ViewModel
 
         private bool CanViewPrescription()
         {
-            return SelectedMedicalRecord != null && SelectedMedicalRecord.PrescriptionId.HasValue;
+            return SelectedMedicalRecord != null;
         }
 
         private bool CanApplyDiscount()
@@ -213,14 +249,20 @@ namespace HospitalManagement.ViewModel
 
         private void ViewSelectedPrescription()
         {
-            if (SelectedMedicalRecord?.PrescriptionId == null)
+            if (SelectedMedicalRecord == null)
                 return;
 
             try
             {
-                SelectedPrescription = _patientService.GetPrescriptionByRecordId(SelectedMedicalRecord.Id);
-                if (SelectedPrescription == null)
+                Prescription prescription = _patientService.GetPrescriptionByRecordId(SelectedMedicalRecord.Id);
+                if (prescription == null)
+                {
                     System.Diagnostics.Debug.WriteLine($"No prescription found for record {SelectedMedicalRecord.Id}");
+                    return;
+                }
+
+                // Open the prescription dialog
+                OpenPrescriptionDialogAction?.Invoke(prescription);
             }
             catch (Exception ex)
             {
@@ -237,16 +279,19 @@ namespace HospitalManagement.ViewModel
             {
                 try
                 {
+                    // Use BillingService to calculate the final price correctly
+                    decimal calculatedFinalPrice = _billingService.ApplyDiscount(BasePrice, discount);
+                    
                     // Update the medical record with discount and final price
                     SelectedMedicalRecord.DiscountApplied = discount;
-                    SelectedMedicalRecord.FinalPrice = finalPrice;
+                    SelectedMedicalRecord.FinalPrice = calculatedFinalPrice;
                     
                     // Update the UI
-                    FinalPrice = finalPrice;
+                    FinalPrice = calculatedFinalPrice;
                     DiscountApplied = true;
                     OnPropertyChanged(nameof(SelectedMedicalRecord));
 
-                    System.Diagnostics.Debug.WriteLine($"Discount applied: {discount}% | Final Price: {finalPrice}");
+                    System.Diagnostics.Debug.WriteLine($"Discount applied: {discount}% | Final Price: {calculatedFinalPrice}");
                 }
                 catch (Exception ex)
                 {

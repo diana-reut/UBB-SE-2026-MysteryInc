@@ -17,7 +17,7 @@ namespace HospitalManagement.View
         private HospitalDbContext _dbContext;
         private Action _goBackCallback;
 
-        public PatientView(Patient patient, Action goBackCallback)
+        public PatientView(int patientId, Action goBackCallback)
         {
             this.InitializeComponent();
 
@@ -57,14 +57,24 @@ namespace HospitalManagement.View
                 rouletteDialog.OnSpinComplete = onComplete;
                 await rouletteDialog.ShowAsync();
             };
-            
-            _viewModel.SelectedPatient = patient;
 
+            // 4b. Set up Prescription Dialog handler
+            _viewModel.OpenPrescriptionDialogAction = async (prescription) =>
+            {
+                var prescriptionDialog = new PrescriptionDialog();
+                prescriptionDialog.XamlRoot = this.Content.XamlRoot;
+                prescriptionDialog.Initialize(prescription);
+                await prescriptionDialog.ShowAsync();
+            };
+            
             // 5. Set DataContext
             if (this.Content is FrameworkElement rootElement)
             {
                 rootElement.DataContext = _viewModel;
             }
+
+            // 6. Load patient data using ID
+            _viewModel.LoadFullPatientProfile(patientId);
         }
 
         private void GoBack()

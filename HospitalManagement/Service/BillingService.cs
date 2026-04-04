@@ -45,9 +45,9 @@ namespace HospitalManagement.Service
 
             foreach(var allergy in allergies)
             {
-                if (allergy.SeverityLevel == "mild" || allergy.SeverityLevel == "moderate")
+                if (string.Compare(allergy.SeverityLevel, "mild", StringComparison.OrdinalIgnoreCase) == 0 || string.Compare(allergy.SeverityLevel, "moderate", StringComparison.OrdinalIgnoreCase) == 0)
                     score += 20;
-                else if (allergy.SeverityLevel == "severe" || allergy.SeverityLevel == "anaphylactic")
+                else if (string.Compare(allergy.SeverityLevel, "severe", StringComparison.OrdinalIgnoreCase)==0 || string.Compare(allergy.SeverityLevel, "anaphylactic", StringComparison.OrdinalIgnoreCase) == 0)
                     score += 100;
             }
 
@@ -56,7 +56,7 @@ namespace HospitalManagement.Service
             return score;
         }
 
-        decimal ApplyDiscount(decimal basePrice, int discount)
+        public decimal ApplyDiscount(decimal basePrice, int discount)
         {
             return basePrice - (basePrice * discount) / 100;
         }

@@ -264,7 +264,7 @@ namespace HospitalManagement.View
         {
             if (_viewModel?.SelectedPatient != null)
             {
-                var patientView = new PatientView(_viewModel.SelectedPatient, () => { });
+                var patientView = new PatientView(_viewModel.SelectedPatient.Id, () => { });
                 patientView.Activate();
             }
         }
