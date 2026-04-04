@@ -146,17 +146,12 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Consultation Details" FontSize="18" FontWeight="Bold" Foreground="White" Grid.Column="0"/>
                             <Button Content="View Prescription" 
                                     Command="{Binding ViewPrescriptionCommand}" 
                                     Background="#1B4965" Foreground="White" 
                                     CornerRadius="6" Padding="15,8" Grid.Column="1"/>
-                            <Button Content="Export to PDF" 
-                                    Command="{Binding ExportRecordCommand}" 
-                                    Background="#0D7377" Foreground="White" 
-                                    CornerRadius="6" Padding="15,8" Grid.Column="2"/>
                         </Grid>
 
                         <!-- Patient Name -->
