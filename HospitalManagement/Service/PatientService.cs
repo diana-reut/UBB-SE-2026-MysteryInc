@@ -102,12 +102,6 @@ namespace HospitalManagement.Service
                 throw new KeyNotFoundException($"Patient with ID {data.Id} not found.");
             }
 
-            // 2. Audit Check: Prevent updates if the patient is currently Archived
-            // Your diagram shows archivePatient(), so we check the IsArchived property
-            //if (existingPatient.IsArchived)
-            //{
-            //    throw new InvalidOperationException("Audit Error: This patient is archived. De-archive before updating.");
-            //}
 
             // 3. Identity Consistency Check: CNP and DOB must not change
             if (existingPatient.Cnp != data.Cnp || existingPatient.Dob.Date != data.Dob.Date)
@@ -124,17 +118,40 @@ namespace HospitalManagement.Service
 
             if (string.IsNullOrWhiteSpace(data.PhoneNo) || data.PhoneNo.Length != 10 || !data.PhoneNo.All(char.IsDigit))
             {
-                throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
+                throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain only numbers.");
             }
 
-            
-            //if (string.IsNullOrWhiteSpace(data.EmergencyContact) || !data.EmergencyContact.All(char.IsDigit) || data.EmergencyContact.Length != 10)
-            //{
-            //    throw new ArgumentException("Validation Error: Emergency contact must contain only numbers.");
-            //}
+            if (string.IsNullOrWhiteSpace(data.FirstName))
+            {
+                throw new ArgumentException("Validation Error: First Name cannot be empty.");
+            }
 
-            // 5. Repository Call: Pass the clean object to the repository
-            // TODO: Uncomment once the Update method in PatientRepository
+            if (string.IsNullOrWhiteSpace(data.LastName))
+            {
+                throw new ArgumentException("Validation Error: Last Name cannot be empty.");
+            }
+
+            if (data.FirstName.Length > 100 || data.LastName.Length > 100)
+            {
+                throw new ArgumentException("Validation Error: Names cannot exceed 100 characters.");
+            }
+
+            if (!data.FirstName.All(c => char.IsLetter(c)))
+            {
+                throw new ArgumentException("Validation Error: First Name must contain only letters.");
+            }
+
+            if (!data.LastName.All(c => char.IsLetter(c)))
+            {
+                throw new ArgumentException("Validation Error: Last Name must contain only letters.");
+            }
+
+
+            if (string.IsNullOrWhiteSpace(data.EmergencyContact) || !data.EmergencyContact.All(char.IsDigit) || data.EmergencyContact.Length != 10)
+            {
+                throw new ArgumentException("Validation Error: Emergency contact must be exactly 10 digits and contain only numbers.");
+            }
+
             _patientRepo.Update(data);
         }
 

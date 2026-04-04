@@ -212,6 +212,10 @@
             <Grid>
                 <StackPanel Spacing="10" Visibility="{Binding IsActiveMode, Converter={StaticResource BoolToVis}}">
                     <TextBlock Text="Patient Details" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                    <TextBlock Text="First Name" Foreground="White"/>
+                    <TextBox Text="{Binding EditingPatient.FirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="Last Name" Foreground="White"/>
+                    <TextBox Text="{Binding EditingPatient.LastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Text="Phone Number" Foreground="White"/>
                     <TextBox Text="{Binding EditingPatient.PhoneNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Text="Emergency Contact" Foreground="White"/>

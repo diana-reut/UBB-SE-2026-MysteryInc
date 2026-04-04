@@ -284,6 +284,29 @@ namespace HospitalManagement.ViewModel
             return phone;
         }
 
+        private string UnformatPhoneNumber(string formattedPhone)
+        {
+            if (string.IsNullOrWhiteSpace(formattedPhone)) return string.Empty;
+
+            // 1. Keep only digits
+            string digits = new string(formattedPhone.Where(char.IsDigit).ToArray());
+
+            // 2. Handle "+40 7..." -> "407..." logic
+            // If it's 11 digits and starts with '40', it's the Romanian prefix.
+            // We need to turn '407...' into '07...' to satisfy the 10-digit rule.
+            if (digits.Length == 11 && digits.StartsWith("40"))
+            {
+                return "0" + digits.Substring(2);
+            }
+
+            // 3. If it's already 10 digits (07...), return as is
+            if (digits.Length == 10) return digits;
+
+            // Return whatever we have if it doesn't match common patterns 
+            // (The service will catch the error)
+            return digits;
+        }
+
         // --- VM7: Load Archived Patients ---
         public void LoadArchivedPatients()
         {
@@ -429,14 +452,24 @@ namespace HospitalManagement.ViewModel
         {
            
             if (EditingPatient == null || SelectedPatient == null) return;
+            string formattedPhone = EditingPatient.PhoneNo;
+            string formattedEmergency = EditingPatient.EmergencyContact;
 
             // 1. (Optional) Re-run phone formatting before saving
             //EditingPatient.PhoneNo = FormatPhoneNumber(EditingPatient.PhoneNo);
             //EditingPatient.EmergencyContact = FormatPhoneNumber(EditingPatient.EmergencyContact);
 
             // 2. Send the updated copy to the Service
+            if (string.IsNullOrWhiteSpace(EditingPatient.FirstName) || string.IsNullOrWhiteSpace(EditingPatient.LastName))
+            {
+                ShowAlertAction?.Invoke("First and Last name cannot be empty.");
+                return;
+            }
+
             try
             {
+                EditingPatient.PhoneNo = UnformatPhoneNumber(formattedPhone);
+                EditingPatient.EmergencyContact = UnformatPhoneNumber(formattedEmergency);
                 _patientService.UpdatePatient(EditingPatient);
 
                 EditingPatient.PhoneNo = FormatPhoneNumber(EditingPatient.PhoneNo);
@@ -453,6 +486,8 @@ namespace HospitalManagement.ViewModel
             }
             catch (Exception ex)
             {
+                EditingPatient.PhoneNo = formattedPhone;
+                EditingPatient.EmergencyContact = formattedEmergency;
                 ShowAlertAction?.Invoke($"Update failed: {ex.Message}");
             }
         }
