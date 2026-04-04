@@ -6,7 +6,7 @@ GO
 
 INSERT INTO Patient (FirstName, LastName, CNP, DateOfBirth, Sex, Phone, EmergencyContact, Archived, IsDonor)
 VALUES 
-('Ion', 'Popescu', '1980101123456', '1980-01-01', 'M', '+40712345678', '+40711111111', 0, 1),
+('Ion', 'Popescu', '1800101123456', '1980-01-01', 'M', '+40712345678', '+40711111111', 0, 1),
 ('Ana', 'Ionescu', '2960505123456', '1996-05-05', 'F', '+40798765432', '+40797222222', 0, 0),
 ('Mihai', 'Georgescu', '5011225123456', '2001-12-25', 'M', '+40711112222', '+40709333333', 0, 1);
 GO

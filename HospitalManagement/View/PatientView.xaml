@@ -41,8 +41,9 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left Section: General Medical Information -->
-            <StackPanel Grid.Column="0" Spacing="15">
+            <!-- Left Section: General Medical Information (Scrollable) -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="15">
                 <!-- Patient Info Card -->
                 <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
                     <StackPanel Spacing="10">
@@ -68,7 +69,7 @@
                         <!-- RH Factor -->
                         <StackPanel Spacing="5">
                             <TextBlock Text="RH Factor" Foreground="Gray" FontSize="12"/>
-                            <TextBlock Text="{Binding MedicalHistory.RhFactor}" 
+                            <TextBlock Text="{Binding MedicalHistory.Rh}" 
                                        Foreground="White" FontWeight="SemiBold" FontSize="14"/>
                         </StackPanel>
 
@@ -134,7 +135,8 @@
                         </ListView>
                     </StackPanel>
                 </Border>
-            </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
 
             <!-- Right Section: Consultation Details -->
             <Border Grid.Column="1" Background="#2C3A4A" CornerRadius="10" Padding="20" Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource NullToVisibilityConverter}}">
@@ -170,14 +172,14 @@
                         <!-- Consultation Source -->
                         <StackPanel Spacing="5">
                             <TextBlock Text="Consultation Source" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
-                            <TextBlock Text="{Binding SelectedMedicalRecord.ConsultationSource}" 
+                            <TextBlock Text="{Binding SelectedMedicalRecord.SourceType}" 
                                        Foreground="White" FontSize="14" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <!-- Staff Member -->
                         <StackPanel Spacing="5">
-                            <TextBlock Text="Staff Member" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
-                            <TextBlock Text="{Binding SelectedMedicalRecord.StaffMemberName}" 
+                            <TextBlock Text="Staff ID" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding SelectedMedicalRecord.StaffId}" 
                                        Foreground="White" FontSize="14"/>
                         </StackPanel>
 
@@ -191,9 +193,9 @@
 
                         <!-- Reported Symptoms -->
                         <StackPanel Spacing="5">
-                            <TextBlock Text="Reported Symptoms" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBlock Text="Symptoms" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
                             <Border Background="#3A4A5A" CornerRadius="8" Padding="10">
-                                <TextBlock Text="{Binding SelectedMedicalRecord.ReportedSymptoms}" 
+                                <TextBlock Text="{Binding SelectedMedicalRecord.Symptoms}" 
                                            Foreground="White" TextWrapping="WrapWholeWords" FontSize="13"/>
                             </Border>
                         </StackPanel>
@@ -203,15 +205,6 @@
                             <TextBlock Text="Diagnosis" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
                             <Border Background="#3A4A5A" CornerRadius="8" Padding="10">
                                 <TextBlock Text="{Binding SelectedMedicalRecord.Diagnosis}" 
-                                           Foreground="White" TextWrapping="WrapWholeWords" FontSize="13"/>
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Additional Notes -->
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Additional Notes" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
-                            <Border Background="#3A4A5A" CornerRadius="8" Padding="10">
-                                <TextBlock Text="{Binding SelectedMedicalRecord.Notes}" 
                                            Foreground="White" TextWrapping="WrapWholeWords" FontSize="13"/>
                             </Border>
                         </StackPanel>
@@ -264,47 +257,6 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- Prescription Details Section -->
-                        <StackPanel Spacing="10" Visibility="{Binding SelectedPrescription, Converter={StaticResource NullToVisibilityConverter}}">
-                            <TextBlock Text="Prescription Details" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,10,0,0"/>
-                            
-                            <!-- Doctor Notes -->
-                            <StackPanel Spacing="5">
-                                <TextBlock Text="Doctor Notes" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
-                                <Border Background="#3A4A5A" CornerRadius="8" Padding="10">
-                                    <TextBlock Text="{Binding SelectedPrescription.DoctorNotes}" 
-                                               Foreground="White" TextWrapping="WrapWholeWords" FontSize="13"/>
-                                </Border>
-                            </StackPanel>
-
-                            <!-- Medications List -->
-                            <StackPanel Spacing="5">
-                                <TextBlock Text="Medications" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
-                                <ListView ItemsSource="{Binding SelectedPrescription.MedicationList}" 
-                                          SelectionMode="None"
-                                          Height="Auto"
-                                          BorderThickness="0">
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="#3A4A5A" CornerRadius="6" Padding="12" Margin="0,5,0,0" BorderThickness="1" BorderBrush="#4A5A6A">
-                                                <Grid ColumnSpacing="10">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="{Binding MedName}" 
-                                                               Foreground="White" FontWeight="SemiBold" FontSize="13" Grid.Column="0"/>
-                                                    <TextBlock Foreground="LightGray" FontSize="12" Grid.Column="1">
-                                                        <Run Text="Qty: "/>
-                                                        <Run Text="{Binding Quantity}"/>
-                                                    </TextBlock>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-                            </StackPanel>
-                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
