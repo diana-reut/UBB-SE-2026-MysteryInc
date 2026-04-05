@@ -31,7 +31,8 @@ namespace HospitalManagement.Database
                 command.Transaction = _transaction;
             }
 
-            return command.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
+            // Never use CloseConnection - let the context manage the connection lifecycle
+            return command.ExecuteReader();
         }
 
         public int ExecuteNonQuery(string sql)

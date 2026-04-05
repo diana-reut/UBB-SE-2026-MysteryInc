@@ -78,18 +78,21 @@ namespace HospitalManagement.Repository
 
                 string sqlPrescription = $@"
                     INSERT INTO Prescription (RecordID, DoctorNotes, [Date]) 
-                    OUTPUT INSERTED.PrescriptionID
-                    VALUES ({prescription.RecordId}, {notesValue}, {dateValue})";
+                    VALUES ({prescription.RecordId}, {notesValue}, {dateValue});
+                    SELECT SCOPE_IDENTITY();";
 
-                int newId;
+                int newId = -1;
 
                 using (var reader = _context.ExecuteQuery(sqlPrescription))
                 {
-                    if (!reader.Read())
-                        throw new Exception("Failed to insert prescription.");
-
-                    newId = (int)reader["PrescriptionID"];
+                    if (reader.Read() && int.TryParse(reader[0].ToString(), out int id))
+                    {
+                        newId = id;
+                    }
                 }
+
+                if (newId <= 0)
+                    throw new Exception("Failed to insert prescription - could not retrieve ID.");
 
                 if (prescription.MedicationList != null)
                 {
