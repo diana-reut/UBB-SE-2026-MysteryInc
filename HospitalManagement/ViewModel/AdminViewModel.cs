@@ -634,7 +634,7 @@ namespace HospitalManagement.ViewModel
                 LoadArchivedPatients();
 
                 OnPropertyChanged(nameof(IsNotDeceased));
-                ShowAlertAction?.Invoke("The patient has been marked as deceased. The record is now locked and moved to the archive.");
+                ShowAlertAction?.Invoke("This patient has now become a ghost. Beware!!!");
             }
             catch (Exception ex)
             {
