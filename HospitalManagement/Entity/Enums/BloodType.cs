@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace HospitalManagement.Entity.Enums;
 
-namespace HospitalManagement.Entity.Enums
+public enum BloodType
 {
-    public enum BloodType
-    {
-        A,
-        B,
-        AB,
-        O
-    }
+    A,
+    B,
+    AB,
+    O,
 }

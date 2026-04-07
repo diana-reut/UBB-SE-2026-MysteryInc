@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace HospitalManagement.Entity.Enums;
 
-namespace HospitalManagement.Entity.Enums
+public enum SourceType
 {
-    public enum SourceType
-    {
-        ER,
-        App,
-        Admin
-    }
+    ER,
+    App,
+    Admin,
 }
