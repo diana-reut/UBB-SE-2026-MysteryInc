@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq; 
 using HospitalManagement.Entity;
+using HospitalManagement.Entity.DTOs;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
 
@@ -45,7 +46,7 @@ namespace HospitalManagement.ViewModel
             Prescriptions.Clear();
             InfoMessage = string.Empty;
 
-            var fakeDoctors = HospitalManagement.Repository.MockDoctorProvider.GetFakeDoctors();
+            var fakeDoctors = MockDoctorProvider.GetFakeDoctors();
             var random = new Random();
 
             bool hasActiveFilter = 

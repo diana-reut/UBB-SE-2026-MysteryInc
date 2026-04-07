@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using HospitalManagement.Integration;
 using System.Linq;
+using HospitalManagement.Entity.DTOs;
 
 namespace HospitalManagement.Repository
 {
