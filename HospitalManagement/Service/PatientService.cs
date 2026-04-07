@@ -198,13 +198,13 @@ namespace HospitalManagement.Service
             if (filter != null)
             {
                 // --- 1. Age Validations ---
-                if (filter.minAge.HasValue && filter.minAge < 0)
+                if (filter.MinAge.HasValue && filter.MinAge < 0)
                     throw new ArgumentException("Validation Error: Minimum age cannot be negative.");
 
-                if (filter.maxAge.HasValue && filter.maxAge < 0)
+                if (filter.MaxAge.HasValue && filter.MaxAge < 0)
                     throw new ArgumentException("Validation Error: Maximum age cannot be negative.");
 
-                if (filter.minAge.HasValue && filter.maxAge.HasValue && filter.minAge > filter.maxAge)
+                if (filter.MinAge.HasValue && filter.MaxAge.HasValue && filter.MinAge > filter.MaxAge)
                     throw new ArgumentException("Validation Error: Minimum age cannot be greater than maximum age.");
 
                 // --- 2. CNP Validations ---
@@ -213,9 +213,9 @@ namespace HospitalManagement.Service
                     throw new ArgumentException("Validation Error: CNP must be exactly 13 digits for an exact search.");
 
                 // --- 3. Date Validations ---
-                if (filter.lastUpdatedFrom.HasValue && filter.lastUpdatedTo.HasValue)
+                if (filter.LastUpdatedFrom.HasValue && filter.LastUpdatedTo.HasValue)
                 {
-                    if (filter.lastUpdatedFrom.Value > filter.lastUpdatedTo.Value)
+                    if (filter.LastUpdatedFrom.Value > filter.LastUpdatedTo.Value)
                         throw new ArgumentException("Validation Error: 'From' date cannot be after 'To' date.");
                 }
             }

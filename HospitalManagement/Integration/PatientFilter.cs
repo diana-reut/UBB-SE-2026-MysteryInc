@@ -1,23 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HospitalManagement.Entity.Enums;
 
-namespace HospitalManagement.Integration
+namespace HospitalManagement.Integration;
 
-{   public class PatientFilter
-    {
-        public string? namePart;
-        public string? CNP;
-        public int? minAge;
-        public int? maxAge;
-        public Sex? sex;
-        public bool? hasChronicCond;
-        public DateTime? lastUpdatedFrom;
-        public DateTime? lastUpdatedTo;
-        public BloodType? bloodType;
-        public RhEnum? rh;
-    }
+public class PatientFilter
+{
+    public string? NamePart { get; set; }
+
+    public string? CNP { get; set; }
+
+    public int? MinAge { get; set; }
+
+    public int? MaxAge { get; set; }
+
+    public Sex? Sex { get; set; }
+
+    public bool? HasChronicCond { get; set; }
+
+    public DateTime? LastUpdatedFrom { get; set; }
+
+    public DateTime? LastUpdatedTo { get; set; }
+
+    public BloodType? BloodType { get; set; }
+
+    public RhEnum? Rh { get; set; }
 }

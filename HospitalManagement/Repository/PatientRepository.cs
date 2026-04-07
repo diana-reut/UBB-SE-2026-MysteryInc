@@ -100,11 +100,11 @@ namespace HospitalManagement.Repository
         {
             IEnumerable<Patient> patients = this.GetAll(true);
             
-            if(!string.IsNullOrWhiteSpace(patientFilter.namePart))
+            if(!string.IsNullOrWhiteSpace(patientFilter.NamePart))
             {
                 patients = patients.Where(p =>
-                    p.FirstName.Contains(patientFilter.namePart, StringComparison.OrdinalIgnoreCase) ||
-                    p.LastName.Contains(patientFilter.namePart, StringComparison.OrdinalIgnoreCase));
+                    p.FirstName.Contains(patientFilter.NamePart, StringComparison.OrdinalIgnoreCase) ||
+                    p.LastName.Contains(patientFilter.NamePart, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(patientFilter.CNP))
@@ -113,27 +113,27 @@ namespace HospitalManagement.Repository
             }
 
             int currentYear = DateTime.Now.Year;
-            if(patientFilter.minAge.HasValue)
+            if(patientFilter.MinAge.HasValue)
             {
-                patients = patients.Where(p => (currentYear - p.Dob.Year) >= patientFilter.minAge);
+                patients = patients.Where(p => (currentYear - p.Dob.Year) >= patientFilter.MinAge);
             }
 
-            if (patientFilter.maxAge.HasValue)
+            if (patientFilter.MaxAge.HasValue)
             {
-                patients = patients.Where(p => (currentYear - p.Dob.Year) <= patientFilter.maxAge);
+                patients = patients.Where(p => (currentYear - p.Dob.Year) <= patientFilter.MaxAge);
             }
 
-            if(patientFilter.bloodType.HasValue)
+            if(patientFilter.BloodType.HasValue)
             {
-                patients = patients.Where(p => p.MedicalHistory !=null && p.MedicalHistory.BloodType == patientFilter.bloodType);
+                patients = patients.Where(p => p.MedicalHistory !=null && p.MedicalHistory.BloodType == patientFilter.BloodType);
             }
 
-            if(patientFilter.sex.HasValue)
+            if(patientFilter.Sex.HasValue)
             {
-                patients = patients.Where(p => p.Sex == patientFilter.sex);
+                patients = patients.Where(p => p.Sex == patientFilter.Sex);
             }
 
-            if(patientFilter.hasChronicCond == true)
+            if(patientFilter.HasChronicCond == true)
             {
                 patients = patients.Where(p => p.MedicalHistory != null && p.MedicalHistory.ChronicConditions.Any());
             }
