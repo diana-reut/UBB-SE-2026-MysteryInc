@@ -1,31 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using HospitalManagement.Entity.DTOs;
 using HospitalManagement.Integration.PatientObserver;
 
-namespace HospitalManagement.Integration.External
+namespace HospitalManagement.Integration.External;
+
+public class ExternalPatientPublisher
 {
-    public class ExternalPatientPublisher
+    private readonly List<IPatientObserver> _observers = [];
+
+    public void Subscribe(IPatientObserver observer)
     {
-        private readonly List<IPatientObserver> _observers = new();
+        _observers.Add(observer);
+    }
 
-        public void Subscribe(IPatientObserver observer)
-        {
-            _observers.Add(observer);
-        }
+    public void Unsubscribe(IPatientObserver observer)
+    {
+        _ = _observers.Remove(observer);
+    }
 
-        public void Unsubscribe(IPatientObserver observer)
+    public void Notify(ExternalPatientDTO dto)
+    {
+        foreach (IPatientObserver observer in _observers)
         {
-            _observers.Remove(observer);
-        }
-
-        public void Notify(ExternalPatientDTO dto)
-        {
-            foreach (var observer in _observers)
-                observer.OnNewExternalPatient(dto);
+            observer.OnNewExternalPatient(dto);
         }
     }
 }
