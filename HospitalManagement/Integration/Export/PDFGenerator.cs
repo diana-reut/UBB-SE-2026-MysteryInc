@@ -4,57 +4,56 @@ using System.IO;
 using HospitalManagement.Entity;
 using iText.Kernel.Pdf;
 using iText.Layout;
-using iText.Layout.Element;
 using Paragraph = iText.Layout.Element.Paragraph;
 
-namespace HospitalManagement.Integration.Export
+namespace HospitalManagement.Integration.Export;
+
+public class PDFGenerator
 {
-    public class PDFGenerator
+    public string GenerateRecordPDF(
+        MedicalRecord record,
+        Patient patient,
+        Prescription? prescription,
+        List<PrescriptionItem> items)
     {
-        public string GenerateRecordPDF(
-            MedicalRecord record,
-            Patient patient,
-            Prescription? prescription,
-            List<PrescriptionItem> items)
+        ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullException.ThrowIfNull(patient);
+
+        string fileName = $"MedicalRecord_{patient.FirstName}{patient.LastName}_{record.ConsultationDate:yyyyMMdd}.pdf";
+
+        // THE FIX: Use standard .NET Desktop path! This prevents the "Operation is not valid" crash.
+        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        string filePath = Path.Combine(desktopPath, fileName);
+
+        using (var writer = new PdfWriter(filePath))
+        using (var pdf = new PdfDocument(writer))
+        using (var doc = new Document(pdf))
         {
-            string fileName = $"MedicalRecord_{patient.FirstName}{patient.LastName}_{record.ConsultationDate:yyyyMMdd}.pdf";
+            _ = doc.Add(new Paragraph($"Patient: {patient.FirstName} {patient.LastName}").SetFontSize(16))
+                .Add(new Paragraph($"CNP: {patient.Cnp}"))
+                .Add(new Paragraph($"Consultation Date: {record.ConsultationDate:dd-MM-yyyy HH:mm}"))
+                .Add(new Paragraph("\n"))
+                .Add(new Paragraph("Section 1: Clinical Findings").SetFontSize(14))
+                .Add(new Paragraph($"Symptoms: {record.Symptoms ?? "N/A"}"))
+                .Add(new Paragraph($"Diagnosis: {record.Diagnosis ?? "N/A"}"))
+                .Add(new Paragraph("\n"))
+                .Add(new Paragraph("Section 2: Prescribed Treatment").SetFontSize(14));
 
-            // THE FIX: Use standard .NET Desktop path! This prevents the "Operation is not valid" crash.
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string filePath = Path.Combine(desktopPath, fileName);
-
-            using (PdfWriter writer = new PdfWriter(filePath))
-            using (PdfDocument pdf = new PdfDocument(writer))
-            using (Document doc = new Document(pdf))
+            if (prescription is null || items.Count == 0)
             {
-                doc.Add(new Paragraph($"Patient: {patient.FirstName} {patient.LastName}").SetFontSize(16));
-                doc.Add(new Paragraph($"CNP: {patient.Cnp}"));
-                doc.Add(new Paragraph($"Consultation Date: {record.ConsultationDate:dd-MM-yyyy HH:mm}"));
-                doc.Add(new Paragraph("\n"));
-
-                doc.Add(new Paragraph("Section 1: Clinical Findings").SetFontSize(14));
-                doc.Add(new Paragraph($"Symptoms: {record.Symptoms ?? "N/A"}"));
-                doc.Add(new Paragraph($"Diagnosis: {record.Diagnosis ?? "N/A"}"));
-                doc.Add(new Paragraph("\n"));
-
-                doc.Add(new Paragraph("Section 2: Prescribed Treatment").SetFontSize(14));
-
-                if (prescription == null || items.Count == 0)
+                _ = doc.Add(new Paragraph("No prescription issued for this consultation."));
+            }
+            else
+            {
+                _ = doc.Add(new Paragraph($"Doctor Notes: {prescription.DoctorNotes ?? "None"}"))
+                    .Add(new Paragraph("Medications:"));
+                foreach (PrescriptionItem item in items)
                 {
-                    doc.Add(new Paragraph("No prescription issued for this consultation."));
-                }
-                else
-                {
-                    doc.Add(new Paragraph($"Doctor Notes: {prescription.DoctorNotes ?? "None"}"));
-                    doc.Add(new Paragraph("Medications:"));
-                    foreach (var item in items)
-                    {
-                        doc.Add(new Paragraph($"  - {item.MedName}: {item.Quantity}"));
-                    }
+                    _ = doc.Add(new Paragraph($"  - {item.MedName}: {item.Quantity}"));
                 }
             }
-
-            return filePath;
         }
+
+        return filePath;
     }
 }
