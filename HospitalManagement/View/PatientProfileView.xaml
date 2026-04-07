@@ -101,7 +101,7 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Patient Name:" Foreground="Gray"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.CurrentPatient.GetFullName(), Mode=OneWay}" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.CurrentPatient.FullName, Mode=OneWay}" FontWeight="SemiBold"/>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Date:" Foreground="Gray"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.SelectedRecord.ConsultationDate, Mode=OneWay, Converter={StaticResource DateConverter}}"/>
