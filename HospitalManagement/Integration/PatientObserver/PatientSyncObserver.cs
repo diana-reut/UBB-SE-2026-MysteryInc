@@ -1,49 +1,52 @@
 ﻿using HospitalManagement.Entity.DTOs;
 using HospitalManagement.Entity;
 using HospitalManagement.Service;
+using System;
 
-namespace HospitalManagement.Integration.PatientObserver
+namespace HospitalManagement.Integration.PatientObserver;
+
+public class PatientSyncObserver : IPatientObserver
 {
-    public class PatientSyncObserver : IPatientObserver
+    private readonly PatientService _patientService;
+
+    public PatientSyncObserver(PatientService patientService)
     {
-        private readonly PatientService _patientService;
+        _patientService = patientService;
+    }
 
-        public PatientSyncObserver(PatientService patientService)
+    public void OnNewExternalPatient(ExternalPatientDTO newPatientData)
+    {
+        if (newPatientData is null)
         {
-            _patientService = patientService;
+            throw new ArgumentNullException(nameof(newPatientData), "Received null patient data from external provider.");
         }
+        // IN6: check if patient exists by CNP
+        bool exists = _patientService.Exists(newPatientData.CNP);
 
-        public void OnNewExternalPatient(ExternalPatientDTO newPatientData)
+        if (exists)
         {
-            // IN6: check if patient exists by CNP
-            bool exists = _patientService.Exists(newPatientData.CNP);
-
-            if (exists)
-            {
-                // map DTO to patient and update
-                Patient updated = MapDTOToPatient(newPatientData);
-                _patientService.UpdatePatient(updated);
-            }
-
-            else
-            {
-                // map DTO to new patient and create
-                Patient newPatient = MapDTOToPatient(newPatientData);
-                _patientService.CreatePatient(newPatient);
-            }
+            // map DTO to patient and update
+            Patient updated = MapDTOToPatient(newPatientData);
+            _patientService.UpdatePatient(updated);
         }
-
-        private Patient MapDTOToPatient(ExternalPatientDTO dto)
+        else
         {
-            return new Patient
-            {
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Cnp = dto.CNP,
-                Sex = dto.Sex
-                // Injury -> goes to MedicalRecord.Symptoms, not Patient
-                // EmergencyTimestamp -> goes to MedicalRecord.ConsultationDate
-            };
+            // map DTO to new patient and create
+            Patient newPatient = MapDTOToPatient(newPatientData);
+            _ = _patientService.CreatePatient(newPatient);
         }
+    }
+
+    private static Patient MapDTOToPatient(ExternalPatientDTO dto)
+    {
+        return new Patient
+        {
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            Cnp = dto.CNP,
+            Sex = dto.Sex,
+            // Injury -> goes to MedicalRecord.Symptoms, not Patient
+            // EmergencyTimestamp -> goes to MedicalRecord.ConsultationDate
+        };
     }
 }
