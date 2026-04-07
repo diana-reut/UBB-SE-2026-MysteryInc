@@ -14,6 +14,9 @@
     <Nullable>enable</Nullable>
 	<WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <CodeAnalysisRuleSet>SE.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <None Remove="configuration\appsettings.template.json" />
     <None Remove="Database\script1_create_database.sql" />
@@ -49,6 +52,10 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Belp.Formatting" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.251219" />
     <PackageReference Include="iText7" Version="9.5.0" />
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.5.0" />
