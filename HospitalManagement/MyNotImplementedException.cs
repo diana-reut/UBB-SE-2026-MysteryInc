@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HospitalManagement.Converters;
+namespace HospitalManagement;
 
 internal class MyNotImplementedException : Exception
 {
