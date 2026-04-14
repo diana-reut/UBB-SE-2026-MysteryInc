@@ -2,327 +2,368 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HospitalManagement.Database;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
-using Windows.ApplicationModel.Chat;
 
-namespace HospitalManagement.Repository
+namespace HospitalManagement.Repository;
 
+
+public class PatientRepository
 {
-    public class PatientRepository
+    private readonly HospitalDbContext _context;
+
+    public PatientRepository(HospitalDbContext context)
     {
-        private readonly HospitalDbContext _context;
+        _context = context;
+    }
 
-        public PatientRepository(HospitalDbContext context)
+    public Patient? GetById(int id)
+    {
+        string query = $"SELECT * FROM Patient WHERE PatientID={id}";
+        using SqlDataReader reader = _context.ExecuteQuery(query);
+        if (reader.Read())
         {
-            _context = context;
+            return MapToPatient(reader);
         }
 
-        public Patient? GetById(int id) 
+        return null;
+    }
+
+    private static Patient MapToPatient(SqlDataReader reader)
+    {
+        return new Patient
         {
-            string query = $"SELECT * FROM Patient WHERE PatientID={id}";
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                if (reader.Read())
-                {
-                    return MapToPatient(reader);
-                }
-            }
-            return null;
-        }
-        private Patient MapToPatient(SqlDataReader reader)
+            Id = reader.GetInt32(reader.GetOrdinal("PatientID")),
+
+            FirstName = reader["FirstName"] as string ?? "",
+            LastName = reader["LastName"] as string ?? "",
+            Cnp = reader["CNP"] as string ?? "",
+
+            Dob = reader.GetDateTime(reader.GetOrdinal("DateOfBirth")),
+
+            Dod = reader.IsDBNull(reader.GetOrdinal("DateOfDeath"))
+          ? null
+          : reader.GetDateTime(reader.GetOrdinal("DateOfDeath")),
+
+            Sex = Enum.Parse<Sex>(reader["Sex"]?.ToString() ?? "Unknown"),
+
+            PhoneNo = reader["Phone"] as string ?? "",
+            EmergencyContact = reader["EmergencyContact"] as string ?? "",
+
+            IsArchived = reader.GetBoolean(reader.GetOrdinal("Archived")),
+            IsDonor = reader.GetBoolean(reader.GetOrdinal("IsDonor")),
+        };
+    }
+
+    public List<Patient> GetAll(bool include_archived)
+    {
+        var patients = new List<Patient>();
+
+
+        string query = "SELECT * FROM Patient";
+
+        if (!include_archived)
         {
-            return new Patient
-            {
-                Id = Convert.ToInt32(reader["PatientID"]),
-                FirstName = reader["FirstName"].ToString() ?? string.Empty,
-                LastName = reader["LastName"].ToString() ?? string.Empty,
-
-                Cnp = reader["CNP"].ToString() ?? string.Empty,
-                Dob = Convert.ToDateTime(reader["DateOfBirth"]),
-                Dod = reader["DateOfDeath"] == DBNull.Value
-                      ? (DateTime?)null
-                      : Convert.ToDateTime(reader["DateOfDeath"]),
-                Sex = Enum.Parse<Sex>(reader["Sex"].ToString()!),
-                PhoneNo = reader["Phone"]?.ToString() ?? string.Empty,
-                EmergencyContact = reader["EmergencyContact"]?.ToString() ?? string.Empty,
-                IsArchived = Convert.ToBoolean(reader["Archived"]),
-                IsDonor = Convert.ToBoolean(reader["IsDonor"])
-            };
-        }
-
-        public List<Patient> GetAll(bool include_archived)
-        {
-            List<Patient> patients = new List<Patient>();
-
-            
-            string query = "SELECT * FROM Patient";
-
-            if (!include_archived)
-            {
-                // SQL Server BIT 0 is false
-                query += " WHERE Archived = 0";
-            }
-
-            _context.EnsureConnectionOpen();
-
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                while (reader.Read())
-                {
-                    patients.Add(MapToPatient(reader));
-                }
-            }
-
-            return patients;
-        }
-        public List<Patient> GetArchived()
-        {
-            List<Patient> archivedPatients = new List<Patient>();
-
-            string query = $"SELECT * FROM Patient WHERE Archived=1";
-
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                while (reader.Read())
-                {
-                    archivedPatients.Add(this.MapToPatient(reader));
-                }
-            }
-            return archivedPatients;
+            // SQL Server BIT 0 is false
+            query += " WHERE Archived = 0";
         }
 
-        public List<Patient> Search(PatientFilter patientFilter)
+        _context.EnsureConnectionOpen();
+
+        using (SqlDataReader reader = _context.ExecuteQuery(query))
         {
-            IEnumerable<Patient> patients = this.GetAll(true);
-            
-            if(!string.IsNullOrWhiteSpace(patientFilter.NamePart))
+            while (reader.Read())
             {
-                patients = patients.Where(p =>
-                    p.FirstName.Contains(patientFilter.NamePart, StringComparison.OrdinalIgnoreCase) ||
-                    p.LastName.Contains(patientFilter.NamePart, StringComparison.OrdinalIgnoreCase));
+                patients.Add(MapToPatient(reader));
             }
-
-            if (!string.IsNullOrWhiteSpace(patientFilter.CNP))
-            {
-                patients = patients.Where(p => p.Cnp != null && p.Cnp.StartsWith(patientFilter.CNP));
-            }
-
-            int currentYear = DateTime.Now.Year;
-            if(patientFilter.MinAge.HasValue)
-            {
-                patients = patients.Where(p => (currentYear - p.Dob.Year) >= patientFilter.MinAge);
-            }
-
-            if (patientFilter.MaxAge.HasValue)
-            {
-                patients = patients.Where(p => (currentYear - p.Dob.Year) <= patientFilter.MaxAge);
-            }
-
-            if(patientFilter.BloodType.HasValue)
-            {
-                patients = patients.Where(p => p.MedicalHistory !=null && p.MedicalHistory.BloodType == patientFilter.BloodType);
-            }
-
-            if(patientFilter.Sex.HasValue)
-            {
-                patients = patients.Where(p => p.Sex == patientFilter.Sex);
-            }
-
-            if(patientFilter.HasChronicCond == true)
-            {
-                patients = patients.Where(p => p.MedicalHistory != null && p.MedicalHistory.ChronicConditions.Any());
-            }
-
-            return patients.ToList<Patient>();
         }
 
-        List<Patient> GetCompatibleDonors(BloodType bloodType, RhEnum rh, Sex sex, DateTime dob, int minAge, int maxAge)
+        return patients;
+    }
+
+    public List<Patient> GetArchived()
+    {
+        var archivedPatients = new List<Patient>();
+
+        const string Query = "SELECT * FROM Patient WHERE Archived=1";
+
+        using (SqlDataReader reader = _context.ExecuteQuery(Query))
         {
-            IEnumerable<Patient> potentialDonors = this.GetAll(false);
-
-            potentialDonors = potentialDonors.Where(p => p.MedicalHistory != null);
-
-            int currentYear = DateTime.Now.Year;
-            // exclude if not in the age range
-            potentialDonors = potentialDonors.Where(p => (currentYear - p.Dob.Year) >= minAge && (currentYear - p.Dob.Year) <= maxAge);
-
-            // exclude if the possible donor has chronic condition
-            potentialDonors = potentialDonors.Where(p => !(p.MedicalHistory != null && p.MedicalHistory.ChronicConditions.Any()));
-
-            // exclude if the possible donor has an allergy with severity anaphylactic
-            potentialDonors = potentialDonors.Where(p => !(p.MedicalHistory != null && p.MedicalHistory.Allergies.Any(a => string.Equals(a.SeverityLevel, "anaphylactic", StringComparison.OrdinalIgnoreCase))));
-
-            // exclude if not a blood match
-            potentialDonors = potentialDonors.Where(p => (p.MedicalHistory != null && this.IsABloodMatch(p.MedicalHistory.BloodType, bloodType)));
-
-            // exclude if not a rh match
-            potentialDonors = potentialDonors.Where(p => (p.MedicalHistory != null && this.IsARhMatch(p.MedicalHistory.Rh, rh)));
-
-            Dictionary<Patient, int> donorsScore = new Dictionary<Patient, int>();
-            foreach(Patient pd in potentialDonors){
-                int score = 0;
-
-                if (pd.MedicalHistory.BloodType == bloodType && pd.MedicalHistory.Rh == rh) score += 50;
-                else score += 25;
-
-                if (pd.Sex == sex)
-                    score += 20;
-                else score += 10;
-
-                score += this.CalculateAgeScore(pd.Dob, dob);
-
-                donorsScore.Add(pd, score);
-
+            while (reader.Read())
+            {
+                archivedPatients.Add(MapToPatient(reader));
             }
-
-            List<Patient> sortedPatients = donorsScore.OrderByDescending(kv => kv.Value)
-                .Select(kv => kv.Key)
-                .ToList();
-            return sortedPatients;
         }
 
-        private bool IsABloodMatch(BloodType? donor, BloodType receiver)
+        return archivedPatients;
+    }
+
+    public List<Patient> Search(PatientFilter patientFilter)
+    {
+        ArgumentNullException.ThrowIfNull(patientFilter);
+
+        IEnumerable<Patient> patients = GetAll(true);
+
+        if (!string.IsNullOrWhiteSpace(patientFilter.NamePart))
         {
-            if (donor == null)
-                return false;
+            patients = patients.Where(p =>
+                p.FirstName.Contains(patientFilter.NamePart, StringComparison.OrdinalIgnoreCase)
+                    || p.LastName.Contains(patientFilter.NamePart, StringComparison.OrdinalIgnoreCase));
+        }
 
-            if (donor == BloodType.O)
-                return true;
+        if (!string.IsNullOrWhiteSpace(patientFilter.CNP))
+        {
+            patients = patients.Where(p => p.Cnp?.StartsWith(patientFilter.CNP, StringComparison.Ordinal) == true);
+        }
 
-            if (donor == BloodType.A && (receiver == BloodType.A || receiver == BloodType.AB))
-                return true;
+        int currentYear = DateTime.Now.Year;
+        if (patientFilter.MinAge.HasValue)
+        {
+            patients = patients.Where(p => currentYear - p.Dob.Year >= patientFilter.MinAge);
+        }
 
-            if (donor == BloodType.B && (receiver == BloodType.B || receiver == BloodType.AB))
-                return true;
+        if (patientFilter.MaxAge.HasValue)
+        {
+            patients = patients.Where(p => currentYear - p.Dob.Year <= patientFilter.MaxAge);
+        }
 
-            if (donor == BloodType.AB && receiver == BloodType.AB)
-                return true;
+        if (patientFilter.BloodType.HasValue)
+        {
+            patients = patients.Where(p => p.MedicalHistory is not null && p.MedicalHistory.BloodType == patientFilter.BloodType);
+        }
 
+        if (patientFilter.Sex.HasValue)
+        {
+            patients = patients.Where(p => p.Sex == patientFilter.Sex);
+        }
+
+        if (patientFilter.HasChronicCond == true)
+        {
+            patients = patients.Where(p => p.MedicalHistory?.ChronicConditions.Count != 0);
+        }
+
+        return [.. patients];
+    }
+
+    private List<Patient> GetCompatibleDonors(BloodType bloodType, RhEnum rh, Sex sex, DateTime dob, int minAge, int maxAge)
+    {
+        IEnumerable<Patient> potentialDonors = GetAll(false);
+
+        potentialDonors = potentialDonors.Where(p => p.MedicalHistory is not null);
+
+        int currentYear = DateTime.Now.Year;
+        // exclude if not in the age range
+        potentialDonors = potentialDonors.Where(p => currentYear - p.Dob.Year >= minAge && currentYear - p.Dob.Year <= maxAge);
+
+        // exclude if the possible donor has chronic condition
+        potentialDonors = potentialDonors.Where(p => p.MedicalHistory?.ChronicConditions.Count == 0);
+
+        // exclude if the possible donor has an allergy with severity anaphylactic
+        potentialDonors = potentialDonors.Where(p => p.MedicalHistory?.Allergies.Any(a => string.Equals(a.SeverityLevel, "anaphylactic", StringComparison.OrdinalIgnoreCase)) != true);
+
+        // exclude if not a blood match
+        potentialDonors = potentialDonors.Where(p => p.MedicalHistory is not null && IsABloodMatch(p.MedicalHistory.BloodType, bloodType));
+
+        // exclude if not a rh match
+        potentialDonors = potentialDonors.Where(p => p.MedicalHistory is not null && IsARhMatch(p.MedicalHistory.Rh, rh));
+
+        var donorsScore = new Dictionary<Patient, int>();
+        foreach (Patient pd in potentialDonors)
+        {
+            int score = 0;
+
+            if (pd.MedicalHistory is null)
+            {
+                continue;
+            }
+
+            if (pd.MedicalHistory.BloodType == bloodType && pd.MedicalHistory.Rh == rh)
+            {
+                score += 50;
+            }
+            else
+            {
+                score += 25;
+            }
+
+            if (pd.Sex == sex)
+            {
+                score += 20;
+            }
+            else
+            {
+                score += 10;
+            }
+
+            score += CalculateAgeScore(pd.Dob, dob);
+
+            donorsScore.Add(pd, score);
+        }
+
+        var sortedPatients = donorsScore.OrderByDescending(kv => kv.Value)
+            .Select(kv => kv.Key)
+            .ToList();
+        return sortedPatients;
+    }
+
+    private static bool IsABloodMatch(BloodType? donor, BloodType receiver)
+    {
+        if (donor is null)
+        {
             return false;
         }
 
-        private bool IsARhMatch(RhEnum? donor, RhEnum receiver)
+        if (donor == BloodType.O)
         {
-            if (donor == null)
-                return false;
+            return true;
+        }
 
-            if (donor == RhEnum.Positive && receiver == RhEnum.Positive)
-                return true;
+        if (donor == BloodType.A && (receiver == BloodType.A || receiver == BloodType.AB))
+        {
+            return true;
+        }
 
-            if (donor == RhEnum.Negative)
-                return true;
+        if (donor == BloodType.B && (receiver == BloodType.B || receiver == BloodType.AB))
+        {
+            return true;
+        }
+
+        if (donor == BloodType.AB && receiver == BloodType.AB)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsARhMatch(RhEnum? donor, RhEnum receiver)
+    {
+        if (donor is null)
+        {
             return false;
         }
 
-        private int CalculateAgeScore(DateTime donorDob, DateTime receiverDob)
+        if (donor == RhEnum.Positive && receiver == RhEnum.Positive)
         {
-            int currentYear = DateTime.Now.Year;
-
-            int donorAge = currentYear - donorDob.Year;
-            int recipientAge = currentYear - receiverDob.Year;
-            int ageGap = Math.Abs(donorAge - recipientAge);
-
-            int group = ageGap / 5; // 0 for 0-4, 1 for 5-9, etc.
-            int score = 30 - (group * 5);
-            return Math.Max(score, 0);
+            return true;
         }
 
-        public bool Exists(string CNP)
+        if (donor == RhEnum.Negative)
         {
-            string query = $"SELECT * FROM Patient WHERE CNP={CNP}";
-
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                return reader.Read();
-            }
-            
+            return true;
         }
 
-        public void MarkAsDeceased(int id, DateOnly dod)
+        return false;
+    }
+
+    private static int CalculateAgeScore(DateTime donorDob, DateTime receiverDob)
+    {
+        int currentYear = DateTime.Now.Year;
+
+        int donorAge = currentYear - donorDob.Year;
+        int recipientAge = currentYear - receiverDob.Year;
+        int ageGap = Math.Abs(donorAge - recipientAge);
+
+        int group = ageGap / 5; // 0 for 0-4, 1 for 5-9, etc.
+        int score = 30 - group * 5;
+        return Math.Max(score, 0);
+    }
+
+    public bool Exists(string cnp)
+    {
+        string query = $"SELECT * FROM Patient WHERE CNP={cnp}";
+
+        using SqlDataReader reader = _context.ExecuteQuery(query);
+        return reader.Read();
+    }
+
+    public void MarkAsDeceased(int id, DateOnly dod)
+    {
+        string query = $"UPDATE Patient SET DateOfDeath={dod} WHERE PatientID={id}";
+        _ = _context.ExecuteNonQuery(query);
+    }
+
+    // public void Add(Patient patientToAdd)
+    // {
+    //    string query = $"INSERT INTO Patient VALUES({patientToAdd.FirstName}, {patientToAdd.LastName}," +
+    //        $"{patientToAdd.Cnp}, {patientToAdd.Dob}, {patientToAdd.Dod}, {patientToAdd.Sex}," +
+    //        $"{patientToAdd.PhoneNo}, {patientToAdd.EmergencyContact}, {patientToAdd.IsArchived}, {patientToAdd.IsDonor})";
+    //        _context.ExecuteNonQuery(query);
+    // }
+
+    public void Add(Patient p)
+    {
+        // 1. List the columns explicitly (Highly Recommended)
+        // 2. Wrap all text/dates in '{value}'
+        ArgumentNullException.ThrowIfNull(p);
+
+        string query = "INSERT INTO Patient (FirstName, LastName, Cnp, DateOfBirth, Sex, Phone, EmergencyContact, Archived, IsDonor) "
+            + "VALUES ("
+            + $"'{p.FirstName}', "
+            + $"'{p.LastName}', "
+            + $"'{p.Cnp}', "
+            + $"'{p.Dob:yyyy-MM-dd}', "
+            + $"'{p.Sex}', "
+            + $"'{p.PhoneNo}', "
+            + $"'{p.EmergencyContact}', "
+            + $"{(p.IsArchived ? 1 : 0)}, "
+            + $"{(p.IsDonor ? 1 : 0)}); "
+            + "SELECT SCOPE_IDENTITY();";
+
+        using SqlDataReader reader = _context.ExecuteQuery(query);
+        if (reader.Read() && int.TryParse(reader[0].ToString(), out int newId))
         {
-            string query = $"UPDATE Patient SET DateOfDeath={dod} WHERE PatientID={id}";
-            _context.ExecuteNonQuery(query);
+            p.Id = newId;
+        }
+    }
+
+    // public void Update(Patient patientToUpdate)
+    // {
+    //    string query = $"UPDATE Patient SET FirstName={patientToUpdate.FirstName}, LastName={patientToUpdate.LastName}," +
+    //        $"Cnp={patientToUpdate.Cnp}, Dob={patientToUpdate.Dob}, Dod={patientToUpdate.Dod}, Sex={patientToUpdate.Sex}," +
+    //        $"PhoneNo={patientToUpdate.PhoneNo}, EmergencyContact={patientToUpdate.EmergencyContact}, IsArchived={patientToUpdate.IsArchived}, IsDonor={patientToUpdate.IsDonor}" +
+    //        $"WHERE PatientID={patientToUpdate.Id}";
+    //        _context.ExecuteNonQuery(query);
+    // }
+
+    public void Update(Patient patientToUpdate)
+    {
+        if (patientToUpdate is null)
+        {
+            throw new ArgumentNullException(nameof(patientToUpdate), "Patient to update cannot be null.");
         }
 
-        //public void Add(Patient patientToAdd)
-        //{
-        //    string query = $"INSERT INTO Patient VALUES({patientToAdd.FirstName}, {patientToAdd.LastName}," +
-        //        $"{patientToAdd.Cnp}, {patientToAdd.Dob}, {patientToAdd.Dod}, {patientToAdd.Sex}," +
-        //        $"{patientToAdd.PhoneNo}, {patientToAdd.EmergencyContact}, {patientToAdd.IsArchived}, {patientToAdd.IsDonor})";
+        // Handle Nullable Date of Death for SQL string
+        string dodValue = patientToUpdate.Dod.HasValue
+            ? $"'{patientToUpdate.Dod.Value:yyyy-MM-dd HH:mm:ss}'"
+            : "NULL";
 
-        //    _context.ExecuteNonQuery(query);
-        //}
-        public void Add(Patient p)
-        {
-            // 1. List the columns explicitly (Highly Recommended)
-            // 2. Wrap all text/dates in '{value}'
-            string query = "INSERT INTO Patient (FirstName, LastName, Cnp, DateOfBirth, Sex, Phone, EmergencyContact, Archived, IsDonor) " +
-                           "VALUES (" +
-                           $"'{p.FirstName}', " +       // Quote
-                           $"'{p.LastName}', " +        // Quote
-                           $"'{p.Cnp}', " +             // Quote
-                           $"'{p.Dob:yyyy-MM-dd}', " +  // Quote + Format
-                           $"'{p.Sex}', " +             // Quote
-                           $"'{p.PhoneNo}', " +         // Quote
-                           $"'{p.EmergencyContact}', " +// Quote
-                           $"{(p.IsArchived ? 1 : 0)}, " + // No quotes for numbers
-                           $"{(p.IsDonor ? 1 : 0)}); " +      // No quotes for numbers
-                           "SELECT SCOPE_IDENTITY();";
+        // Format Date of Birth for SQL string
+        string dobValue = $"'{patientToUpdate.Dob:yyyy-MM-dd}'";
 
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                if (reader.Read() && int.TryParse(reader[0].ToString(), out int newId))
-                {
-                    p.Id = newId;
-                }
-            }
-        }
-        //public void Update(Patient patientToUpdate)
-        //{
-        //    string query = $"UPDATE Patient SET FirstName={patientToUpdate.FirstName}, LastName={patientToUpdate.LastName}," +
-        //        $"Cnp={patientToUpdate.Cnp}, Dob={patientToUpdate.Dob}, Dod={patientToUpdate.Dod}, Sex={patientToUpdate.Sex}," +
-        //        $"PhoneNo={patientToUpdate.PhoneNo}, EmergencyContact={patientToUpdate.EmergencyContact}, IsArchived={patientToUpdate.IsArchived}, IsDonor={patientToUpdate.IsDonor}" +
-        //        $"WHERE PatientID={patientToUpdate.Id}";
-
-        //    _context.ExecuteNonQuery(query);
-        //}
-        public void Update(Patient patientToUpdate)
-        {
-            // Handle Nullable Date of Death for SQL string
-            string dodValue = patientToUpdate.Dod.HasValue
-                ? $"'{patientToUpdate.Dod.Value:yyyy-MM-dd HH:mm:ss}'"
-                : "NULL";
-
-            // Format Date of Birth for SQL string
-            string dobValue = $"'{patientToUpdate.Dob:yyyy-MM-dd}'";
-
-            // Construct the query using the exact column names from your SSMS screenshot
-            string query = $@"UPDATE Patient SET 
+        // Construct the query using the exact column names from your SSMS screenshot
+        string query = $@"UPDATE Patient SET 
         FirstName = '{patientToUpdate.FirstName}', 
         LastName = '{patientToUpdate.LastName}', 
         CNP = '{patientToUpdate.Cnp}', 
         DateOfBirth = {dobValue}, 
         DateOfDeath = {dodValue}, 
-        Sex = '{(patientToUpdate.Sex == HospitalManagement.Entity.Enums.Sex.M ? "M" : "F")}', 
+        Sex = '{(patientToUpdate.Sex == Sex.M ? "M" : "F")}', 
         Phone = '{patientToUpdate.PhoneNo}', 
         EmergencyContact = '{patientToUpdate.EmergencyContact}', 
         Archived = {(patientToUpdate.IsArchived ? 1 : 0)}, 
         IsDonor = {(patientToUpdate.IsDonor ? 1 : 0)} 
         WHERE PatientID = {patientToUpdate.Id}";
 
-            _context.ExecuteNonQuery(query);
-        }
-
-        public void Delete(int id)
-        {
-            string query = $"DELET FROM Patient WHERE PatientID={id}";
-            _context.ExecuteNonQuery(query);
-        }
-
+        _ = _context.ExecuteNonQuery(query);
     }
+
+    public void Delete(int id)
+    {
+        string query = $"DELET FROM Patient WHERE PatientID={id}";
+        _ = _context.ExecuteNonQuery(query);
+    }
+
 }

@@ -83,7 +83,7 @@ public class MedicalRecordRepository
         {
             if (reader.Read())
             {
-                return Convert.ToInt32(reader.GetOrdinal("RecordID"));
+                return reader.GetInt32(reader.GetOrdinal("RecordID"));
             }
         }
 
@@ -146,7 +146,7 @@ public class MedicalRecordRepository
         using SqlDataReader reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
-            return Convert.ToInt32(reader, System.Globalization.CultureInfo.InvariantCulture);
+            return reader.GetInt32(0);
         }
 
         return 0;
@@ -208,8 +208,8 @@ public class MedicalRecordRepository
         {
             return new Prescription
             {
-                Id = Convert.ToInt32(reader.GetOrdinal("PrescriptionID")),
-                RecordId = Convert.ToInt32(reader.GetOrdinal("RecordID")),
+                Id = reader.GetInt32(reader.GetOrdinal("PrescriptionID")),
+                RecordId = reader.GetInt32(reader.GetOrdinal("RecordID")),
                 DoctorNotes = reader["DoctorNotes"]?.ToString(),
                 Date = reader.GetDateTime(reader.GetOrdinal("Date")),
             };
@@ -226,7 +226,7 @@ public class MedicalRecordRepository
         using SqlDataReader reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
-            return Convert.ToInt32(reader.GetOrdinal("StaffID"));
+            return reader.GetInt32(reader.GetOrdinal("StaffID"));
         }
 
         return null;
