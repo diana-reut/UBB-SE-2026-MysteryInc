@@ -5,224 +5,247 @@ using HospitalManagement.Database;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 
-namespace HospitalManagement.Repository
+namespace HospitalManagement.Repository;
+
+public class MedicalRecordRepository
 {
-    public class MedicalRecordRepository
+    private readonly HospitalDbContext _context;
+
+    public MedicalRecordRepository(HospitalDbContext context)
     {
-        private readonly HospitalDbContext _context;
+        _context = context;
+    }
 
-        public MedicalRecordRepository(HospitalDbContext context)
+    public List<MedicalRecord> GetByHistoryId(int historyId) //RP15
+    {
+        var records = new List<MedicalRecord>();
+        string query = $"SELECT * FROM MedicalRecord WHERE HistoryID={historyId}";
+        using (SqlDataReader reader = _context.ExecuteQuery(query))
         {
-            _context = context;
-        }
-
-        public List<MedicalRecord> GetByHistoryId(int historyId) //RP15
-        {
-            List<MedicalRecord> records = new List<MedicalRecord>();
-            string query = $"SELECT * FROM MedicalRecord WHERE HistoryID={historyId}";
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    records.Add(MapToMedicalRecord(reader));
-                }
+                records.Add(MapToMedicalRecord(reader));
             }
-            return records;
+        }
+        return records;
+    }
+
+    public MedicalRecord? GetById(int id) //RP15
+    {
+        string query = $"SELECT * FROM MedicalRecord WHERE RecordID={id}";
+        using SqlDataReader reader = _context.ExecuteQuery(query);
+        if (reader.Read())
+        {
+            return MapToMedicalRecord(reader);
         }
 
-        public MedicalRecord? GetById(int id) //RP15
+        return null;
+    }
+
+    public int Add(MedicalRecord record) // RP16
+    {
+        if (record is null)
         {
-            string query = $"SELECT * FROM MedicalRecord WHERE RecordID={id}";
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                if (reader.Read())
-                {
-                    return MapToMedicalRecord(reader);
-                }
-            }
-            return null;
+            throw new ArgumentNullException(nameof(record), "MedicalRecord cannot be null.");
         }
 
-        public int Add(MedicalRecord record) // RP16
+        if (record.HistoryId <= 0 || record.StaffId <= 0)
         {
-            if (record.HistoryId <= 0 || record.StaffId <= 0)
-                throw new ArgumentException("HistoryId and StaffId must be greater than 0.");
+            throw new ArgumentException("HistoryId and StaffId must be greater than 0.");
+        }
 
-            // Convert enum to database string values
-            string sourceTypeStr = record.SourceType switch
-            {
-                SourceType.ER => "ER Visit",
-                SourceType.App => "Appointment",
-                SourceType.Admin => "Admin",
-                _ => throw new InvalidOperationException($"Unknown SourceType: {record.SourceType}")
-            };
+        // Convert enum to database string values
+        string sourceTypeStr = record.SourceType switch
+        {
+            SourceType.ER => "ER Visit",
+            SourceType.App => "Appointment",
+            SourceType.Admin => "Admin",
+            _ => throw new InvalidOperationException($"Unknown SourceType: {record.SourceType}"),
+        };
 
-            string query = $@"
+        string query = $@"
         INSERT INTO MedicalRecord
         (HistoryID, SourceType, SourceID, StaffID, Symptoms, Diagnosis, ConsultationDate,
          BasePrice, FinalPrice, DiscountApplied, PoliceNotified, TransplantID)
         OUTPUT INSERTED.RecordID
         VALUES
         ({record.HistoryId}, '{sourceTypeStr}', {record.SourceId}, {record.StaffId},
-         {(record.Symptoms != null ? $"'{record.Symptoms}'" : "NULL")},
-         {(record.Diagnosis != null ? $"'{record.Diagnosis}'" : "NULL")},
+         {(record.Symptoms is not null ? $"'{record.Symptoms}'" : "NULL")},
+         {(record.Diagnosis is not null ? $"'{record.Diagnosis}'" : "NULL")},
          '{record.ConsultationDate:yyyy-MM-dd HH:mm:ss}',
          {record.BasePrice}, {record.FinalPrice},
-         {(record.DiscountApplied.HasValue ? record.DiscountApplied.ToString() : "NULL")},
+         {(record.DiscountApplied.HasValue ? record.DiscountApplied.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "NULL")},
          {(record.PoliceNotified ? 1 : 0)},
-         {(record.TransplantId.HasValue ? record.TransplantId.ToString() : "NULL")}
+         {(record.TransplantId.HasValue ? record.TransplantId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "NULL")}
         )";
 
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        {
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    return Convert.ToInt32(reader["RecordID"]);
-                }
+                return Convert.ToInt32(reader.GetOrdinal("RecordID"));
             }
-            throw new Exception("Failed to insert MedicalRecord.");
         }
 
-        public void Update(MedicalRecord record) // RP16
-        {
-            // ID range validation
-            if (record.Id <= 0 || record.HistoryId <= 0 || record.StaffId <= 0)
-                throw new ArgumentException("Id, HistoryId and StaffId must be greater than 0.");
+        throw new DatabaseException("Failed to insert MedicalRecord.");
+    }
 
-            // Verify historyId exists to prevent orphaned records
-            string checkQuery = $"SELECT COUNT(*) FROM MedicalHistory WHERE HistoryID={record.HistoryId}";
-            using (SqlDataReader reader = _context.ExecuteQuery(checkQuery))
+    public void Update(MedicalRecord record) // RP16
+    {
+        if (record is null)
+        {
+            throw new ArgumentNullException(nameof(record), "MedicalRecord cannot be null.");
+        }
+
+        // ID range validation
+        if (record.Id <= 0 || record.HistoryId <= 0 || record.StaffId <= 0)
+        {
+            throw new ArgumentException("Id, HistoryId and StaffId must be greater than 0.");
+        }
+
+        // Verify historyId exists to prevent orphaned records
+        string checkQuery = $"SELECT COUNT(*) FROM MedicalHistory WHERE HistoryID={record.HistoryId}";
+        using (SqlDataReader reader = _context.ExecuteQuery(checkQuery))
+        {
+            if (reader.Read() && reader.GetInt32(0) == 0)
             {
-                if (reader.Read() && Convert.ToInt32(reader[0]) == 0)
-                    throw new KeyNotFoundException($"No MedicalHistory found with ID={record.HistoryId}.");
+                throw new KeyNotFoundException($"No MedicalHistory found with ID={record.HistoryId}.");
             }
-
-            string query = $"UPDATE MedicalRecord SET " +
-                           $"Symptoms = {(record.Symptoms != null ? $"'{record.Symptoms}'" : "NULL")}, " +
-                           $"Diagnosis = {(record.Diagnosis != null ? $"'{record.Diagnosis}'" : "NULL")}, " +
-                           $"BasePrice = {record.BasePrice}, " +
-                           $"FinalPrice = {record.FinalPrice}, " +
-                           $"DiscountApplied = {(record.DiscountApplied.HasValue ? record.DiscountApplied.ToString() : "NULL")}, " +
-                           $"PoliceNotified = {(record.PoliceNotified ? 1 : 0)}, " +
-                           $"TransplantID = {(record.TransplantId.HasValue ? record.TransplantId.ToString() : "NULL")} " +
-                           $"WHERE RecordID = {record.Id}";
-            _context.ExecuteNonQuery(query);
         }
 
-        public void Delete(int id) // RP16
-        {
-            // Void associated prescription before deleting the record
-            // A prescription cannot exist without its parent consultation
-            string deletePrescription = $"DELETE FROM Prescription WHERE RecordID={id}";
-            _context.ExecuteNonQuery(deletePrescription);
+        string query = "UPDATE MedicalRecord SET "
+            + $"Symptoms = {(record.Symptoms is not null ? $"'{record.Symptoms}'" : "NULL")}, "
+            + $"Diagnosis = {(record.Diagnosis is not null ? $"'{record.Diagnosis}'" : "NULL")}, "
+            + $"BasePrice = {record.BasePrice}, "
+            + $"FinalPrice = {record.FinalPrice}, "
+            + $"DiscountApplied = {(record.DiscountApplied.HasValue ? record.DiscountApplied.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "NULL")}, "
+            + $"PoliceNotified = {(record.PoliceNotified ? 1 : 0)}, "
+            + $"TransplantID = {(record.TransplantId.HasValue ? record.TransplantId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "NULL")} "
+            + $"WHERE RecordID = {record.Id}";
+        _ = _context.ExecuteNonQuery(query);
+    }
 
-            string query = $"DELETE FROM MedicalRecord WHERE RecordID={id}";
-            _context.ExecuteNonQuery(query);
+    public void Delete(int id) // RP16
+    {
+        // Void associated prescription before deleting the record
+        // A prescription cannot exist without its parent consultation
+        string deletePrescription = $"DELETE FROM Prescription WHERE RecordID={id}";
+        _ = _context.ExecuteNonQuery(deletePrescription);
+
+        string query = $"DELETE FROM MedicalRecord WHERE RecordID={id}";
+        _ = _context.ExecuteNonQuery(query);
+    }
+
+    public int GetERVisitCount(int patientId, DateTime fromDate) // RP17
+    {
+        string query = "SELECT COUNT(*) FROM MedicalRecord mr "
+            + "JOIN MedicalHistory mh ON mr.HistoryID = mh.HistoryID "
+            + $"WHERE mh.PatientID = {patientId} "
+            + "AND mr.SourceType = 'ER Visit' "
+            + $"AND mr.ConsultationDate >= '{fromDate:yyyy-MM-dd}'";
+        using SqlDataReader reader = _context.ExecuteQuery(query);
+        if (reader.Read())
+        {
+            return Convert.ToInt32(reader, System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        public int GetERVisitCount(int patientId, DateTime fromDate)//RP17
+        return 0;
+    }
+
+    private static MedicalRecord MapToMedicalRecord(SqlDataReader reader)
+    {
+        // Convert database string values to enum
+        // Database stores: 'ER Visit' → ER, 'Appointment' → App
+        string sourceTypeStr = reader["SourceType"].ToString()!;
+        SourceType sourceType = sourceTypeStr switch
         {
-            string query = $"SELECT COUNT(*) FROM MedicalRecord mr " +
-                           $"JOIN MedicalHistory mh ON mr.HistoryID = mh.HistoryID " +
-                           $"WHERE mh.PatientID = {patientId} " +
-                           $"AND mr.SourceType = 'ER Visit' " +
-                           $"AND mr.ConsultationDate >= '{fromDate:yyyy-MM-dd}'";
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            "ER Visit" => SourceType.ER,
+            "Appointment" => SourceType.App,
+            "Admin" => SourceType.Admin,
+            _ => throw new InvalidOperationException($"Unknown SourceType value in database: {sourceTypeStr}"),
+        };
+
+        return new MedicalRecord
+        {
+            Id = reader.GetInt32(reader.GetOrdinal("RecordID")),
+            HistoryId = reader.GetInt32(reader.GetOrdinal("HistoryID")),
+            SourceType = sourceType,
+            SourceId = reader.GetInt32(reader.GetOrdinal("SourceID")),
+            StaffId = reader.GetInt32(reader.GetOrdinal("StaffID")),
+
+            Symptoms = reader["Symptoms"] as string,
+            Diagnosis = reader["Diagnosis"] as string,
+
+            ConsultationDate = reader.GetDateTime(reader.GetOrdinal("ConsultationDate")),
+            PrescriptionId = null,
+
+            BasePrice = reader.GetDecimal(reader.GetOrdinal("BasePrice")),
+            FinalPrice = reader.GetDecimal(reader.GetOrdinal("FinalPrice")),
+
+            DiscountApplied = reader.IsDBNull(reader.GetOrdinal("DiscountApplied"))
+                      ? null
+                      : reader.GetInt32(reader.GetOrdinal("DiscountApplied")),
+
+            PoliceNotified = reader.GetBoolean(reader.GetOrdinal("PoliceNotified")),
+
+            TransplantId = reader.IsDBNull(reader.GetOrdinal("TransplantID"))
+                   ? null
+                   : reader.GetInt32(reader.GetOrdinal("TransplantID")),
+        };
+    }
+
+
+
+    // added things from MedicalRecord ENtity
+
+    public Prescription? GetPrescription(int recordId) // getPrescription()
+    {
+        // PrescriptionRepository will own the full mapping,
+        // but MedicalRecord needs basic navigation — we do a lightweight fetch here
+        string query = $"SELECT * FROM Prescription WHERE RecordID={recordId}";
+        using SqlDataReader reader = _context.ExecuteQuery(query);
+        if (reader.Read())
+        {
+            return new Prescription
             {
-                if (reader.Read())
-                    return Convert.ToInt32(reader[0]);
-            }
-            return 0;
-        }
-
-        private MedicalRecord MapToMedicalRecord(SqlDataReader reader)
-        {
-            // Convert database string values to enum
-            // Database stores: 'ER Visit' → ER, 'Appointment' → App
-            string sourceTypeStr = reader["SourceType"].ToString()!;
-            SourceType sourceType = sourceTypeStr switch
-            {
-                "ER Visit" => SourceType.ER,
-                "Appointment" => SourceType.App,
-                "Admin" => SourceType.Admin,
-                _ => throw new InvalidOperationException($"Unknown SourceType value in database: {sourceTypeStr}")
+                Id = Convert.ToInt32(reader.GetOrdinal("PrescriptionID")),
+                RecordId = Convert.ToInt32(reader.GetOrdinal("RecordID")),
+                DoctorNotes = reader["DoctorNotes"]?.ToString(),
+                Date = reader.GetDateTime(reader.GetOrdinal("Date")),
             };
-
-            return new MedicalRecord
-            {
-                Id = Convert.ToInt32(reader["RecordID"]),
-                HistoryId = Convert.ToInt32(reader["HistoryID"]),
-                SourceType = sourceType,
-                SourceId = Convert.ToInt32(reader["SourceID"]),
-                StaffId = Convert.ToInt32(reader["StaffID"]),
-                Symptoms = reader["Symptoms"]?.ToString(),
-                Diagnosis = reader["Diagnosis"]?.ToString(),
-                ConsultationDate = Convert.ToDateTime(reader["ConsultationDate"]),
-                PrescriptionId = null, // Prescription.RecordID references MedicalRecord, not the other way around
-                BasePrice = Convert.ToDecimal(reader["BasePrice"]),
-                FinalPrice = Convert.ToDecimal(reader["FinalPrice"]),
-                DiscountApplied = reader["DiscountApplied"] == DBNull.Value
-                                  ? (int?)null
-                                  : Convert.ToInt32(reader["DiscountApplied"]),
-                PoliceNotified = Convert.ToBoolean(reader["PoliceNotified"]),
-                TransplantId = reader["TransplantID"] == DBNull.Value
-                               ? (int?)null
-                               : Convert.ToInt32(reader["TransplantID"])
-            };
         }
 
+        return null;
+    }
 
-
-        // added things from MedicalRecord ENtity
-
-        public Prescription? GetPrescription(int recordId) // getPrescription()
+    public int? GetConsultingStaffId(int recordId) // getConsultingStaff()
+    {
+        // Staff details live in an external module (StaffProxy handles the full object).
+        // The repo's job is just to return the StaffID so the service/proxy can fetch the rest.
+        string query = $"SELECT StaffID FROM MedicalRecord WHERE RecordID={recordId}";
+        using SqlDataReader reader = _context.ExecuteQuery(query);
+        if (reader.Read())
         {
-            // PrescriptionRepository will own the full mapping,
-            // but MedicalRecord needs basic navigation — we do a lightweight fetch here
-            string query = $"SELECT * FROM Prescription WHERE RecordID={recordId}";
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                if (reader.Read())
-                {
-                    return new Prescription
-                    {
-                        Id = Convert.ToInt32(reader["PrescriptionID"]),
-                        RecordId = Convert.ToInt32(reader["RecordID"]),
-                        DoctorNotes = reader["DoctorNotes"]?.ToString(),
-                        Date = Convert.ToDateTime(reader["Date"])
-                    };
-                }
-            }
-            return null;
+            return Convert.ToInt32(reader.GetOrdinal("StaffID"));
         }
 
-        public int? GetConsultingStaffId(int recordId) // getConsultingStaff()
+        return null;
+    }
+
+
+    public List<MedicalRecord> GetAll() // for statistics service
+    {
+        _context.EnsureConnectionOpen();
+        var records = new List<MedicalRecord>();
+        string query = $"SELECT * FROM MedicalRecord";
+        using (SqlDataReader reader = _context.ExecuteQuery(query))
         {
-            // Staff details live in an external module (StaffProxy handles the full object).
-            // The repo's job is just to return the StaffID so the service/proxy can fetch the rest.
-            string query = $"SELECT StaffID FROM MedicalRecord WHERE RecordID={recordId}";
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
+            while (reader.Read())
             {
-                if (reader.Read())
-                    return Convert.ToInt32(reader["StaffID"]);
+                records.Add(MapToMedicalRecord(reader));
             }
-            return null;
         }
 
-
-        public List<MedicalRecord> GetAll() //for statistics service
-        {
-            _context.EnsureConnectionOpen();
-            List<MedicalRecord> records = new List<MedicalRecord>();
-            string query = $"SELECT * FROM MedicalRecord";
-            using (SqlDataReader reader = _context.ExecuteQuery(query))
-            {
-                while (reader.Read())
-                {
-                    records.Add(MapToMedicalRecord(reader));
-                }
-            }
-            return records;
-        }
+        return records;
     }
 }
