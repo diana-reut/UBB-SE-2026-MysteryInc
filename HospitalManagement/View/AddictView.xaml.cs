@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace HospitalManagement.View
 {
-    public sealed partial class AddictView : UserControl
+    internal sealed partial class AddictView : UserControl
     {
         public ViewModel.AddictViewModel ViewModel { get; set; }
 

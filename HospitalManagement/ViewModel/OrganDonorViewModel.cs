@@ -11,7 +11,7 @@ using HospitalManagement.Service;
 
 namespace HospitalManagement.ViewModel
 {
-    public class OrganDonorViewModel : INotifyPropertyChanged
+    internal class OrganDonorViewModel : INotifyPropertyChanged
     {
         private readonly TransplantService _transplantService;
         private readonly PatientRepository _patientRepo;

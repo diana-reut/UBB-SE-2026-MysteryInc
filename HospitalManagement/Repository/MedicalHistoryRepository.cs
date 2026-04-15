@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace HospitalManagement.Repository;
 
-public class MedicalHistoryRepository
+internal class MedicalHistoryRepository
 {
     private readonly HospitalDbContext _context; // RP 12
 

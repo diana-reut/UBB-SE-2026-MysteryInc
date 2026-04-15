@@ -19,7 +19,7 @@ namespace HospitalManagement.View
             this.InitializeComponent();
             ViewModel = new MedicalStaffViewModel();
 
-            if (this.Content is FrameworkElement rootElement)
+            if (Content is FrameworkElement rootElement)
             {
                 rootElement.DataContext = ViewModel;
             }

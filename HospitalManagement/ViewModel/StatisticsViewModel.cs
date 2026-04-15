@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace HospitalManagement.ViewModel
 {
-    public class StatisticsViewModel : INotifyPropertyChanged
+    internal class StatisticsViewModel : INotifyPropertyChanged
     {
         private readonly StatisticsService _statisticsService;
         public event PropertyChangedEventHandler? PropertyChanged;

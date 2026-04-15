@@ -7,7 +7,7 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Service
 {
-    public class TransplantService
+    internal class TransplantService
     {
         private readonly TransplantRepository _transplantRepo;
         private readonly PatientRepository _patientRepo;
