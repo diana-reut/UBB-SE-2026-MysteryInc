@@ -80,7 +80,7 @@ namespace HospitalManagement.ViewModel
                 {
                     try
                     {
-                        BasePrice = _billingService.computeBasePrice(SelectedPatient.Id, _selectedMedicalRecord.Id);
+                        BasePrice = _billingService.ComputeBasePrice(SelectedPatient.Id, _selectedMedicalRecord.Id);
                         FinalPrice = _selectedMedicalRecord.FinalPrice > 0 ? _selectedMedicalRecord.FinalPrice : BasePrice;
                         DiscountApplied = _selectedMedicalRecord.DiscountApplied.HasValue;
                     }
