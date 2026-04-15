@@ -10,7 +10,7 @@ using HospitalManagement.Integration;
 namespace HospitalManagement.Repository;
 
 
-public class PatientRepository
+internal class PatientRepository
 {
     private readonly HospitalDbContext _context;
 

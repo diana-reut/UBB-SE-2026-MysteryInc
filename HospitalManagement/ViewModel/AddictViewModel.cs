@@ -7,7 +7,7 @@ using HospitalManagement.Service;
 
 namespace HospitalManagement.ViewModel
 {
-    public class AddictViewModel
+    internal class AddictViewModel
     {
         private readonly AddictDetectionService _addictDetectionService;
 
@@ -16,7 +16,7 @@ namespace HospitalManagement.ViewModel
         public AddictViewModel(AddictDetectionService addictDetectionService)
         {
             _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
-            
+
             AddictCandidates = new ObservableCollection<Patient>();
             
             LoadAddicts();
@@ -53,22 +53,24 @@ namespace HospitalManagement.ViewModel
 
         public string GetPoliceReportMessage(int patientId)
         {
-            var targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
+            Patient? targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
 
-            if (targetPatient == null) 
+            if (targetPatient is null)
+            {
                 return "Error: Patient not found in the current flagged list.";
+            }
 
             return _addictDetectionService.BuildPoliceReport(targetPatient);
         }
 
         public void RemoveFlaggedPatient(int patientId)
         {
-            var targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
+            Patient? targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
             
             if (targetPatient != null)
             {
                 AddictCandidates.Remove(targetPatient);
-                
+
                 // pe viitor, daca se cere la backend, aici am putea schimba starea in baza de date ca ex: "Reported = true"
             }
         }

@@ -5,7 +5,7 @@ using System;
 
 namespace HospitalManagement.Integration.PatientObserver;
 
-public class PatientSyncObserver : IPatientObserver
+internal class PatientSyncObserver : IPatientObserver
 {
     private readonly PatientService _patientService;
 

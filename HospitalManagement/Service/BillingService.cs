@@ -6,7 +6,7 @@ using HospitalManagement.Entity;
 
 namespace HospitalManagement.Service;
 
-public class BillingService
+internal class BillingService
 {
     private readonly MedicalHistoryRepository _historyRepo;
     private readonly MedicalRecordRepository _recordRepo;

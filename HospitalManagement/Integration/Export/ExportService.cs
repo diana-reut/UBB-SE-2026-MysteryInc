@@ -4,7 +4,7 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Integration.Export;
 
-public class ExportService
+internal class ExportService
 {
     private readonly PDFGenerator _pdfGen;
     private readonly MedicalRecordRepository _recordRepo;

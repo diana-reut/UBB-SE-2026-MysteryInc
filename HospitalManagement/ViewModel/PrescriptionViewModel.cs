@@ -9,7 +9,7 @@ using HospitalManagement.Service;
 
 namespace HospitalManagement.ViewModel
 {
-    public class PrescriptionViewModel
+    internal class PrescriptionViewModel
     {
       
         private readonly PrescriptionService _prescriptionService;

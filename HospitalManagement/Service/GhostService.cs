@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HospitalManagement.Service;
 
-public class GhostService
+public sealed class GhostService
 {
     private static readonly GhostService ServiceInstance = new();
 

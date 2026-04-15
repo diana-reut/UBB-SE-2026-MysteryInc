@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace HospitalManagement.ViewModel
 {
-    public class AdminViewModel : INotifyPropertyChanged
+    internal class AdminViewModel : INotifyPropertyChanged
     {
         private string _currentView;
 

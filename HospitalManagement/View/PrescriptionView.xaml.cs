@@ -5,7 +5,7 @@ using System;
 
 namespace HospitalManagement.View
 {
-    public sealed partial class PrescriptionView : UserControl
+    internal sealed partial class PrescriptionView : UserControl
     {
         public ViewModel.PrescriptionViewModel ViewModel { get; set; }
 

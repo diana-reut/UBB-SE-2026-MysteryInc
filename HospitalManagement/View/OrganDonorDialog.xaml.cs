@@ -6,7 +6,7 @@ using System;
 
 namespace HospitalManagement.View
 {
-    public sealed partial class OrganDonorDialog : ContentDialog
+    internal sealed partial class OrganDonorDialog : ContentDialog
     {
         public OrganDonorViewModel ViewModel { get; private set; }
 

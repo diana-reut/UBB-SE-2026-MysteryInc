@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace HospitalManagement.ViewModel
 {
-    public class PatientViewModel : INotifyPropertyChanged
+    internal class PatientViewModel : INotifyPropertyChanged
     {
         private readonly PatientService _patientService;
         private readonly ExportService _exportService;
