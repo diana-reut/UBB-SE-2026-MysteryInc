@@ -1,19 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HospitalManagement.Entity.Enums;
 
-namespace HospitalManagement.Entity.DTOs
+namespace HospitalManagement.Entity.DTOs;
+
+public class RecordDTO
 {
-    public class RecordDTO
-    {
-        public int ExternalRecordId { get; set; }
-        public string Symptoms { get; set; } = string.Empty;
-        public string TemporaryDiagnosis { get; set; } = string.Empty;
-        public string PrescribedMeds { get; set; } = string.Empty;
-        public DateTime ConsultationDate { get; set; }
-        public SourceType SourceType { get; set; }
-    }
+    public int ExternalRecordId { get; set; }
+
+    public string Symptoms { get; set; } = "";
+
+    public string TemporaryDiagnosis { get; set; } = "";
+
+    public string PrescribedMeds { get; set; } = "";
+
+    public DateTime ConsultationDate { get; set; }
+
+    public SourceType SourceType { get; set; }
 }

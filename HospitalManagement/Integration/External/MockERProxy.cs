@@ -1,51 +1,46 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HospitalManagement.Entity.DTOs;
 using HospitalManagement.Entity.Enums;
 
-namespace HospitalManagement.Integration.External
+namespace HospitalManagement.Integration.External;
+
+public class MockERProxy : IExternalProvider
 {
-    public class MockERProxy : IExternalProvider
+    private readonly ExternalPatientPublisher _publisher;
+
+    public MockERProxy(ExternalPatientPublisher publisher)
     {
-        private readonly ExternalPatientPublisher _publisher;
+        _publisher = publisher;
+    }
 
-        public MockERProxy(ExternalPatientPublisher publisher)
+    public ExternalPatientDTO FetchPatientById(int patientId)
+    {
+        return new ExternalPatientDTO
         {
-            _publisher = publisher;
-        }
+            CNP = "1990101123456",
+            FirstName = "John",
+            LastName = "Doe",
+            Sex = Sex.M,
+            EmergencyTimestamp = DateTime.Now,
+            Injury = "Broken arm",
+        };
+    }
 
-        public ExternalPatientDTO FetchPatientById(int patientId)
+    public RecordDTO FetchRecordByPatientId(int patientId)
+    {
+        return new RecordDTO
         {
-            return new ExternalPatientDTO
-            {
-                CNP = "1990101123456",
-                FirstName = "John",
-                LastName = "Doe",
-                Sex = Sex.M,
-                EmergencyTimestamp = DateTime.Now,
-                Injury = "Broken arm"
-            };
-        }
+            ExternalRecordId = patientId,
+            Symptoms = "Pain in left arm",
+            TemporaryDiagnosis = "Suspected fracture",
+            PrescribedMeds = "Ibuprofen 400mg",
+            ConsultationDate = DateTime.Now,
+            SourceType = SourceType.ER,
+        };
+    }
 
-        public RecordDTO FetchRecordByPatientId(int patientId)
-        {
-            return new RecordDTO
-            {
-                ExternalRecordId = patientId,
-                Symptoms = "Pain in left arm",
-                TemporaryDiagnosis = "Suspected fracture",
-                PrescribedMeds = "Ibuprofen 400mg",
-                ConsultationDate = DateTime.Now,
-                SourceType = SourceType.ER
-            };
-        }
-
-        public void OnNewPatientDetected(ExternalPatientDTO dto)
-        {
-            _publisher.Notify(dto);
-        }
+    public void OnNewPatientDetected(ExternalPatientDTO dto)
+    {
+        _publisher.Notify(dto);
     }
 }

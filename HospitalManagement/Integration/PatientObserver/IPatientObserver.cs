@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HospitalManagement.Entity.DTOs;
+﻿using HospitalManagement.Entity.DTOs;
 
-namespace HospitalManagement.Integration.PatientObserver
+namespace HospitalManagement.Integration.PatientObserver;
+
+public interface IPatientObserver
 {
-    public interface IPatientObserver
-    {
-        void OnNewExternalPatient(ExternalPatientDTO newPatientData);
-    }
+    public void OnNewExternalPatient(ExternalPatientDTO newPatientData);
 }

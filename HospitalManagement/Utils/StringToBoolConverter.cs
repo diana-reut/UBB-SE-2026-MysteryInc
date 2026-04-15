@@ -1,27 +1,22 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
-namespace HospitalManagement.Utils
+namespace HospitalManagement.Utils;
+
+public class StringToBoolConverter : IValueConverter
 {
-    public class StringToBoolConverter : IValueConverter
+    public object Convert(object value, Type targetType, object parameter, string language)
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
+        if (value is string str)
         {
-            if (value is string str)
-            {
-                return !string.IsNullOrEmpty(str);
-            }
-            return false;
+            return !string.IsNullOrEmpty(str);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            throw new NotImplementedException();
-        }
+        return false;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new MyNotImplementedException();
     }
 }

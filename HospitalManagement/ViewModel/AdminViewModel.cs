@@ -486,7 +486,7 @@ namespace HospitalManagement.ViewModel
                 else
                 {
                     // If it contains letters, map to the namePart field
-                    filter.namePart = SearchQuery;
+                    filter.NamePart = SearchQuery;
                 }
             }
 
@@ -532,9 +532,9 @@ namespace HospitalManagement.ViewModel
                 // 2. Map values to the filter
                 var filter = new PatientFilter
                 {
-                    minAge = (int?)MinAge,
-                    maxAge = (int?)MaxAge,
-                    sex = finalSexEnum // Now the types match perfectly!
+                    MinAge = (int?)MinAge,
+                    MaxAge = (int?)MaxAge,
+                    Sex = finalSexEnum // Now the types match perfectly!
                 };
 
                 // 3. Re-apply SearchQuery with the "13-digit shield"
@@ -546,7 +546,7 @@ namespace HospitalManagement.ViewModel
                     }
                     else
                     {
-                        filter.namePart = SearchQuery;
+                        filter.NamePart = SearchQuery;
                     }
                 }
 

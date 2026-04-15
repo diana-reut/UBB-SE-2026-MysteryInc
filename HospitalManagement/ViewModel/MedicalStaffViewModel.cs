@@ -103,7 +103,7 @@ namespace HospitalManagement.ViewModel
             }
             else
             {
-                filter.namePart = SearchQuery;
+                filter.NamePart = SearchQuery;
             }
 
             try
