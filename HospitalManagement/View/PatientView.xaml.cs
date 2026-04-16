@@ -1,96 +1,97 @@
 using System;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using HospitalManagement.ViewModel;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.Database;
-using HospitalManagement.Entity;
 using HospitalManagement.Integration.Export;
 
-namespace HospitalManagement.View
+namespace HospitalManagement.View;
+
+internal sealed partial class PatientView : Window, IDisposable
 {
-    public sealed partial class PatientView : Window, IDisposable
+    private readonly PatientViewModel _viewModel;
+    private readonly HospitalDbContext _dbContext;
+    private readonly Action _goBackCallback;
+
+    public PatientView(int patientId, Action goBackCallback)
     {
-        private PatientViewModel _viewModel;
-        private HospitalDbContext _dbContext;
-        private Action _goBackCallback;
+        InitializeComponent();
 
-        public PatientView(int patientId, Action goBackCallback)
+        // 1. Maximize Logic
+        nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        if (appWindow.Presenter is OverlappedPresenter presenter)
         {
-            this.InitializeComponent();
+            presenter.Maximize();
+        }
 
-            // 1. Maximize Logic
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
-            var appWindow = AppWindow.GetFromWindowId(windowId);
-            if (appWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.Maximize();
-            }
+        _goBackCallback = goBackCallback;
 
-            _goBackCallback = goBackCallback;
+        // 2. Dependency Injection
+        _dbContext = new HospitalDbContext();
+        var pRepo = new PatientRepository(_dbContext);
+        var hRepo = new MedicalHistoryRepository(_dbContext);
+        var rRepo = new MedicalRecordRepository(_dbContext);
+        var prescRepo = new PrescriptionRepository(_dbContext);
+        var tRepo = new TransplantRepository(_dbContext);
+        var service = new PatientService(pRepo, hRepo, rRepo, prescRepo);
+        var pdfGen = new PDFGenerator();
+        var exportService = new ExportService(pdfGen, rRepo, prescRepo, pRepo, hRepo);
+        var billingService = new BillingService(hRepo, rRepo, prescRepo, tRepo);
 
-            // 2. Dependency Injection
-            _dbContext = new HospitalDbContext();
-            var pRepo = new PatientRepository(_dbContext);
-            var hRepo = new MedicalHistoryRepository(_dbContext);
-            var rRepo = new MedicalRecordRepository(_dbContext);
-            var prescRepo = new PrescriptionRepository(_dbContext);
-            var tRepo = new TransplantRepository(_dbContext);
-            var service = new PatientService(pRepo, hRepo, rRepo, prescRepo);
-            var pdfGen = new PDFGenerator();
-            var exportService = new ExportService(pdfGen, rRepo, prescRepo, pRepo, hRepo);
-            var billingService = new BillingService(hRepo, rRepo, prescRepo, tRepo);
-
-            // 3. Initialize ViewModel
-            _viewModel = new PatientViewModel(service, exportService, billingService);
-            _viewModel.GoBackAction = GoBack;
-            
+        // 3. Initialize ViewModel
+        _viewModel = new PatientViewModel(service, exportService, billingService)
+        {
+            GoBackAction = GoBack,
             // 4. Set up Roulette Dialog handler
-            _viewModel.OpenRouletteAction = async (basePrice, onComplete) =>
-            {
-                var rouletteDialog = new DiscountRouletteDialog();
-                rouletteDialog.XamlRoot = this.Content.XamlRoot;
-                rouletteDialog.Initialize(basePrice);
-                rouletteDialog.OnSpinComplete = onComplete;
-                await rouletteDialog.ShowAsync();
-            };
+            OpenRouletteAction = async (basePrice, onComplete) =>
+                {
+                    var rouletteDialog = new DiscountRouletteDialog
+                    {
+                        XamlRoot = Content.XamlRoot,
+                    };
+                    rouletteDialog.Initialize(basePrice);
+                    rouletteDialog.OnSpinComplete = onComplete;
+                    _ = await rouletteDialog.ShowAsync();
+                },
 
             // 4b. Set up Prescription Dialog handler
-            _viewModel.OpenPrescriptionDialogAction = async (prescription) =>
-            {
-                var prescriptionDialog = new PrescriptionDialog();
-                prescriptionDialog.XamlRoot = this.Content.XamlRoot;
-                prescriptionDialog.Initialize(prescription);
-                await prescriptionDialog.ShowAsync();
-            };
-            
-            // 5. Set DataContext
-            if (this.Content is FrameworkElement rootElement)
-            {
-                rootElement.DataContext = _viewModel;
-            }
-
-            // 6. Load patient data using ID
-            _viewModel.LoadFullPatientProfile(patientId);
-        }
-
-        private void GoBack()
+            OpenPrescriptionDialogAction = async (prescription) =>
+                {
+                    var prescriptionDialog = new PrescriptionDialog
+                    {
+                        XamlRoot = Content.XamlRoot,
+                    };
+                    prescriptionDialog.Initialize(prescription);
+                    _ = await prescriptionDialog.ShowAsync();
+                },
+        };
+        // 5. Set DataContext
+        if (Content is FrameworkElement rootElement)
         {
-            _goBackCallback?.Invoke();
-            this.Close();
+            rootElement.DataContext = _viewModel;
         }
 
-        private void Window_Closed(object sender, WindowEventArgs args)
-        {
-            Dispose();
-        }
+        // 6. Load patient data using ID
+        _viewModel.LoadFullPatientProfile(patientId);
+    }
 
-        public void Dispose()
-        {
-            _dbContext?.Dispose();
-        }
+    private void GoBack()
+    {
+        _goBackCallback?.Invoke();
+        Close();
+    }
+
+    private void Window_Closed(object sender, WindowEventArgs args)
+    {
+        Dispose();
+    }
+
+    public void Dispose()
+    {
+        _dbContext?.Dispose();
     }
 }

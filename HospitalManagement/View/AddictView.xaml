@@ -103,7 +103,7 @@
                                 </Button>
 
                                 <Button Background="{StaticResource DangerRed}" Foreground="White" Height="40" BorderThickness="0"
-                                        Tag="{x:Bind Id}" Click="OnNotifyPoliceClicked">
+                                        Tag="{x:Bind Id}" Click="OnNotifyPoliceClickedAsync">
                                     <Button.Resources>
                                         <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#C53030"/>
                                         <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
