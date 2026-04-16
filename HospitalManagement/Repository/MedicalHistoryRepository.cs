@@ -3,7 +3,7 @@ using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Globalization;
 
 namespace HospitalManagement.Repository;

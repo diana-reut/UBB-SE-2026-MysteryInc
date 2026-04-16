@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using HospitalManagement.Integration;
 using System.Linq;
 using HospitalManagement.Entity.DTOs;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
