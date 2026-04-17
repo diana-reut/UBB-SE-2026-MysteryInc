@@ -11,7 +11,7 @@ public class PrescriptionService
 {
     private readonly PrescriptionRepository _prescriptionRepository;
 
-    public PrescriptionService(PrescriptionRepository prescriptionRepository)
+    internal PrescriptionService(PrescriptionRepository prescriptionRepository)
     {
         _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
     }

@@ -10,9 +10,9 @@ namespace HospitalManagement.Service;
 internal class AddictDetectionService
 {
     private readonly PrescriptionRepository _prescriptionRepository;
-    private readonly MedicalHistoryRepository _medicalHistoryRepository;
+    private readonly IMedicalHistoryRepository _medicalHistoryRepository;
 
-    public AddictDetectionService(PrescriptionRepository prescriptionRepository, MedicalHistoryRepository medicalHistoryRepository)
+    public AddictDetectionService(PrescriptionRepository prescriptionRepository, IMedicalHistoryRepository medicalHistoryRepository)
     {
         _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
         _medicalHistoryRepository = medicalHistoryRepository ?? throw new ArgumentNullException(nameof(medicalHistoryRepository));

@@ -1,9 +1,13 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
+using System;
 
 namespace HospitalManagement.Database;
 
-public interface IDbContext
+internal interface IDbContext : IDisposable
 {
+    // added this
+    public void EnsureConnectionOpen();
+
     public SqlDataReader ExecuteQuery(string sql);
 
     public int ExecuteNonQuery(string sql);

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 using HospitalManagement.Database;
 using HospitalManagement.Entity;
@@ -10,11 +10,11 @@ using HospitalManagement.Integration;
 namespace HospitalManagement.Repository;
 
 
-internal class PatientRepository
+internal class PatientRepository : IPatientRepository
 {
-    private readonly HospitalDbContext _context;
+    private readonly IDbContext _context;
 
-    public PatientRepository(HospitalDbContext context)
+    public PatientRepository(IDbContext context)
     {
         _context = context;
     }
@@ -362,8 +362,7 @@ internal class PatientRepository
 
     public void Delete(int id)
     {
-        string query = $"DELET FROM Patient WHERE PatientID={id}";
+        string query = $"DELETE FROM Patient WHERE PatientID={id}";
         _ = _context.ExecuteNonQuery(query);
     }
-
 }

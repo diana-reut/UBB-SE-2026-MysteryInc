@@ -9,20 +9,20 @@ namespace HospitalManagement.Service
 {
     internal class TransplantService
     {
-        private readonly TransplantRepository _transplantRepo;
-        private readonly PatientRepository _patientRepo;
-        private readonly MedicalRecordRepository _recordRepo;
+        private readonly ITransplantRepository _transplantRepo;
+        private readonly IPatientRepository _patientRepo;
+        private readonly IMedicalRecordRepository _recordRepo;
         private readonly BloodCompatibilityService _compatibilityService;
 
         // 1. ADDED THE MISSING REPOSITORY TO FIX THE BUG
-        private readonly MedicalHistoryRepository _historyRepo;
+        private readonly IMedicalHistoryRepository _historyRepo;
 
         public TransplantService(
-            TransplantRepository transplantRepo,
-            PatientRepository patientRepo,
-            MedicalRecordRepository recordRepo,
+            ITransplantRepository transplantRepo,
+            IPatientRepository patientRepo,
+            IMedicalRecordRepository recordRepo,
             BloodCompatibilityService compatibilityService,
-            MedicalHistoryRepository historyRepo)
+            IMedicalHistoryRepository historyRepo)
         {
             _transplantRepo = transplantRepo;
             _patientRepo = patientRepo;

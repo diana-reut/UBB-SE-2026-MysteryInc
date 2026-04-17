@@ -10,14 +10,14 @@ internal class ExportService
     private readonly MedicalRecordRepository _recordRepo;
     private readonly PrescriptionRepository _prescriptionRepo;
     private readonly PatientRepository _patientRepo;
-    private readonly MedicalHistoryRepository _historyRepo;
+    private readonly IMedicalHistoryRepository _historyRepo;
 
     public ExportService(
         PDFGenerator pdfGen,
         MedicalRecordRepository recordRepo,
         PrescriptionRepository prescriptionRepo,
         PatientRepository patientRepo,
-        MedicalHistoryRepository historyRepo)
+        IMedicalHistoryRepository historyRepo)
     {
         _pdfGen = pdfGen;
         _recordRepo = recordRepo;

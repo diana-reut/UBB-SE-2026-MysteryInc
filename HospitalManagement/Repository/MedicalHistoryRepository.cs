@@ -3,16 +3,16 @@ using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Globalization;
+using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
-internal class MedicalHistoryRepository
+internal class MedicalHistoryRepository : IMedicalHistoryRepository
 {
-    private readonly HospitalDbContext _context; // RP 12
+    private readonly IDbContext _context; // RP 12
 
-    public MedicalHistoryRepository(HospitalDbContext context)
+    public MedicalHistoryRepository(IDbContext context)
     {
         _context = context;
     }
@@ -140,11 +140,11 @@ internal class MedicalHistoryRepository
             if (reader.Read() && reader["ChronicConditions"] != DBNull.Value)
             {
                 string raw = reader["ChronicConditions"].ToString()!;
-                return new List<string>(raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+                return [.. raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
             }
         }
 
-        return new List<string>();
+        return [];
     }
 
     public List<(Allergy Allergy, string SeverityLevel)> GetAllergiesByHistoryId(int historyId) // getAllergies()
