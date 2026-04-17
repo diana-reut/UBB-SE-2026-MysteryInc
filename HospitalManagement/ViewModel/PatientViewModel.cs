@@ -9,283 +9,339 @@ using HospitalManagement.Service;
 using HospitalManagement.Integration.Export;
 using System.Collections.Generic;
 
-namespace HospitalManagement.ViewModel
+namespace HospitalManagement.ViewModel;
+
+internal class PatientViewModel : INotifyPropertyChanged
 {
-    internal class PatientViewModel : INotifyPropertyChanged
+    private readonly PatientService _patientService;
+    private readonly ExportService? _exportService;
+    private readonly BillingService? _billingService;
+
+    private Patient? _selectedPatient;
+
+    public Patient? SelectedPatient
     {
-        private readonly PatientService _patientService;
-        private readonly ExportService _exportService;
-        private readonly BillingService _billingService;
+        get => _selectedPatient;
 
-        private Patient _selectedPatient;
-        public Patient SelectedPatient
+        set
         {
-            get => _selectedPatient;
-            set
+            _selectedPatient = value;
+            OnPropertyChanged();
+            if (_selectedPatient is not null)
             {
-                _selectedPatient = value;
-                OnPropertyChanged();
-                if (_selectedPatient != null)
+                // Set medical history directly from the patient object
+                MedicalHistory = _selectedPatient.MedicalHistory;
+                // Load medical records and allergies
+                LoadMedicalRecords();
+            }
+        }
+    }
+
+    private MedicalHistory? _medicalHistory;
+
+    public MedicalHistory? MedicalHistory
+    {
+        get => _medicalHistory;
+
+        set
+        {
+            _medicalHistory = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ChronicConditionsFormatted));
+        }
+    }
+
+    public string ChronicConditionsFormatted
+    {
+        get
+        {
+            if (MedicalHistory is null)
+            {
+                return "None";
+            }
+
+            if (MedicalHistory.ChronicConditions is null || MedicalHistory.ChronicConditions.Count == 0)
+            {
+                return "None";
+            }
+
+            return string.Join(", ", MedicalHistory.ChronicConditions);
+        }
+    }
+
+    private ObservableCollection<MedicalRecord>? _medicalRecords;
+
+    public ObservableCollection<MedicalRecord>? MedicalRecords
+    {
+        get => _medicalRecords;
+
+        set
+        {
+            _medicalRecords = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private MedicalRecord? _selectedMedicalRecord;
+
+    public MedicalRecord? SelectedMedicalRecord
+    {
+        get => _selectedMedicalRecord;
+
+        set
+        {
+            _selectedMedicalRecord = value;
+            OnPropertyChanged();
+            // Calculate base price when record is selected
+            if (_selectedMedicalRecord is not null && _billingService is not null && SelectedPatient is not null)
+            {
+                try
                 {
-                    // Set medical history directly from the patient object
-                    MedicalHistory = _selectedPatient.MedicalHistory;
-                    
-                    // Load medical records and allergies
-                    LoadMedicalRecords();
+                    BasePrice = _billingService.ComputeBasePrice(SelectedPatient.Id, _selectedMedicalRecord.Id);
+                    FinalPrice = _selectedMedicalRecord.FinalPrice > 0 ? _selectedMedicalRecord.FinalPrice : BasePrice;
+                    DiscountApplied = _selectedMedicalRecord.DiscountApplied.HasValue;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error calculating base price: {ex.Message}");
                 }
             }
         }
+    }
 
-        private MedicalHistory _medicalHistory;
-        public MedicalHistory MedicalHistory
+    private ObservableCollection<string>? _allergies;
+
+    public ObservableCollection<string>? Allergies
+    {
+        get => _allergies;
+
+        set
         {
-            get => _medicalHistory;
-            set 
-            { 
-                _medicalHistory = value; 
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(ChronicConditionsFormatted));
-            }
+            _allergies = value;
+            OnPropertyChanged();
         }
+    }
 
-        public string ChronicConditionsFormatted
+    private Prescription? _selectedPrescription;
+
+    public Prescription? SelectedPrescription
+    {
+        get => _selectedPrescription;
+
+        set
         {
-            get
+            _selectedPrescription = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private decimal _basePrice;
+
+    public decimal BasePrice
+    {
+        get => _basePrice;
+
+        set
+        {
+            _basePrice = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private decimal _finalPrice;
+
+    public decimal FinalPrice
+    {
+        get => _finalPrice;
+
+        set
+        {
+            _finalPrice = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private bool _discountApplied;
+
+    public bool DiscountApplied
+    {
+        get => _discountApplied;
+
+        set
+        {
+            _discountApplied = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand BackCommand { get; }
+
+    public ICommand ExportRecordCommand { get; }
+
+    public ICommand ViewPrescriptionCommand { get; }
+
+    public ICommand ApplyDiscountCommand { get; }
+
+    public Action? GoBackAction { get; set; }
+
+    public Action<decimal, Action<int, decimal>>? OpenRouletteAction { get; set; }
+
+    public Action<Prescription>? OpenPrescriptionDialogAction { get; set; }
+
+    public PatientViewModel(PatientService patientService, ExportService? exportService = null, BillingService? billingService = null)
+    {
+        _patientService = patientService;
+        _exportService = exportService;
+        _billingService = billingService;
+        MedicalRecords = [];
+        Allergies = [];
+        BackCommand = new RelayCommand(GoBack);
+        ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
+        ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
+        ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
+    }
+
+    public void LoadFullPatientProfile(int id)
+    {
+        try
+        {
+            Patient p = _patientService.GetPatientDetails(id);
+            if (p is not null)
             {
-                if (MedicalHistory == null)
-                    return "None";
-                if (MedicalHistory.ChronicConditions == null || MedicalHistory.ChronicConditions.Count == 0)
-                    return "None";
-                return string.Join(", ", MedicalHistory.ChronicConditions);
-            }
-        }
+                p.MedicalHistory ??= new MedicalHistory();
 
-        private ObservableCollection<MedicalRecord> _medicalRecords;
-        public ObservableCollection<MedicalRecord> MedicalRecords
-        {
-            get => _medicalRecords;
-            set { _medicalRecords = value; OnPropertyChanged(); }
-        }
-
-        private MedicalRecord _selectedMedicalRecord;
-        public MedicalRecord SelectedMedicalRecord
-        {
-            get => _selectedMedicalRecord;
-            set 
-            { 
-                _selectedMedicalRecord = value; 
-                OnPropertyChanged();
-                // Calculate base price when record is selected
-                if (_selectedMedicalRecord != null && _billingService != null && SelectedPatient != null)
+                if (p.MedicalHistory.MedicalRecords is null)
                 {
-                    try
-                    {
-                        BasePrice = _billingService.ComputeBasePrice(SelectedPatient.Id, _selectedMedicalRecord.Id);
-                        FinalPrice = _selectedMedicalRecord.FinalPrice > 0 ? _selectedMedicalRecord.FinalPrice : BasePrice;
-                        DiscountApplied = _selectedMedicalRecord.DiscountApplied.HasValue;
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error calculating base price: {ex.Message}");
-                    }
+                    p.MedicalHistory.MedicalRecords = [];
                 }
+
+                SelectedPatient = p;
             }
         }
-
-        private ObservableCollection<string> _allergies;
-        public ObservableCollection<string> Allergies
+        catch (Exception ex)
         {
-            get => _allergies;
-            set { _allergies = value; OnPropertyChanged(); }
+            // Keep the dummy data if the database completely fails
+            Console.WriteLine(ex);
+        }
+    }
+
+    private void LoadMedicalHistory()
+    {
+        if (SelectedPatient is null)
+        {
+            MedicalHistory = null!;
+            return;
         }
 
-        private Prescription _selectedPrescription;
-        public Prescription SelectedPrescription
+        try
         {
-            get => _selectedPrescription;
-            set { _selectedPrescription = value; OnPropertyChanged(); }
+            // Assuming PatientService has a method to get medical history
+            MedicalHistory = _patientService.GetMedicalHistory(SelectedPatient.Id);
+            Console.WriteLine(MedicalHistory?.Rh);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading medical history: {ex.Message}");
+        }
+    }
+
+    private void LoadMedicalRecords()
+    {
+        if (SelectedPatient is null || MedicalHistory is null)
+        {
+            MedicalRecords?.Clear();
+            Allergies?.Clear();
+            return;
         }
 
-        private decimal _basePrice;
-        public decimal BasePrice
+        try
         {
-            get => _basePrice;
-            set { _basePrice = value; OnPropertyChanged(); }
-        }
-
-        private decimal _finalPrice;
-        public decimal FinalPrice
-        {
-            get => _finalPrice;
-            set { _finalPrice = value; OnPropertyChanged(); }
-        }
-
-        private bool _discountApplied;
-        public bool DiscountApplied
-        {
-            get => _discountApplied;
-            set { _discountApplied = value; OnPropertyChanged(); }
-        }
-
-        public ICommand BackCommand { get; }
-        public ICommand ExportRecordCommand { get; }
-        public ICommand ViewPrescriptionCommand { get; }
-        public ICommand ApplyDiscountCommand { get; }
-
-        public Action GoBackAction { get; set; }
-        public Action<decimal, Action<int, decimal>> OpenRouletteAction { get; set; }
-        public Action<Prescription> OpenPrescriptionDialogAction { get; set; }
-
-        public PatientViewModel(PatientService patientService, ExportService exportService = null, BillingService billingService = null)
-        {
-            _patientService = patientService;
-            _exportService = exportService;
-            _billingService = billingService;
-            MedicalRecords = new ObservableCollection<MedicalRecord>();
-            Allergies = new ObservableCollection<string>();
-            BackCommand = new RelayCommand(GoBack);
-            ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
-            ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
-            ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
-        }
-
-        public void LoadFullPatientProfile(int id)
-        {
-            try
+            List<MedicalRecord> records = _patientService.GetMedicalRecords(MedicalHistory.Id);
+            MedicalRecords?.Clear();
+            foreach (MedicalRecord? record in records.OrderByDescending(r => r.ConsultationDate))
             {
-                var p = _patientService.GetPatientDetails(id);
-                if (p != null)
-                {
-                    if (p.MedicalHistory == null)
-                    {
-                        p.MedicalHistory = new MedicalHistory();
-                    }
-                    if (p.MedicalHistory.MedicalRecords == null)
-                    {
-                        p.MedicalHistory.MedicalRecords = new List<MedicalRecord>();
-                    }
-
-                    SelectedPatient = p;
-                }
+                MedicalRecords?.Add(record);
             }
-            catch (Exception)
+
+            // Load allergies
+            List<string> allergies = _patientService.GetPatientAllergies(SelectedPatient.Id);
+            Allergies?.Clear();
+            foreach (string allergy in allergies)
             {
-                // Keep the dummy data if the database completely fails
+                Allergies?.Add(allergy);
             }
         }
-
-        private void LoadMedicalHistory()
+        catch (Exception ex)
         {
-            if (SelectedPatient == null)
+            System.Diagnostics.Debug.WriteLine($"Error loading medical records: {ex.Message}");
+        }
+    }
+
+    private void GoBack()
+    {
+        GoBackAction?.Invoke();
+    }
+
+    private bool CanExportRecord()
+    {
+        return SelectedMedicalRecord is not null && _exportService is not null;
+    }
+
+    private bool CanViewPrescription()
+    {
+        return SelectedMedicalRecord is not null;
+    }
+
+    private bool CanApplyDiscount()
+    {
+        return SelectedMedicalRecord is not null && !DiscountApplied && _billingService is not null;
+    }
+
+    private void ViewSelectedPrescription()
+    {
+        if (SelectedMedicalRecord is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Prescription? prescription = _patientService.GetPrescriptionByRecordId(SelectedMedicalRecord.Id);
+            if (prescription is null)
             {
-                MedicalHistory = null;
+                System.Diagnostics.Debug.WriteLine($"No prescription found for record {SelectedMedicalRecord.Id}");
                 return;
             }
 
-            try
-            {
-                // Assuming PatientService has a method to get medical history
-                MedicalHistory = _patientService.GetMedicalHistory(SelectedPatient.Id);
-                Console.WriteLine(MedicalHistory.Rh);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading medical history: {ex.Message}");
-            }
+            // Open the prescription dialog
+            OpenPrescriptionDialogAction?.Invoke(prescription);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading prescription: {ex.Message}");
+        }
+    }
+
+    private void ApplyDiscount()
+    {
+        if (SelectedMedicalRecord is null || _billingService is null)
+        {
+            return;
         }
 
-        private void LoadMedicalRecords()
-        {
-            if (SelectedPatient == null || MedicalHistory == null)
-            {
-                MedicalRecords.Clear();
-                Allergies.Clear();
-                return;
-            }
-
-            try
-            {
-                var records = _patientService.GetMedicalRecords(MedicalHistory.Id);
-                
-                MedicalRecords.Clear();
-                foreach (var record in records.OrderByDescending(r => r.ConsultationDate))
-                {
-                    MedicalRecords.Add(record);
-                }
-
-                // Load allergies
-                var allergies = _patientService.GetPatientAllergies(SelectedPatient.Id);
-                Allergies.Clear();
-                foreach (var allergy in allergies)
-                {
-                    Allergies.Add(allergy);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading medical records: {ex.Message}");
-            }
-        }
-
-        private void GoBack()
-        {
-            GoBackAction?.Invoke();
-        }
-
-        private bool CanExportRecord()
-        {
-            return SelectedMedicalRecord != null && _exportService != null;
-        }
-
-        private bool CanViewPrescription()
-        {
-            return SelectedMedicalRecord != null;
-        }
-
-        private bool CanApplyDiscount()
-        {
-            return SelectedMedicalRecord != null && !DiscountApplied && _billingService != null;
-        }
-
-        private void ViewSelectedPrescription()
-        {
-            if (SelectedMedicalRecord == null)
-                return;
-
-            try
-            {
-                Prescription prescription = _patientService.GetPrescriptionByRecordId(SelectedMedicalRecord.Id);
-                if (prescription == null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"No prescription found for record {SelectedMedicalRecord.Id}");
-                    return;
-                }
-
-                // Open the prescription dialog
-                OpenPrescriptionDialogAction?.Invoke(prescription);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading prescription: {ex.Message}");
-            }
-        }
-
-        private void ApplyDiscount()
-        {
-            if (SelectedMedicalRecord == null || _billingService == null)
-                return;
-
-            OpenRouletteAction?.Invoke(BasePrice, (discount, finalPrice) =>
+        OpenRouletteAction?.Invoke(
+            BasePrice,
+            (discount, finalPrice) =>
             {
                 try
                 {
                     // Use BillingService to calculate the final price correctly
                     decimal calculatedFinalPrice = _billingService.ApplyDiscount(BasePrice, discount);
-                    
+
                     // Update the medical record with discount and final price
                     SelectedMedicalRecord.DiscountApplied = discount;
                     SelectedMedicalRecord.FinalPrice = calculatedFinalPrice;
-                    
+
                     // Update the UI
                     FinalPrice = calculatedFinalPrice;
                     DiscountApplied = true;
@@ -298,29 +354,30 @@ namespace HospitalManagement.ViewModel
                     System.Diagnostics.Debug.WriteLine($"Error applying discount: {ex.Message}");
                 }
             });
-        }
+    }
 
-        private void ExportSelectedRecord()
+    private void ExportSelectedRecord()
+    {
+        if (SelectedMedicalRecord is null || _exportService is null)
         {
-            if (SelectedMedicalRecord == null || _exportService == null)
-                return;
-
-            try
-            {
-                _exportService.ExportRecordToPDF(SelectedMedicalRecord.Id);
-                System.Diagnostics.Debug.WriteLine($"Successfully exported record {SelectedMedicalRecord.Id} to PDF");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error exporting record: {ex.Message}");
-            }
+            return;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        try
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _ = _exportService.ExportRecordToPDF(SelectedMedicalRecord.Id);
+            System.Diagnostics.Debug.WriteLine($"Successfully exported record {SelectedMedicalRecord.Id} to PDF");
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error exporting record: {ex.Message}");
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
