@@ -13,9 +13,9 @@ namespace HospitalManagement.ViewModel
 {
     internal class PatientViewModel : INotifyPropertyChanged
     {
-        private readonly PatientService _patientService;
+        private readonly IPatientService _patientService;
         private readonly ExportService _exportService;
-        private readonly BillingService _billingService;
+        private readonly IBillingService _billingService;
 
         private Patient _selectedPatient;
         public Patient SelectedPatient
@@ -136,7 +136,7 @@ namespace HospitalManagement.ViewModel
         public Action<decimal, Action<int, decimal>> OpenRouletteAction { get; set; }
         public Action<Prescription> OpenPrescriptionDialogAction { get; set; }
 
-        public PatientViewModel(PatientService patientService, ExportService exportService = null, BillingService billingService = null)
+        public PatientViewModel(IPatientService patientService, ExportService exportService = null, IBillingService billingService = null)
         {
             _patientService = patientService;
             _exportService = exportService;

@@ -13,7 +13,7 @@ namespace HospitalManagement.ViewModel
 {
     internal class OrganDonorViewModel : INotifyPropertyChanged
     {
-        private readonly TransplantService _transplantService;
+        private readonly ITransplantService _transplantService;
         private readonly PatientRepository _patientRepo;
         private readonly MedicalHistoryRepository _historyRepo;
 
@@ -85,7 +85,7 @@ namespace HospitalManagement.ViewModel
         public Action<int, int, float> OnAssignmentConfirmed { get; set; }
 
         // Constructor
-        public OrganDonorViewModel(TransplantService transplantService, PatientRepository patientRepo, MedicalHistoryRepository historyRepo)
+        public OrganDonorViewModel(ITransplantService transplantService, PatientRepository patientRepo, MedicalHistoryRepository historyRepo)
         {
             _transplantService = transplantService ?? throw new ArgumentNullException(nameof(transplantService));
             _patientRepo = patientRepo ?? throw new ArgumentNullException(nameof(patientRepo));
