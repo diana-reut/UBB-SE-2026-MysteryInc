@@ -7,7 +7,7 @@ using HospitalManagement.Integration.External;
 
 namespace HospitalManagement.Service;
 
-internal class ImportService
+internal class ImportService : IImportService
 {
     private readonly PatientService _patientService;
     private readonly MedicalRecordRepository _recordRepo;

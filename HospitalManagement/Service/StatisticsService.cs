@@ -8,7 +8,7 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Service
 {
-    internal class StatisticsService
+    internal class StatisticsService : IStatisticsService
     {
         private PatientRepository patientRepo;
         private MedicalRecordRepository recordRepo;

@@ -7,7 +7,7 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Service
 {
-    internal class TransplantService
+    internal class TransplantService : ITransplantService
     {
         private readonly TransplantRepository _transplantRepo;
         private readonly PatientRepository _patientRepo;
@@ -34,7 +34,8 @@ namespace HospitalManagement.Service
         public void CreateWaitlistRequest(int receiverId, string organType)
         {
             var receiver = _patientRepo.GetById(receiverId);
-            if (receiver == null) throw new ArgumentException("Receiver not found.");
+            if (receiver == null)
+                throw new ArgumentException("Receiver not found.");
 
             var request = new Transplant
             {
@@ -64,17 +65,22 @@ namespace HospitalManagement.Service
             foreach (var request in waitlist)
             {
                 var receiver = _patientRepo.GetById(request.ReceiverId);
-                if (receiver == null) continue;
+                if (receiver == null)
+                    continue;
 
                 // FIX: Eagerly load the receiver's history
                 receiver.MedicalHistory = _historyRepo.GetByPatientId(receiver.Id);
 
-                if (receiver.MedicalHistory?.BloodType == null || receiver.MedicalHistory.Rh == null) continue;
+                if (receiver.MedicalHistory?.BloodType == null || receiver.MedicalHistory.Rh == null)
+                    continue;
 
-                if (!_compatibilityService.IsBloodMatch(donor.MedicalHistory?.BloodType, receiver.MedicalHistory.BloodType.Value)) continue;
-                if (!_compatibilityService.IsRhMatch(donor.MedicalHistory?.Rh, receiver.MedicalHistory.Rh.Value)) continue;
+                if (!_compatibilityService.IsBloodMatch(donor.MedicalHistory?.BloodType, receiver.MedicalHistory.BloodType.Value))
+                    continue;
+                if (!_compatibilityService.IsRhMatch(donor.MedicalHistory?.Rh, receiver.MedicalHistory.Rh.Value))
+                    continue;
 
-                if (receiver.MedicalHistory.ChronicConditions != null && receiver.MedicalHistory.ChronicConditions.Any()) continue;
+                if (receiver.MedicalHistory.ChronicConditions != null && receiver.MedicalHistory.ChronicConditions.Any())
+                    continue;
 
                 request.CompatibilityScore = CalculatePostMortemScore(donor, receiver);
                 scoredMatches.Add(request);
