@@ -46,7 +46,7 @@ namespace HospitalManagement.ViewModel
         public ICommand NavigateToStatisticsCommand { get; }
 
         private readonly IPatientService _patientService;
-        private readonly GhostService _ghostService;
+        private readonly IGhostService _ghostService;
 
         // --- Ghost logic ---
         private bool _isExorcismAlertVisible;

@@ -7,9 +7,9 @@ namespace HospitalManagement.Integration.PatientObserver;
 
 internal class PatientSyncObserver : IPatientObserver
 {
-    private readonly PatientService _patientService;
+    private readonly IPatientService _patientService;
 
-    public PatientSyncObserver(PatientService patientService)
+    public PatientSyncObserver(IPatientService patientService)
     {
         _patientService = patientService;
     }
