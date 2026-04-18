@@ -3,7 +3,7 @@ using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Entity;
 
-public class MedicalRecord
+internal class MedicalRecord
 {
     public int Id { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace HospitalManagement.Integration.External;
 
-public class ERProxy : IExternalProvider // THIS IS A SKELETON FOR THE NEXT TEAM , ER PART , IN THEIR TEMPORARY LIST LOGIC SHOULD IMPLEMENT THIS
+internal class ERProxy : IExternalProvider // THIS IS A SKELETON FOR THE NEXT TEAM , ER PART , IN THEIR TEMPORARY LIST LOGIC SHOULD IMPLEMENT THIS
 {
     private readonly ExternalPatientPublisher _publisher;
 

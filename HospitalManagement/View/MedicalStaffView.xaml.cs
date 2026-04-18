@@ -10,7 +10,7 @@ using HospitalManagement.Entity;
 
 namespace HospitalManagement.View
 {
-    public sealed partial class MedicalStaffView : Window
+    internal sealed partial class MedicalStaffView : Window
     {
         public MedicalStaffViewModel ViewModel { get; }
 

@@ -40,8 +40,7 @@ namespace HospitalManagement.View
             var prescRepo = new PrescriptionRepository(_dbContext);
             var tRepo = new TransplantRepository(_dbContext);
             var service = new PatientService(pRepo, hRepo, rRepo, prescRepo);
-            var pdfGen = new PDFGenerator();
-            var exportService = new ExportService(pdfGen, rRepo, prescRepo, pRepo, hRepo);
+            var exportService = new ExportService(rRepo, prescRepo, pRepo, hRepo);
             var billingService = new BillingService(hRepo, rRepo, prescRepo, tRepo);
 
             // 3. Initialize ViewModel

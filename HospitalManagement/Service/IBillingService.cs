@@ -2,6 +2,7 @@
 
 internal interface IBillingService
 {
-    decimal ApplyDiscount(decimal basePrice, int discount);
-    decimal ComputeBasePrice(int patientId, int recordId);
+    public decimal ApplyDiscount(decimal basePrice, int discount);
+
+    public decimal ComputeBasePrice(int patientId, int recordId);
 }

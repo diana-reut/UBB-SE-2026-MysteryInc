@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace HospitalManagement.View
 {
-    public sealed partial class AddPatientDialog : ContentDialog
+    internal sealed partial class AddPatientDialog : ContentDialog
     {
         public Patient NewPatient { get; private set; }
 

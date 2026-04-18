@@ -9,13 +9,13 @@ using System.Linq;
 namespace HospitalManagement.View
 {
     // Simple wrapper class for allergy entries
-    public class AllergyEntry
+    internal class AllergyEntry
     {
         public Allergy Allergy { get; set; }
         public string Severity { get; set; }
     }
 
-    public sealed partial class MedicalHistoryDialog : ContentDialog
+    internal sealed partial class MedicalHistoryDialog : ContentDialog
     {
         public MedicalHistory MedicalHistory { get; private set; }
         public bool WasSkipped { get; private set; }

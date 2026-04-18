@@ -357,7 +357,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
             string[] nameParts = Escape(searchString).Trim().Split(separator, StringSplitOptions.RemoveEmptyEntries);
             string searchTerm = searchString;
 
-            var matchingDoctorIds = MockDoctorProvider.GetFakeDoctors()
+            var matchingDoctorIds = MockDoctorProvider.FakeDoctors
                 .Where(d => d.FirstName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
                     || d.LastName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 .Select(d => d.DoctorId)

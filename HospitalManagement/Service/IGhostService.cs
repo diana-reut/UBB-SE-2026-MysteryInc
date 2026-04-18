@@ -1,12 +1,14 @@
 ﻿using System;
 
 namespace HospitalManagement.Service;
-public interface IGhostService
+
+internal interface IGhostService
 {
-    static abstract GhostService Instance { get; }
+    public static abstract GhostService Instance { get; }
 
-    event EventHandler? ExorcismTriggered;
+    public event EventHandler? ExorcismTriggered;
 
-    bool IsExorcismTriggered();
-    void SawAGhost();
+    public bool IsExorcismTriggered();
+
+    public void SawAGhost();
 }

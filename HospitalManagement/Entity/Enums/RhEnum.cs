@@ -1,7 +1,7 @@
 ﻿namespace HospitalManagement.Entity.Enums;
 
-public enum RhEnum
+internal enum RhEnum
 {
-    Positive,
-    Negative,
+    Positive = 0,
+    Negative = 1,
 }
