@@ -261,8 +261,6 @@ internal class AdminViewModel : INotifyPropertyChanged
     // For showing medical history - just pass the patient ID
     public Func<int, Task> ShowMedicalHistoryAction { get; set; }
 
-    public Func<int, Task>? ShowMedicalHistoryAction { get; set; }
-
     // --- Commands bound to the View Buttons ---
     public ICommand LoadAllPatientsCommand { get; }
 

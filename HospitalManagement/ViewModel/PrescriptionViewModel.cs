@@ -47,7 +47,7 @@ internal class PrescriptionViewModel
         Prescriptions.Clear();
         InfoMessage = "";
 
-        List<DoctorDTO> fakeDoctors = MockDoctorProvider.GetFakeDoctors();
+        List<DoctorDTO> fakeDoctors = MockDoctorProvider.FakeDoctors;
         var random = new Random();
 
         bool hasActiveFilter =

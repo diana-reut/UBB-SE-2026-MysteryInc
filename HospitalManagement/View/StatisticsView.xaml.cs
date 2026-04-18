@@ -14,15 +14,16 @@ namespace HospitalManagement.View;
 
 internal sealed partial class StatisticsWindow : Window, IDisposable
 {
-    internal sealed partial class StatisticsWindow : Window
-    {
-        private IDbContext _dbContext;
-        private IStatisticsService _statisticsService;
-        private string _currentStatistic;
+    private readonly IDbContext _dbContext;
+    private readonly IStatisticsService _statisticsService;
+    private string _currentStatistic;
+    private readonly bool _ownsDbContext;
 
-        public StatisticsWindow(IDbContext dbContext = null)
-        {
-            this.InitializeComponent();
+    public StatisticsWindow(IDbContext dbContext)
+    {
+        InitializeComponent();
+
+        _currentStatistic = "";
 
         // Use provided context or create new one
         if (dbContext is null)
@@ -212,19 +213,19 @@ internal sealed partial class StatisticsWindow : Window, IDisposable
 
             Axis[] xAxes = [
                 new Axis
-                {
-                    Labels = validatedData.Keys.ToArray(),
-                    LabelsRotation = 15,
-                },
-            ];
+            {
+                Labels = validatedData.Keys.ToArray(),
+                LabelsRotation = 15,
+            },
+        ];
 
             var series = new ISeries[]
             {
                 new ColumnSeries<int>
-                {
-                    Name = "Diagnoses",
-                    Values = validatedData.Values.ToArray(),
-                },
+                    {
+                        Name = "Diagnoses",
+                        Values = validatedData.Values.ToArray(),
+                    },
             };
 
             CartesianChartControl.XAxes = xAxes;
@@ -260,18 +261,18 @@ internal sealed partial class StatisticsWindow : Window, IDisposable
             Axis[] xAxes =
             [
                 new Axis
-                {
-                    Labels = validatedData.Keys.ToArray(),
-                },
-            ];
+            {
+                Labels = validatedData.Keys.ToArray(),
+            },
+        ];
 
             var series = new ISeries[]
             {
                 new ColumnSeries<int>
-                {
-                    Name = "Prescriptions",
-                    Values = validatedData.Values.ToArray(),
-                },
+                    {
+                        Name = "Prescriptions",
+                        Values = validatedData.Values.ToArray(),
+                    },
             };
 
             CartesianChartControl.XAxes = xAxes;
@@ -316,18 +317,18 @@ internal sealed partial class StatisticsWindow : Window, IDisposable
 
                 Axis[] xAxes = [
                     new Axis
-                    {
-                        Labels = validatedAgeData.Keys.ToArray(),
-                    },
-                ];
+                {
+                    Labels = validatedAgeData.Keys.ToArray(),
+                },
+            ];
 
                 var series = new ISeries[]
                 {
                     new ColumnSeries<int>
-                    {
-                        Name = "Patients",
-                        Values = validatedAgeData.Values.ToArray(),
-                    },
+                        {
+                            Name = "Patients",
+                            Values = validatedAgeData.Values.ToArray(),
+                        },
                 };
 
                 AgeChart.XAxes = xAxes;

@@ -5,31 +5,31 @@ using System.Linq;
 using HospitalManagement.Entity;
 using HospitalManagement.Service;
 
-namespace HospitalManagement.ViewModel
+namespace HospitalManagement.ViewModel;
+
+internal class AddictViewModel
 {
-    internal class AddictViewModel
-    {
-        private readonly IAddictDetectionService _addictDetectionService;
+    private readonly IAddictDetectionService _addictDetectionService;
 
     public ObservableCollection<Patient> AddictCandidates { get; set; }
 
-        public AddictViewModel(IAddictDetectionService addictDetectionService)
-        {
-            _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
+    public AddictViewModel(IAddictDetectionService addictDetectionService)
+    {
+        _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
 
         AddictCandidates = [];
         LoadAddicts();
     }
 
-        public void LoadAddicts()
+    public void LoadAddicts()
+    {
+        AddictCandidates.Clear();
+
+        List<Patient> candidates = _addictDetectionService.GetAddictCandidates();
+
+        foreach (Patient candidate in candidates)
         {
-            AddictCandidates.Clear();
-            
-            var candidates = _addictDetectionService.GetAddictCandidates();
-            
-            foreach (var candidate in candidates)
-            {
-                string chronicString = _addictDetectionService.GetChronicConditions(candidate.Id);
+            string chronicString = _addictDetectionService.GetChronicConditions(candidate.Id);
 
             if (candidate.MedicalHistory is not null)
             {

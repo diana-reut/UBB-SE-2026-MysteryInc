@@ -138,10 +138,8 @@ internal sealed partial class PatientProfileView : Page
                 var patientRepo = new Repository.PatientRepository(dbContext);
                 var historyRepo = new Repository.MedicalHistoryRepository(dbContext);
 
-                var pdfGen = new Integration.Export.PDFGenerator();
-
                 var exportService = new Integration.Export.ExportService(
-                    pdfGen, recordRepo, prescriptionRepo, patientRepo, historyRepo);
+                    recordRepo, prescriptionRepo, patientRepo, historyRepo);
 
                 // 1. Generate the PDF straight to the Desktop
                 string savedFilePath = exportService.ExportRecordToPDF(ViewModel.SelectedRecord.Id);
