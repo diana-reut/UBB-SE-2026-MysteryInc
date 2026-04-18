@@ -21,6 +21,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     public string CurrentView
     {
         get => _currentView;
+
         set
         {
             _currentView = value;
@@ -73,6 +74,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     public Patient SelectedPatient
     {
         get => _selectedPatient;
+
         set
         {
             _selectedPatient = value;
@@ -165,6 +167,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     public double? MaxAge
     {
         get => _maxAge;
+
         set
         {
             _maxAge = value;
@@ -177,6 +180,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     public object SelectedSexFilter
     {
         get => _selectedSexFilter;
+
         set
         {
             _selectedSexFilter = value;
@@ -200,7 +204,16 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     private string _cnpError;
 
-    public string CnpError { get => _cnpError; set { _cnpError = value; OnPropertyChanged(); } }
+    public string CnpError
+    {
+        get => _cnpError;
+
+        set
+        {
+            _cnpError = value;
+            OnPropertyChanged();
+        }
+    }
 
     private string _phoneError;
 
@@ -230,9 +243,9 @@ internal class AdminViewModel : INotifyPropertyChanged
     // This property will be used in XAML to disable buttons: IsEnabled="{Binding IsNotDeceased}"
     public Func<string, string,Task<DateTime?>> RequestDateAction { get; set; }
 
-    public bool IsNotDeceased => SelectedPatient != null && !SelectedPatient.IsDeceased;
+    public bool IsNotDeceased => SelectedPatient?.IsDeceased == false;
 
-    public bool IsDeceased => SelectedPatient != null && SelectedPatient.IsDeceased;
+    public bool IsDeceased => SelectedPatient?.IsDeceased == true;
 
     public ICommand MarkAsDeceasedCommand { get; }
 
@@ -321,9 +334,9 @@ internal class AdminViewModel : INotifyPropertyChanged
 
         Patients.Clear();
 
-        IEnumerable<Patient> activePatients = allPatients.Where(p => p.IsArchived == false);
+        IEnumerable<Patient> activePatients = allPatients.Where(p => !p.IsArchived);
 
-        foreach (var patient in activePatients)
+        foreach (Patient patient in activePatients)
         {
             patient.PhoneNo = FormatPhoneNumber(patient.PhoneNo);
             patient.EmergencyContact = FormatPhoneNumber(patient.EmergencyContact);

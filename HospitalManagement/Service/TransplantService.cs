@@ -18,9 +18,9 @@ namespace HospitalManagement.Service
         private readonly IMedicalHistoryRepository _historyRepo;
 
         public TransplantService(
-            TransplantRepository transplantRepo,
-            PatientRepository patientRepo,
-            MedicalRecordRepository recordRepo,
+            ITransplantRepository transplantRepo,
+            IPatientRepository patientRepo,
+            IMedicalRecordRepository recordRepo,
             IBloodCompatibilityService compatibilityService,
             IMedicalHistoryRepository historyRepo)
         {

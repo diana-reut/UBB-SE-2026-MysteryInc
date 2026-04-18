@@ -1,9 +1,11 @@
-﻿using Microsoft.UI.Xaml;
-using System;
-using Microsoft.Extensions.DependencyInjection;
-using HospitalManagement.Database;
+﻿using HospitalManagement.Database;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
+using HospitalManagement.View;
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -44,15 +46,27 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton<IDbContext, HospitalDbContext>();
+        // DB
+        _ = services.AddSingleton<IDbContext, HospitalDbContext>();
 
-        services.AddSingleton<IPatientRepository, PatientRepository>();
-        services.AddSingleton<IMedicalHistoryRepository, MedicalHistoryRepository>();
-        services.AddSingleton<IMedicalRecordRepository, MedicalRecordRepository>();
+        // Repositories
+        _ = services.AddSingleton<IPatientRepository, PatientRepository>();
+        _ = services.AddSingleton<IMedicalHistoryRepository, MedicalHistoryRepository>();
+        _ = services.AddSingleton<IMedicalRecordRepository, MedicalRecordRepository>();
+        _ = services.AddSingleton<IAllergyRepository, AllergyRepository>();
+        _ = services.AddSingleton<ITransplantRepository, TransplantRepository>();
 
+        // Services
+        _ = services.AddSingleton<IBloodCompatibilityService, BloodCompatibilityService>();
+        _ = services.AddSingleton<IPatientService, PatientService>();
+        _ = services.AddSingleton<IAllergyService, AllergyService>();
+        _ = services.AddSingleton<ITransplantService, TransplantService>();
 
-        services.AddSingleton<IPatientService, PatientService>();
-
+        // ViewModels & Windows
+        _ = services.AddTransient<AdminViewModel>();
+        _ = services.AddTransient<OrganDonorViewModel>();
+        _ = services.AddTransient<StatisticsWindow>();
+        _ = services.AddTransient<AdminView>();
 
         return services.BuildServiceProvider();
     }
