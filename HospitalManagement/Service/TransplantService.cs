@@ -12,7 +12,7 @@ namespace HospitalManagement.Service
         private readonly TransplantRepository _transplantRepo;
         private readonly PatientRepository _patientRepo;
         private readonly MedicalRecordRepository _recordRepo;
-        private readonly BloodCompatibilityService _compatibilityService;
+        private readonly IBloodCompatibilityService _compatibilityService;
 
         // 1. ADDED THE MISSING REPOSITORY TO FIX THE BUG
         private readonly MedicalHistoryRepository _historyRepo;
@@ -21,7 +21,7 @@ namespace HospitalManagement.Service
             TransplantRepository transplantRepo,
             PatientRepository patientRepo,
             MedicalRecordRepository recordRepo,
-            BloodCompatibilityService compatibilityService,
+            IBloodCompatibilityService compatibilityService,
             MedicalHistoryRepository historyRepo)
         {
             _transplantRepo = transplantRepo;
