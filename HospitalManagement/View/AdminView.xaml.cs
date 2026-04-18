@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
+using HospitalManagement.Entity;
+using HospitalManagement.Service;
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using HospitalManagement.ViewModel;
-using HospitalManagement.Service;
-using HospitalManagement.Entity;
-using Microsoft.UI;
+using System;
+using System.Collections.Generic;
 
 namespace HospitalManagement.View;
 
@@ -18,9 +19,9 @@ internal sealed partial class AdminView : Window
     private readonly IAllergyService _allergyService;
     private readonly IPatientService _patientService;
     private readonly ITransplantService _transplantService;
-    private readonly StatisticsWindow _statisticsWindow;
+    private StatisticsWindow _statisticsWindow;
 
-    public AdminView(AdminViewModel adminViewModel, OrganDonorViewModel organDonorViewModel, StatisticsWindow statisticsWindow, IAllergyService allergyService, IPatientService patientService, ITransplantService transplantService)
+    public AdminView(AdminViewModel adminViewModel, OrganDonorViewModel organDonorViewModel, IAllergyService allergyService, IPatientService patientService, ITransplantService transplantService)
     {
         InitializeComponent();
 
@@ -38,7 +39,6 @@ internal sealed partial class AdminView : Window
         _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _transplantService = transplantService ?? throw new ArgumentNullException(nameof(transplantService));
         _organDonorViewModel = organDonorViewModel ?? throw new ArgumentNullException(nameof(organDonorViewModel));
-        _statisticsWindow = statisticsWindow ?? throw new ArgumentNullException(nameof(statisticsWindow));
 
         // 3. Initialize ViewModel & Bindings
         _viewModel = adminViewModel ?? throw new ArgumentNullException(nameof(adminViewModel));
@@ -86,7 +86,7 @@ internal sealed partial class AdminView : Window
                                     medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
 
                                     // CreateMedicalHistory will handle saving allergies from MedicalHistory.Allergies
-                                    _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory, []);
+                                    _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
 
                                     var successAlert = new ContentDialog
                                     {
@@ -260,6 +260,7 @@ internal sealed partial class AdminView : Window
 
     private void OpenStatisticsWindow()
     {
+        _statisticsWindow = (App.Current as App)!.Services.GetRequiredService<StatisticsWindow>();
         _statisticsWindow.Activate();
     }
 
