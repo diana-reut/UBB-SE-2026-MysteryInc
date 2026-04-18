@@ -15,7 +15,7 @@ namespace HospitalManagement.View
     public sealed partial class StatisticsWindow : Window
     {
         private HospitalDbContext _dbContext;
-        private StatisticsService _statisticsService;
+        private IStatisticsService _statisticsService;
         private string _currentStatistic;
 
         public StatisticsWindow(HospitalDbContext dbContext = null)
