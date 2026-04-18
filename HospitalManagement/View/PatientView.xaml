@@ -4,8 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:entity="using:HospitalManagement.Entity"
     xmlns:converters="using:HospitalManagement.Converters"
-    Title="Patient Medical Information"
-    Closed="Window_Closed">
+    Title="Patient Medical Information">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />

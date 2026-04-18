@@ -1,4 +1,5 @@
 ﻿using HospitalManagement.Database;
+using HospitalManagement.Integration.Export;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
@@ -55,18 +56,24 @@ public partial class App : Application
         _ = services.AddSingleton<IMedicalRecordRepository, MedicalRecordRepository>();
         _ = services.AddSingleton<IAllergyRepository, AllergyRepository>();
         _ = services.AddSingleton<ITransplantRepository, TransplantRepository>();
+        _ = services.AddSingleton<IPrescriptionRepository, PrescriptionRepository>();
+        _ = services.AddSingleton<ITransplantRepository, TransplantRepository>();
 
         // Services
         _ = services.AddSingleton<IBloodCompatibilityService, BloodCompatibilityService>();
         _ = services.AddSingleton<IPatientService, PatientService>();
         _ = services.AddSingleton<IAllergyService, AllergyService>();
         _ = services.AddSingleton<ITransplantService, TransplantService>();
+        _ = services.AddSingleton<IExportService, ExportService>();
+        _ = services.AddSingleton<IBillingService, BillingService>();
 
         // ViewModels & Windows
         _ = services.AddTransient<AdminViewModel>();
         _ = services.AddTransient<OrganDonorViewModel>();
         _ = services.AddTransient<StatisticsWindow>();
         _ = services.AddTransient<AdminView>();
+        _ = services.AddTransient<PatientViewModel>();
+        _ = services.AddTransient<PatientView>();
 
         return services.BuildServiceProvider();
     }
