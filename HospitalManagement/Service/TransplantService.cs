@@ -21,7 +21,7 @@ namespace HospitalManagement.Service
             TransplantRepository transplantRepo,
             PatientRepository patientRepo,
             MedicalRecordRepository recordRepo,
-            BloodCompatibilityService compatibilityService,
+            IBloodCompatibilityService compatibilityService,
             MedicalHistoryRepository historyRepo)
         {
             _transplantRepo = transplantRepo;
