@@ -18,10 +18,10 @@ namespace HospitalManagement.ViewModel
         private string _searchQuery = string.Empty;
         private string _errorMessage = string.Empty;
         private ObservableCollection<Patient> _searchResults = new ObservableCollection<Patient>();
-        private readonly PatientService _patientService;
+        private readonly IPatientService _patientService;
         private Patient _selectedPatient;
 
-        private readonly GhostService _ghostService;
+        private readonly IGhostService _ghostService;
 
         private bool _isExorcismAlertVisible;
         public bool IsExorcismAlertVisible

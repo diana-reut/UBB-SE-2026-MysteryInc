@@ -14,7 +14,7 @@ namespace HospitalManagement.ViewModel
     {
         private Patient _patient;
         private MedicalRecord _selectedRecord;
-        private readonly PatientService _patientService;
+        private readonly IPatientService _patientService;
 
         public Patient CurrentPatient
         {

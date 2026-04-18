@@ -7,7 +7,7 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Service;
 
-internal class BloodCompatibilityService
+internal class BloodCompatibilityService : IBloodCompatibilityService
 {
     private readonly PatientRepository _patientRepo;
     // 1. Add the History Repository

@@ -15,7 +15,7 @@ namespace HospitalManagement.ViewModel
         public event PropertyChangedEventHandler PropertyChanged;
          
         //I SAW A GHOST LOGIC
-        private readonly GhostService _ghostService;
+        private readonly IGhostService _ghostService;
 
         private bool _isExorcismAlertVisible;
         public bool IsExorcismAlertVisible

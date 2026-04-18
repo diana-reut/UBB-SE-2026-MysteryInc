@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HospitalManagement.Service;
-using Windows.Services.Maps;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using System.Runtime.CompilerServices;
@@ -15,7 +12,7 @@ namespace HospitalManagement.ViewModel
 {
     internal class StatisticsViewModel : INotifyPropertyChanged
     {
-        private readonly StatisticsService _statisticsService;
+        private readonly IStatisticsService _statisticsService;
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<ISeries> GenderSeries { get; set; } = new();
@@ -72,7 +69,7 @@ namespace HospitalManagement.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        public StatisticsViewModel(StatisticsService statisticsService)
+        public StatisticsViewModel(IStatisticsService statisticsService)
         {
             this._statisticsService = statisticsService;
             SelectedStatistic = MenuOptions[0];
