@@ -14,11 +14,11 @@ namespace HospitalManagement.View
 {
     internal sealed partial class StatisticsWindow : Window
     {
-        private HospitalDbContext _dbContext;
+        private IDbContext _dbContext;
         private IStatisticsService _statisticsService;
         private string _currentStatistic;
 
-        public StatisticsWindow(HospitalDbContext dbContext = null)
+        public StatisticsWindow(IDbContext dbContext = null)
         {
             this.InitializeComponent();
 

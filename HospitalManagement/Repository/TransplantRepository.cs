@@ -6,11 +6,11 @@ using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
-internal class TransplantRepository
+internal class TransplantRepository : ITransplantRepository
 {
-    private readonly HospitalDbContext _context;
+    private readonly IDbContext _context;
 
-    public TransplantRepository(HospitalDbContext context)
+    public TransplantRepository(IDbContext context)
     {
         _context = context;
     }

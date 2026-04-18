@@ -9,11 +9,11 @@ using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
-internal class PrescriptionRepository
+internal class PrescriptionRepository : IPrescriptionRepository
 {
-    private readonly HospitalDbContext _context;
+    private readonly IDbContext _context;
 
-    public PrescriptionRepository(HospitalDbContext context)
+    public PrescriptionRepository(IDbContext context)
     {
         _context = context;
     }

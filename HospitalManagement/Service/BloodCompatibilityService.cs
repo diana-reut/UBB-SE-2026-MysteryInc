@@ -9,11 +9,11 @@ namespace HospitalManagement.Service;
 
 internal class BloodCompatibilityService : IBloodCompatibilityService
 {
-    private readonly PatientRepository _patientRepo;
+    private readonly IPatientRepository _patientRepo;
     // 1. Add the History Repository
-    private readonly MedicalHistoryRepository _historyRepo;
+    private readonly IMedicalHistoryRepository _historyRepo;
 
-    public BloodCompatibilityService(PatientRepository patientRepo, MedicalHistoryRepository historyRepo)
+    public BloodCompatibilityService(IPatientRepository patientRepo, IMedicalHistoryRepository historyRepo)
     {
         _patientRepo = patientRepo;
         _historyRepo = historyRepo;

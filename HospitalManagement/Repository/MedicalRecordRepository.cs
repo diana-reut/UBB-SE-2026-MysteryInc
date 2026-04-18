@@ -7,11 +7,11 @@ using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Repository;
 
-internal class MedicalRecordRepository
+internal class MedicalRecordRepository : IMedicalRecordRepository
 {
-    private readonly HospitalDbContext _context;
+    private readonly IDbContext _context;
 
-    public MedicalRecordRepository(HospitalDbContext context)
+    public MedicalRecordRepository(IDbContext context)
     {
         _context = context;
     }

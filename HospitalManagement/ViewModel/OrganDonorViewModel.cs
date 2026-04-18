@@ -14,8 +14,8 @@ namespace HospitalManagement.ViewModel
     internal class OrganDonorViewModel : INotifyPropertyChanged
     {
         private readonly ITransplantService _transplantService;
-        private readonly PatientRepository _patientRepo;
-        private readonly MedicalHistoryRepository _historyRepo;
+        private readonly IPatientRepository _patientRepo;
+        private readonly IMedicalHistoryRepository _historyRepo;
 
         // Deceased donor being processed
         private Patient _deceasedPatient;
@@ -85,7 +85,7 @@ namespace HospitalManagement.ViewModel
         public Action<int, int, float> OnAssignmentConfirmed { get; set; }
 
         // Constructor
-        public OrganDonorViewModel(ITransplantService transplantService, PatientRepository patientRepo, MedicalHistoryRepository historyRepo)
+        public OrganDonorViewModel(ITransplantService transplantService, IPatientRepository patientRepo, IMedicalHistoryRepository historyRepo)
         {
             _transplantService = transplantService ?? throw new ArgumentNullException(nameof(transplantService));
             _patientRepo = patientRepo ?? throw new ArgumentNullException(nameof(patientRepo));

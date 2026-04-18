@@ -1,0 +1,42 @@
+﻿using HospitalManagement.Database;
+using HospitalManagement.Entity;
+using System.Collections.Generic;
+using Microsoft.Data.SqlClient;
+
+namespace HospitalManagement.Repository;
+
+internal class AllergyRepository : IAllergyRepository
+{
+    private readonly IDbContext _context;
+
+    public AllergyRepository(IDbContext context)
+    {
+        _context = context;
+    }
+
+    public IEnumerable<Allergy> GetAllergies()
+    {
+        const string Query = "SELECT AllergyId, AllergyName, AllergyType, AllergyCategory FROM Allergy";
+        using SqlDataReader reader = _context.ExecuteQuery(Query);
+        var allergies = new List<Allergy>();
+        while (reader.Read())
+        {
+            allergies.Add(MapToAllergy(reader));
+        }
+
+        return allergies;
+    }
+
+
+    private static Allergy MapToAllergy(SqlDataReader reader)
+    {
+        return new Allergy
+        {
+            AllergyId = (int)reader["AllergyId"],
+            AllergyName = reader["AllergyName"]?.ToString(),
+            AllergyType = reader["AllergyType"]?.ToString(),
+            AllergyCategory = reader["AllergyCategory"]?.ToString(),
+        };
+    }
+}
+

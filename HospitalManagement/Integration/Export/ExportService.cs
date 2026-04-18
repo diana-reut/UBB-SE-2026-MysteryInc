@@ -9,13 +9,13 @@ internal class ExportService
     private readonly MedicalRecordRepository _recordRepo;
     private readonly PrescriptionRepository _prescriptionRepo;
     private readonly PatientRepository _patientRepo;
-    private readonly MedicalHistoryRepository _historyRepo;
+    private readonly IMedicalHistoryRepository _historyRepo;
 
     public ExportService(
         MedicalRecordRepository recordRepo,
         PrescriptionRepository prescriptionRepo,
         PatientRepository patientRepo,
-        MedicalHistoryRepository historyRepo)
+        IMedicalHistoryRepository historyRepo)
     {
         _recordRepo = recordRepo;
         _prescriptionRepo = prescriptionRepo;
