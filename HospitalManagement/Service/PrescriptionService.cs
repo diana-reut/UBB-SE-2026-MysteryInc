@@ -7,7 +7,7 @@ using HospitalManagement.Integration;
 
 namespace HospitalManagement.Service;
 
-public class PrescriptionService
+public class PrescriptionService : IPrescriptionService
 {
     private readonly PrescriptionRepository _prescriptionRepository;
 
