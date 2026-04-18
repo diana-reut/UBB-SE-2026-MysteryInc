@@ -1,78 +1,75 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq; 
+using System.Linq;
 using HospitalManagement.Entity;
 using HospitalManagement.Service;
 
-namespace HospitalManagement.ViewModel
+namespace HospitalManagement.ViewModel;
+
+internal class AddictViewModel
 {
-    internal class AddictViewModel
+    private readonly IAddictDetectionService _addictDetectionService;
+
+    public ObservableCollection<Patient> AddictCandidates { get; set; }
+
+    public AddictViewModel(IAddictDetectionService addictDetectionService)
     {
-        private readonly IAddictDetectionService _addictDetectionService;
+        _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
 
-        public ObservableCollection<Patient> AddictCandidates { get; set; }
+        AddictCandidates = [];
+        LoadAddicts();
+    }
 
-        public AddictViewModel(IAddictDetectionService addictDetectionService)
+    public void LoadAddicts()
+    {
+        AddictCandidates.Clear();
+
+        List<Patient> candidates = _addictDetectionService.GetAddictCandidates();
+
+        foreach (Patient candidate in candidates)
         {
-            _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
+            string chronicString = _addictDetectionService.GetChronicConditions(candidate.Id);
 
-            AddictCandidates = new ObservableCollection<Patient>();
-            
-            LoadAddicts();
-        }
-
-        public void LoadAddicts()
-        {
-            AddictCandidates.Clear();
-            
-            var candidates = _addictDetectionService.GetAddictCandidates();
-            
-            foreach (var candidate in candidates)
+            if (candidate.MedicalHistory is not null)
             {
-                string chronicString = _addictDetectionService.GetChronicConditions(candidate.Id);
-
-                if (candidate.MedicalHistory != null)
+                if (candidate.MedicalHistory.ChronicConditions is null || candidate.MedicalHistory.ChronicConditions.Count == 0)
                 {
-                    if (candidate.MedicalHistory.ChronicConditions == null || candidate.MedicalHistory.ChronicConditions.Count == 0)
-                    {
-                        candidate.MedicalHistory.ChronicConditions = new List<string> { chronicString }; 
-                    }
+                    candidate.MedicalHistory.ChronicConditions = [chronicString];
                 }
-                else
+            }
+            else
+            {
+                candidate.MedicalHistory = new MedicalHistory
                 {
-                    candidate.MedicalHistory = new MedicalHistory 
-                    { 
-                        ChronicConditions = new List<string> { chronicString } 
-                    };
-                }
-
-                AddictCandidates.Add(candidate);
+                    ChronicConditions = [chronicString],
+                };
             }
+
+            AddictCandidates.Add(candidate);
+        }
+    }
+
+    public string GetPoliceReportMessage(int patientId)
+    {
+        Patient? targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
+
+        if (targetPatient is null)
+        {
+            return "Error: Patient not found in the current flagged list.";
         }
 
-        public string GetPoliceReportMessage(int patientId)
+        return _addictDetectionService.BuildPoliceReport(targetPatient);
+    }
+
+    public void RemoveFlaggedPatient(int patientId)
+    {
+        Patient? targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
+        if (targetPatient is not null)
         {
-            Patient? targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
+            _ = AddictCandidates.Remove(targetPatient);
 
-            if (targetPatient is null)
-            {
-                return "Error: Patient not found in the current flagged list.";
-            }
-
-            return _addictDetectionService.BuildPoliceReport(targetPatient);
-        }
-
-        public void RemoveFlaggedPatient(int patientId)
-        {
-            Patient? targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
-            
-            if (targetPatient != null)
-            {
-                AddictCandidates.Remove(targetPatient);
-
-                // pe viitor, daca se cere la backend, aici am putea schimba starea in baza de date ca ex: "Reported = true"
-            }
+            // pe viitor, daca se cere la backend, aici am putea schimba starea in baza de date ca ex: "Reported = true"
         }
     }
 }

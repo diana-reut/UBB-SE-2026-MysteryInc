@@ -16,7 +16,7 @@ namespace HospitalManagement.ViewModel;
 
 internal class AdminViewModel : INotifyPropertyChanged
 {
-    private string _currentView;
+    private string _currentView = "";
 
     public string CurrentView
     {
@@ -260,7 +260,6 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     // For showing medical history - just pass the patient ID
     public Func<int, Task> ShowMedicalHistoryAction { get; set; }
-
 
     // --- Commands bound to the View Buttons ---
     public ICommand LoadAllPatientsCommand { get; }
