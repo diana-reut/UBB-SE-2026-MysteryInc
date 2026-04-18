@@ -1,7 +1,7 @@
 ﻿namespace HospitalManagement.Entity.Enums;
 
-public enum Sex
+internal enum Sex
 {
-    M,
-    F,
+    M = 0,
+    F = 1,
 }

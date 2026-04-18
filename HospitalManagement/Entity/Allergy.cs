@@ -1,6 +1,6 @@
 ﻿namespace HospitalManagement.Entity;
 
-public class Allergy
+internal class Allergy
 {
     // hii
     public int AllergyId { get; set; }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HospitalManagement.Repository;
 
-public interface IMedicalHistoryRepository
+internal interface IMedicalHistoryRepository
 {
     public int Create(MedicalHistory history);
 

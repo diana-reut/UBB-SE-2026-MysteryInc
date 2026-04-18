@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace HospitalManagement.Utils;
 
-public class StringVisibilityConverter: IValueConverter
+internal class StringVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace HospitalManagement.Utils;
 
-public class StringToBoolConverter : IValueConverter
+internal class StringToBoolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

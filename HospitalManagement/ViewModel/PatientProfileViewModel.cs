@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml;
 
 namespace HospitalManagement.ViewModel
 {
-    public class PatientProfileViewModel : INotifyPropertyChanged
+    internal class PatientProfileViewModel : INotifyPropertyChanged
     {
         private Patient _patient;
         private MedicalRecord _selectedRecord;

@@ -1,10 +1,10 @@
 ﻿namespace HospitalManagement.Entity.Enums;
 
-public enum TransplantStatus
+internal enum TransplantStatus
 {
-    Pending,
-    Matched,
-    Scheduled,
-    Completed,
-    Cancelled,
+    Pending = 0,
+    Matched = 1,
+    Scheduled = 2,
+    Completed = 3,
+    Cancelled = 4,
 }

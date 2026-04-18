@@ -240,7 +240,7 @@ internal class PatientService : IPatientService
     // <summary>
     // SV3: Initializes the clinical profile for a patient.
     // </summary>
-    public void CreateMedicalHistory(int patientId, MedicalHistory history, List<Allergy> allergies)
+    public void CreateMedicalHistory(int patientId, MedicalHistory history)
     {
         // 1. Validate the patient exists
         _ = _patientRepo.GetById(patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");
