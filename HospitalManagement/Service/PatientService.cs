@@ -30,7 +30,7 @@ internal class PatientService
     }
 
     // Validates that the CNP matches the provided Sex and Date of Birth.
-    public bool ValidateCNP(string cnp, Sex sex, DateTime dob)
+    public static bool ValidateCNP(string cnp, Sex sex, DateTime dob)
     {
         // 1. Basic sanity checks: Must be exactly 13 digits
         if (string.IsNullOrWhiteSpace(cnp) || cnp.Length != 13 || !cnp.All(char.IsDigit))
@@ -240,7 +240,7 @@ internal class PatientService
     // <summary>
     // SV3: Initializes the clinical profile for a patient.
     // </summary>
-    public void CreateMedicalHistory(int patientId, MedicalHistory history, List<Allergy> allergies)
+    public void CreateMedicalHistory(int patientId, MedicalHistory history)
     {
         // 1. Validate the patient exists
         _ = _patientRepo.GetById(patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");

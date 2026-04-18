@@ -4,10 +4,11 @@ using System.Linq;
 using HospitalManagement.Entity;
 using HospitalManagement.Repository;
 using HospitalManagement.Integration;
+using System.Collections.ObjectModel;
 
 namespace HospitalManagement.Service;
 
-public class PrescriptionService
+internal class PrescriptionService
 {
     private readonly PrescriptionRepository _prescriptionRepository;
 
@@ -20,7 +21,7 @@ public class PrescriptionService
     // <param name="n">Number of items per page</param>
     // <param name="page">Page number (starting from 1)</param>
     // <returns>List of Prescriptions</returns>
-    public List<Prescription> GetLatestPrescriptions(int n, int page)
+    public Collection<Prescription> GetLatestPrescriptions(int n, int page)
     {
         return _prescriptionRepository.GetTopN(n, page);
     }
@@ -38,7 +39,7 @@ public class PrescriptionService
 
     // <param name="filter">The complex filter for finding prescriptions</param>
     // <returns>A filtered list of Prescriptions sorted by Date descending.</returns>
-    public List<Prescription> ApplyFilter(PrescriptionFilter filter)
+    public Collection<Prescription> ApplyFilter(PrescriptionFilter filter)
     {
         if (filter is null)
         {
@@ -47,7 +48,7 @@ public class PrescriptionService
 
         try
         {
-            List<Prescription> results = _prescriptionRepository.GetFiltered(filter);
+            Collection<Prescription> results = _prescriptionRepository.GetFiltered(filter);
 
             return results;
         }

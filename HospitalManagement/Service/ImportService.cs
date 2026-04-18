@@ -4,10 +4,11 @@ using HospitalManagement.Entity;
 using HospitalManagement.Entity.DTOs;
 using HospitalManagement.Repository;
 using HospitalManagement.Integration.External;
+using HospitalManagement.Interfaces.Service;
 
 namespace HospitalManagement.Service;
 
-internal class ImportService
+internal class ImportService : IImportService
 {
     private readonly PatientService _patientService;
     private readonly MedicalRecordRepository _recordRepo;

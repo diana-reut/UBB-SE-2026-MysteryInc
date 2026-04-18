@@ -1,19 +1,20 @@
-﻿using System;
+﻿using HospitalManagement.Interfaces.Service;
+using System;
 using System.Collections.Generic;
 
 namespace HospitalManagement.Service;
 
-public sealed class GhostService
+internal sealed class GhostService : IGhostService
 {
     private static readonly GhostService ServiceInstance = new();
 
-    public static GhostService Instance => ServiceInstance;
+    private readonly List<DateTime> _sightings = [];
 
     private GhostService()
     {
     }
 
-    private readonly List<DateTime> _sightings = [];
+    public static GhostService Instance => ServiceInstance;
 
     public event EventHandler? ExorcismTriggered;
 

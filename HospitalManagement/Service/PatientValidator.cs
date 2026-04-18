@@ -1,5 +1,6 @@
 ﻿using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
+using HospitalManagement.Interfaces.Service;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -8,8 +9,14 @@ using System.Text.RegularExpressions;
 
 namespace HospitalManagement.Service;
 
-public class PatientValidator
+internal partial class PatientValidator : IPatientValidator
 {
+    [GeneratedRegex(@"^[\p{L}\s\-]+$")]
+    private static partial Regex NameRegex();
+
+    [GeneratedRegex(@"^\+40\d{9}$")]
+    private static partial Regex PhoneRegex();
+
     public void ValidateUpdate(Patient newDetails, Patient existingPatient)
     {
         if (newDetails is null || existingPatient is null)
@@ -31,7 +38,6 @@ public class PatientValidator
     public ValidationResult ValidatePatient(Patient patient)
     {
         var result = new ValidationResult();
-        // for this line above if there is an error replace with this: var result = new global::ValidationResult();
 
         if (patient is null)
         {
@@ -79,7 +85,7 @@ public class PatientValidator
             return;
         }
 
-        if (!Regex.IsMatch(name, @"^[\p{L}\s\-]+$"))
+        if (!NameRegex().IsMatch(name))
         {
             result.AddError($"{field} can only contain letters, spaces, and hyphens.");
         }
@@ -89,10 +95,10 @@ public class PatientValidator
     {
         if (!isRequired && string.IsNullOrEmpty(phone))
         {
-            return; // Skip validation if it's optional and empty
+            return;
         }
 
-        if (string.IsNullOrEmpty(phone) || !Regex.IsMatch(phone, @"^\+40\d{9}$"))
+        if (string.IsNullOrEmpty(phone) || !PhoneRegex().IsMatch(phone))
         {
             result.AddError($"{field} must be in format +40XXXXXXXXX.");
         }
