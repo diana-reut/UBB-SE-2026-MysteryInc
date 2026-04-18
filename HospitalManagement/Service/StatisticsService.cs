@@ -6,7 +6,7 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Service;
 
-internal class StatisticsService
+internal class StatisticsService : IStatisticsService
 {
     private readonly PatientRepository _patientRepo;
     private readonly MedicalRecordRepository _recordRepo;

@@ -8,7 +8,7 @@ namespace HospitalManagement.ViewModel
 {
     public class PharmacistViewModel : INotifyPropertyChanged
     {
-        private readonly GhostService _ghostService;
+        private readonly IGhostService _ghostService;
 
 
         private string _currentView;
@@ -63,8 +63,7 @@ namespace HospitalManagement.ViewModel
         private void ReportGhost()
         {
             _ghostService.SawAGhost();
-            
-            //System.Diagnostics.Debug.WriteLine($">> GHOST REPORTED FROM PHARMACIST AT {DateTime.Now} <<");
+           
         }
     }
 }

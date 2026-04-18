@@ -7,12 +7,12 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Service;
 
-internal class TransplantService
+internal class TransplantService : ITransplantService
 {
     private readonly TransplantRepository _transplantRepo;
     private readonly PatientRepository _patientRepo;
     private readonly MedicalRecordRepository _recordRepo;
-    private readonly BloodCompatibilityService _compatibilityService;
+    private readonly IBloodCompatibilityService _compatibilityService;
 
     // 1. ADDED THE MISSING REPOSITORY TO FIX THE BUG
     private readonly MedicalHistoryRepository _historyRepo;
@@ -21,7 +21,7 @@ internal class TransplantService
         TransplantRepository transplantRepo,
         PatientRepository patientRepo,
         MedicalRecordRepository recordRepo,
-        BloodCompatibilityService compatibilityService,
+        IBloodCompatibilityService compatibilityService,
         MedicalHistoryRepository historyRepo)
     {
         _transplantRepo = transplantRepo;
@@ -71,8 +71,8 @@ internal class TransplantService
 
             if (receiver.MedicalHistory?.BloodType == null || receiver.MedicalHistory.Rh == null) continue;
 
-            if (!BloodCompatibilityService.IsBloodMatch(donor.MedicalHistory?.BloodType, receiver.MedicalHistory.BloodType.Value)) continue;
-            if (!BloodCompatibilityService.IsRhMatch(donor.MedicalHistory?.Rh, receiver.MedicalHistory.Rh.Value)) continue;
+            if (!_compatibilityService.IsBloodMatch(donor.MedicalHistory?.BloodType, receiver.MedicalHistory.BloodType.Value)) continue;
+            if (!_compatibilityService.IsRhMatch(donor.MedicalHistory?.Rh, receiver.MedicalHistory.Rh.Value)) continue;
 
             if (receiver.MedicalHistory.ChronicConditions != null && receiver.MedicalHistory.ChronicConditions.Any()) continue;
 

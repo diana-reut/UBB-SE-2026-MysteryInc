@@ -9,11 +9,11 @@ namespace HospitalManagement.ViewModel
 {
     internal class AddictViewModel
     {
-        private readonly AddictDetectionService _addictDetectionService;
+        private readonly IAddictDetectionService _addictDetectionService;
 
         public ObservableCollection<Patient> AddictCandidates { get; set; }
 
-        public AddictViewModel(AddictDetectionService addictDetectionService)
+        public AddictViewModel(IAddictDetectionService addictDetectionService)
         {
             _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
 
@@ -28,7 +28,7 @@ namespace HospitalManagement.ViewModel
             
             var candidates = _addictDetectionService.GetAddictCandidates();
             
-            foreach(var candidate in candidates)
+            foreach (var candidate in candidates)
             {
                 string chronicString = _addictDetectionService.GetChronicConditions(candidate.Id);
 

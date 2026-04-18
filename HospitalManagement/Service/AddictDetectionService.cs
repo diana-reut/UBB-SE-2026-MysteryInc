@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace HospitalManagement.Service;
 
-internal class AddictDetectionService
+internal class AddictDetectionService : IAddictDetectionService
 {
     private readonly PrescriptionRepository _prescriptionRepository;
     private readonly MedicalHistoryRepository _medicalHistoryRepository;

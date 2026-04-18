@@ -10,7 +10,7 @@ namespace HospitalManagement.ViewModel
 {
     public class TransplantRequestViewModel : INotifyPropertyChanged
     {
-        private readonly TransplantService _transplantService;
+        private readonly ITransplantService _transplantService;
         private readonly int _patientId;
 
         public string PatientName { get; set; }
