@@ -57,15 +57,14 @@ namespace HospitalManagement.ViewModel
                 !string.IsNullOrWhiteSpace(ActiveFilter.PatientName) || 
                 !string.IsNullOrWhiteSpace(ActiveFilter.DoctorName);
 
-            List<Prescription> targetList;
+            Collection<Prescription> targetList;
 
             if (hasActiveFilter)
             {
-                var allFilteredResults = _prescriptionService.ApplyFilter(ActiveFilter);
-                targetList = allFilteredResults
-                                    .Skip((CurrentPage - 1) * PageSize)
-                                    .Take(PageSize)
-                                    .ToList();
+                Collection<Prescription> allFilteredResults = _prescriptionService.ApplyFilter(ActiveFilter);
+                targetList = new Collection<Prescription>([.. allFilteredResults
+                    .Skip((CurrentPage - 1) * PageSize)
+                    .Take(PageSize)]);
             }
             else
             {

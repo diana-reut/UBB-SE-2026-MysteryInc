@@ -2,6 +2,7 @@
 using HospitalManagement.Repository;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 
@@ -19,9 +20,9 @@ internal class AddictDetectionService
     }
 
 
-    public List<Patient> GetAddictCandidates()
+    public Collection<Patient> GetAddictCandidates()
     {
-        List<Patient> flaggedPatients = _prescriptionRepository.GetAddictCandidatePatients();
+        Collection<Patient> flaggedPatients = _prescriptionRepository.GetAddictCandidatePatients();
 
         foreach (Patient patient in flaggedPatients)
         {
@@ -77,7 +78,7 @@ internal class AddictDetectionService
             DateFrom = DateTime.Today.AddDays(-30),
         };
 
-        List<Prescription> recentPrescriptions = _prescriptionRepository.GetFiltered(filter);
+        Collection<Prescription> recentPrescriptions = _prescriptionRepository.GetFiltered(filter);
 
         var reportBuilder = new System.Text.StringBuilder();
 

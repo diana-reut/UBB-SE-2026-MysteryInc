@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using HospitalManagement.Entity;
 using iText.Kernel.Pdf;
@@ -14,7 +15,7 @@ public class PDFGenerator
         MedicalRecord record,
         Patient patient,
         Prescription? prescription,
-        List<PrescriptionItem> items)
+        Collection<PrescriptionItem> items)
     {
         ArgumentNullException.ThrowIfNull(record);
         ArgumentNullException.ThrowIfNull(patient);

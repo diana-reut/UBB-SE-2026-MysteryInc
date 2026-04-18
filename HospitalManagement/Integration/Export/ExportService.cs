@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using HospitalManagement.Entity;
 using HospitalManagement.Repository;
 
@@ -35,7 +36,7 @@ internal class ExportService
         Patient? patient = _patientRepo.GetById(history.PatientId) ?? throw new ExportException($"Patient for history ID={history.Id} not found.");
 
         // THE FIX: Use the PrescriptionRepo to find the prescription!
-        var items = new List<PrescriptionItem>();
+        var items = new Collection<PrescriptionItem>();
         Prescription? prescription = _prescriptionRepo.GetByRecordId(recordId);
 
         if (prescription is not null)

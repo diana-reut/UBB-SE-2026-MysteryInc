@@ -1,12 +1,14 @@
-﻿using HospitalManagement.Entity;
-using HospitalManagement.Database;
+﻿using HospitalManagement.Database;
+using HospitalManagement.Entity;
+using HospitalManagement.Interfaces.Repository;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
+using System.Collections.ObjectModel;
 
 namespace HospitalManagement.Repository;
 
-public class TransplantRepository
+internal class TransplantRepository : ITransplantRepository
 {
     private readonly HospitalDbContext _context;
 
@@ -30,8 +32,6 @@ public class TransplantRepository
     {
         ArgumentNullException.ThrowIfNull(transplant);
 
-        // DECI TOATA PARTEA ASTA CU TRANSPLANT NU VA FUNCTIONA PANA NU SE SCOATE DONOR_ID NOT NULL
-        // DUPA CE VA FI NULL VA FI OK ACEST COD (si requirementurile) - DONE
         string sql = $@"
             INSERT INTO Transplants (ReceiverID, DonorID, OrganType, RequestDate, TransplantDate, Status, CompatibilityScore)
             VALUES (
@@ -47,7 +47,7 @@ public class TransplantRepository
         _ = _context.ExecuteNonQuery(sql);
     }
 
-    public List<Transplant> GetWaitingByOrgan(string organType)
+    public Collection<Transplant> GetWaitingByOrgan(string organType)
     {
         string sql = $@"
             SELECT t.*, mh.BloodType, mh.RH, mh.ChronicConditions 
@@ -57,7 +57,6 @@ public class TransplantRepository
 
         return GetListByQuery(sql);
     }
-
 
     public void Update(int id, int donorId, float score)
     {
@@ -71,8 +70,7 @@ public class TransplantRepository
         _ = _context.ExecuteNonQuery(sql);
     }
 
-
-    public List<Transplant> GetTopMatches(string organType)
+    public Collection<Transplant> GetTopMatches(string organType)
     {
         string sql = $@"
                 SELECT TOP 5 t.* FROM Transplants t
@@ -82,17 +80,17 @@ public class TransplantRepository
         return GetListByQuery(sql);
     }
 
-    public List<Transplant> GetByReceiverId(int receiverId)
+    public Collection<Transplant> GetByReceiverId(int receiverId)
     {
         return GetListByQuery($"SELECT * FROM Transplants WHERE ReceiverID = {receiverId}");
     }
 
-    public List<Transplant> GetByDonorId(int donorId)
+    public Collection<Transplant> GetByDonorId(int donorId)
     {
         return GetListByQuery($"SELECT * FROM Transplants WHERE DonorID = {donorId}");
     }
 
-    private List<Transplant> GetListByQuery(string sql)
+    private Collection<Transplant> GetListByQuery(string sql)
     {
         var list = new List<Transplant>();
         using (SqlDataReader reader = _context.ExecuteQuery(sql))
@@ -113,11 +111,9 @@ public class TransplantRepository
             }
         }
 
-        return list;
+        return new Collection<Transplant>(list);
     }
 
-
-    // Added - for transplant Service
     public Transplant? GetById(int id)
     {
         string sql = $"SELECT * FROM Transplants WHERE TransplantID = {id}";
@@ -130,7 +126,7 @@ public class TransplantRepository
                 TransplantId = (int)reader["TransplantID"],
                 ReceiverId = (int)reader["ReceiverID"],
                 DonorId = reader["DonorID"] == DBNull.Value ? null : (int)reader["DonorID"],
-                OrganType = reader["OrganType"] as string ?? string.Empty,
+                OrganType = reader["OrganType"] as string ?? "",
                 RequestDate = (DateTime)reader["RequestDate"],
                 TransplantDate = reader["TransplantDate"] == DBNull.Value ? null : (DateTime)reader["TransplantDate"],
                 Status = Enum.Parse<Entity.Enums.TransplantStatus>(reader.GetString(reader.GetOrdinal("Status"))),

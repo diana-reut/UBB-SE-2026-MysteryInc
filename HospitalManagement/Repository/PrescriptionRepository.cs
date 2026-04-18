@@ -1,15 +1,17 @@
-﻿using HospitalManagement.Entity;
-using HospitalManagement.Database;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using HospitalManagement.Integration;
+using System.Collections.ObjectModel;
 using System.Linq;
+using HospitalManagement.Database;
+using HospitalManagement.Entity;
 using HospitalManagement.Entity.DTOs;
+using HospitalManagement.Integration;
+using HospitalManagement.Interfaces.Repository;
 using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
-public class PrescriptionRepository
+internal class PrescriptionRepository : IPrescriptionRepository
 {
     private readonly HospitalDbContext _context;
 
@@ -55,10 +57,9 @@ public class PrescriptionRepository
             };
         }
 
-        // Load medication items after reader is closed
         if (prescription is not null)
         {
-            prescription.MedicationList = GetItems(prescription.Id);
+            prescription.MedicationList = [.. GetItems(prescription.Id)];
         }
 
         return prescription;
@@ -166,8 +167,8 @@ public class PrescriptionRepository
             _context.BeginTransaction();
 
             string notesValue = prescription.DoctorNotes is null
-            ? "NULL"
-            : $"'{Escape(prescription.DoctorNotes)}'";
+                ? "NULL"
+                : $"'{Escape(prescription.DoctorNotes)}'";
 
             string dateValue = prescription.Date == default
                 ? "CONVERT(DATE, GETDATE())"
@@ -208,7 +209,7 @@ public class PrescriptionRepository
     }
 
     // RP21 Pagination
-    public List<Prescription> GetTopN(int n, int page)
+    public Collection<Prescription> GetTopN(int n, int page)
     {
         if (n <= 0)
         {
@@ -257,20 +258,20 @@ public class PrescriptionRepository
 
         foreach (Prescription rx in list)
         {
-            rx.MedicationList = GetItems(rx.Id);
+            rx.MedicationList = [.. GetItems(rx.Id)];
         }
 
-        return list;
+        return new Collection<Prescription>(list);
     }
 
     // RP22
-    public List<PrescriptionItem> GetItems(int prescriptionId)
+    public Collection<PrescriptionItem> GetItems(int prescriptionId)
     {
         var items = new List<PrescriptionItem>();
 
         if (prescriptionId <= 0)
         {
-            return items;
+            return new Collection<PrescriptionItem>(items);
         }
 
         _context.EnsureConnectionOpen();
@@ -293,11 +294,11 @@ public class PrescriptionRepository
             }
         }
 
-        return items;
+        return new Collection<PrescriptionItem>(items);
     }
 
     // RP20 Filtering
-    public List<Prescription> GetFiltered(PrescriptionFilter filter)
+    public Collection<Prescription> GetFiltered(PrescriptionFilter filter)
     {
         if (filter is null)
         {
@@ -412,21 +413,20 @@ public class PrescriptionRepository
 
         foreach (Prescription rx in list)
         {
-            rx.MedicationList = GetItems(rx.Id);
+            rx.MedicationList = [.. GetItems(rx.Id)];
         }
 
-        return list;
+        return new Collection<Prescription>(list);
     }
 
-    public List<Prescription> GetAll()
+    public Collection<Prescription> GetAll()
     {
         _context.EnsureConnectionOpen();
         var prescriptions = new List<Prescription>();
 
-        string query = $"SELECT * FROM Prescription";
+        const string Query = "SELECT * FROM Prescription";
 
-        // First pass: retrieve prescription headers without items
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (SqlDataReader reader = _context.ExecuteQuery(Query))
         {
             while (reader.Read())
             {
@@ -436,24 +436,23 @@ public class PrescriptionRepository
                     RecordId = (int)reader["RecordID"],
                     DoctorNotes = reader["DoctorNotes"] == DBNull.Value ? null : reader["DoctorNotes"].ToString(),
                     Date = (DateTime)reader["Date"],
-                    MedicationList = [], // Initialize empty list
+                    MedicationList = [],
                 };
 
                 prescriptions.Add(prescription);
             }
         }
 
-        // Second pass: load medication items for each prescription (after reader is closed)
         foreach (Prescription prescription in prescriptions)
         {
-            prescription.MedicationList = GetItems(prescription.Id);
+            prescription.MedicationList = [.. GetItems(prescription.Id)];
         }
 
-        return prescriptions;
+        return new Collection<Prescription>(prescriptions);
     }
 
     // AD1: Addict Detection Logic
-    public List<Patient> GetAddictCandidatePatients()
+    public Collection<Patient> GetAddictCandidatePatients()
     {
         var flagList = new List<Patient>();
 
@@ -504,6 +503,7 @@ public class PrescriptionRepository
             }
         }
 
-        return [.. flagList.GroupBy(p => p.Id).Select(g => g.First())];
+        var deduped = flagList.GroupBy(p => p.Id).Select(g => g.First()).ToList();
+        return new Collection<Patient>(deduped);
     }
 }

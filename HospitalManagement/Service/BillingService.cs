@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HospitalManagement.Repository;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Entity;
+using System.Collections.ObjectModel;
 
 namespace HospitalManagement.Service;
 
@@ -26,7 +27,7 @@ internal class BillingService
         decimal score = 0;
         MedicalRecord? record = _recordRepo.GetById(recordId);
         Prescription? prescription = _prescriptionRepo.GetByRecordId(recordId);
-        List<PrescriptionItem> prescriptionItems;
+        Collection<PrescriptionItem> prescriptionItems;
         if (prescription is not null)
         {
             prescriptionItems = _prescriptionRepo.GetItems(prescription.Id);
@@ -45,7 +46,7 @@ internal class BillingService
 
         List<string> chronicConditions = _historyRepo.GetChronicConditions(history.Id);
         List<(Allergy Allergy, string SeverityLevel)> allergies = _historyRepo.GetAllergiesByHistoryId(history.Id);
-        List<Transplant> associatedTransplants = _transplantRepo.GetByReceiverId(patientId);
+        Collection<Transplant> associatedTransplants = _transplantRepo.GetByReceiverId(patientId);
 
         if (record.SourceType == SourceType.ER)
         {
