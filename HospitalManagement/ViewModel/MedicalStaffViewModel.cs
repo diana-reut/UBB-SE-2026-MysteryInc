@@ -21,7 +21,7 @@ namespace HospitalManagement.ViewModel
         private readonly IPatientService _patientService;
         private Patient _selectedPatient;
 
-        private readonly GhostService _ghostService;
+        private readonly IGhostService _ghostService;
 
         private bool _isExorcismAlertVisible;
         public bool IsExorcismAlertVisible
