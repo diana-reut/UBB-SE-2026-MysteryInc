@@ -39,7 +39,7 @@ public sealed partial class MainWindow : Window
         {
             if (_viewModel.CurrentView?.ToString() == "PharmacistDashboard")
             {
-                var pharmacistWindow = new View.PharmacistView();
+                PharmacistView pharmacistWindow = (App.Current as App).Services.GetRequiredService<PharmacistView>();
                 pharmacistWindow.Activate();
                 Close();
             }

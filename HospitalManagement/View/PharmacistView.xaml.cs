@@ -1,9 +1,8 @@
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using HospitalManagement.ViewModel;
-using HospitalManagement.Database;
-using HospitalManagement.Repository;
-using HospitalManagement.Service;
+using System;
 
 namespace HospitalManagement.View;
 
@@ -11,9 +10,13 @@ internal sealed partial class PharmacistView : Window
 {
     private readonly PharmacistViewModel _viewModel;
 
-    public PharmacistView()
+    private readonly IServiceProvider _services;
+
+    public PharmacistView(PharmacistViewModel viewModel, IServiceProvider services)
     {
         InitializeComponent();
+        _services = services;
+        _viewModel = viewModel;
 
         // Deschiderea Full Screen (Maximizatã)
         nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -24,8 +27,6 @@ internal sealed partial class PharmacistView : Window
             presenter.Maximize();
         }
 
-        // Ini?ializãm ViewModel ?i abonãm evenimentul
-        _viewModel = new PharmacistViewModel();
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         // Setãm DataContext-ul pentru bindings
@@ -52,44 +53,13 @@ internal sealed partial class PharmacistView : Window
         {
             case "Prescriptions":
             {
-                var prescriptionView = new PrescriptionView();
-
-                using var dbContext = new HospitalDbContext();
-                var prescriptRepo = new PrescriptionRepository(dbContext);
-                var medHistoryRepo = new MedicalHistoryRepository(dbContext);
-
-                var pService = new PrescriptionService(prescriptRepo);
-                var aService = new AddictDetectionService(prescriptRepo, medHistoryRepo);
-
-                var prescriptionVM = new PrescriptionViewModel(pService, aService);
-
-                prescriptionView.ViewModel = prescriptionVM;
-                prescriptionView.DataContext = prescriptionVM;
-
+                PrescriptionView prescriptionView = _services.GetRequiredService<PrescriptionView>();
                 MainContentArea.Content = prescriptionView;
                 break;
             }
             case "Addicts":
             {
-                // 1. Instan?iem View-ul de Addicts (în locul The Placeholder-ului de tip TextBlock)
-                var addictView = new AddictView();
-
-                // 2. Re-generãm conexiunile la BD ca la Presciptions
-                using var dbContextAddict = new HospitalDbContext();
-                var prescriptRepoAddict = new PrescriptionRepository(dbContextAddict);
-                var medHistoryRepoAddict = new MedicalHistoryRepository(dbContextAddict);
-
-                // 3. Creãm Serviciul pentru adic?ii
-                var addictDetectionService = new AddictDetectionService(prescriptRepoAddict, medHistoryRepoAddict);
-
-                // 4. Instan?iem automat ViewModel-ul pt AddictView
-                var addictViewModel = new AddictViewModel(addictDetectionService);
-
-                // 5. Legãm model-ul de XAML
-                addictView.ViewModel = addictViewModel;
-                addictView.DataContext = addictViewModel;
-
-                // 6. Afi?eazã efectiv controlul pe ecran
+                AddictView addictView = _services.GetRequiredService<AddictView>();
                 MainContentArea.Content = addictView;
                 break;
             }

@@ -1,3 +1,4 @@
+using HospitalManagement.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -7,15 +8,17 @@ namespace HospitalManagement.View;
 
 internal sealed partial class AddictView : UserControl
 {
-    public ViewModel.AddictViewModel ViewModel { get; set; } = null!;
+    public AddictViewModel ViewModel { get; set; }
 
     [DllImport("user32.dll")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     public static extern bool MessageBeep(uint uType);
 
-    public AddictView()
+    public AddictView(AddictViewModel viewModel)
     {
         InitializeComponent();
+        ViewModel = viewModel;
+        DataContext = ViewModel;
     }
 
     private async void OnNotifyPoliceClickedAsync(object sender, RoutedEventArgs e)
