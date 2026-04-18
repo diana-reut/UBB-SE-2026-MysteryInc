@@ -30,7 +30,7 @@ internal class PatientService : IPatientService
     }
 
     // Validates that the CNP matches the provided Sex and Date of Birth.
-    public static bool ValidateCNP(string cnp, Sex sex, DateTime dob)
+    public bool ValidateCNP(string cnp, Sex sex, DateTime dob)
     {
         // 1. Basic sanity checks: Must be exactly 13 digits
         if (string.IsNullOrWhiteSpace(cnp) || cnp.Length != 13 || !cnp.All(char.IsDigit))

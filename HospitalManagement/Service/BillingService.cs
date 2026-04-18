@@ -80,7 +80,7 @@ internal class BillingService : IBillingService
         return score;
     }
 
-    public static decimal ApplyDiscount(decimal basePrice, int discount)
+    public decimal ApplyDiscount(decimal basePrice, int discount)
     {
         return basePrice - basePrice * discount / 100;
     }

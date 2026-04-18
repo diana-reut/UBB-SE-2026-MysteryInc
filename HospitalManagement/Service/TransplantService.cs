@@ -33,8 +33,7 @@ internal class TransplantService : ITransplantService
 
     public void CreateWaitlistRequest(int receiverId, string organType)
     {
-        var receiver = _patientRepo.GetById(receiverId);
-        if (receiver == null) throw new ArgumentException("Receiver not found.");
+        _ = _patientRepo.GetById(receiverId) ?? throw new ArgumentException("Receiver not found.");
 
         var request = new Transplant
         {
@@ -43,7 +42,7 @@ internal class TransplantService : ITransplantService
             OrganType = organType,
             RequestDate = DateTime.Now,
             Status = TransplantStatus.Pending,
-            CompatibilityScore = 0
+            CompatibilityScore = 0,
         };
 
         _transplantRepo.Add(request);
@@ -51,40 +50,57 @@ internal class TransplantService : ITransplantService
 
     public List<Transplant> GetTopMatchesForDonor(int donorId, string organType)
     {
-        var donor = _patientRepo.GetById(donorId);
-        if (donor == null || !donor.IsDeceased || !donor.IsDonor)
+        Patient? donor = _patientRepo.GetById(donorId);
+        if (donor?.IsDeceased != true || !donor.IsDonor)
+        {
             throw new InvalidOperationException("Donor must be deceased and registered.");
+        }
 
         // FIX: Prevent null crashes by eager loading the history
         donor.MedicalHistory = _historyRepo.GetByPatientId(donor.Id);
 
-        var waitlist = _transplantRepo.GetWaitingByOrgan(organType);
+        List<Transplant> waitlist = _transplantRepo.GetWaitingByOrgan(organType);
         var scoredMatches = new List<Transplant>();
 
-        foreach (var request in waitlist)
+        foreach (Transplant request in waitlist)
         {
-            var receiver = _patientRepo.GetById(request.ReceiverId);
-            if (receiver == null) continue;
+            Patient? receiver = _patientRepo.GetById(request.ReceiverId);
+            if (receiver is null)
+            {
+                continue;
+            }
 
             // FIX: Eagerly load the receiver's history
             receiver.MedicalHistory = _historyRepo.GetByPatientId(receiver.Id);
 
-            if (receiver.MedicalHistory?.BloodType == null || receiver.MedicalHistory.Rh == null) continue;
+            if (receiver.MedicalHistory?.BloodType is null || receiver.MedicalHistory.Rh is null)
+            {
+                continue;
+            }
 
-            if (!_compatibilityService.IsBloodMatch(donor.MedicalHistory?.BloodType, receiver.MedicalHistory.BloodType.Value)) continue;
-            if (!_compatibilityService.IsRhMatch(donor.MedicalHistory?.Rh, receiver.MedicalHistory.Rh.Value)) continue;
+            if (!_compatibilityService.IsBloodMatch(donor.MedicalHistory?.BloodType, receiver.MedicalHistory.BloodType.Value))
+            {
+                continue;
+            }
 
-            if (receiver.MedicalHistory.ChronicConditions != null && receiver.MedicalHistory.ChronicConditions.Any()) continue;
+            if (!_compatibilityService.IsRhMatch(donor.MedicalHistory?.Rh, receiver.MedicalHistory.Rh.Value))
+            {
+                continue;
+            }
+
+            if (receiver.MedicalHistory.ChronicConditions is not null && receiver.MedicalHistory.ChronicConditions.Count != 0)
+            {
+                continue;
+            }
 
             request.CompatibilityScore = CalculatePostMortemScore(donor, receiver);
             scoredMatches.Add(request);
         }
 
-        return scoredMatches
+        return [.. scoredMatches
             .OrderByDescending(t => t.CompatibilityScore)
             .ThenBy(t => t.RequestDate)
-            .Take(5)
-            .ToList();
+            .Take(5)];
     }
 
     public void AssignDonor(int transplantId, int donorId, float finalScore)
@@ -94,32 +110,32 @@ internal class TransplantService : ITransplantService
 
     private float CalculatePostMortemScore(Patient donor, Patient receiver)
     {
-        float score = BloodCompatibilityService.CalculateScore(donor, receiver);
-        var threeMonthsAgo = DateTime.Now.AddMonths(-3);
+        float score = _compatibilityService.CalculateScore(donor, receiver);
+        DateTime threeMonthsAgo = DateTime.Now.AddMonths(-3);
         int erVisits = _recordRepo.GetERVisitCount(receiver.Id, threeMonthsAgo);
-        score += (erVisits >= 10) ? 20 : 5;
+        score += erVisits >= 10 ? 20 : 5;
         return score;
     }
 
     public bool IsUrgent(int patientId)
     {
-        var threeMonthsAgo = DateTime.Now.AddMonths(-3);
+        DateTime threeMonthsAgo = DateTime.Now.AddMonths(-3);
         int erVisits = _recordRepo.GetERVisitCount(patientId, threeMonthsAgo);
         return erVisits >= 10;
     }
 
     public string? GetChronicWarning(int patientId)
     {
-        var patient = _patientRepo.GetById(patientId);
+        Patient? patient = _patientRepo.GetById(patientId);
 
         // FIX: Actually fetch the conditions from the database!
-        if (patient != null)
+        if (patient is not null)
         {
             patient.MedicalHistory = _historyRepo.GetByPatientId(patientId);
         }
 
-        if (patient?.MedicalHistory?.ChronicConditions != null &&
-            patient.MedicalHistory.ChronicConditions.Any())
+        if (patient?.MedicalHistory?.ChronicConditions is not null
+            && patient.MedicalHistory.ChronicConditions.Count != 0)
         {
             return "Patient has underlying conditions that may affect transplant success.";
         }

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 
-public class ValidationResult
+internal class ValidationResult
 {
     public bool IsValid { get; set; } = true;
-    public List<string> Errors { get; set; } = new List<string>();
+
+    public List<string> Errors { get; set; } = [];
 
     public void AddError(string message)
     {

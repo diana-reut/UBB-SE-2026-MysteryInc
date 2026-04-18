@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 
 namespace HospitalManagement.Service;
+
 internal interface IAddictDetectionService
 {
-    string BuildPoliceReport(Patient patient);
-    List<Patient> GetAddictCandidates();
-    string GetChronicConditions(int patientId);
+    public string BuildPoliceReport(Patient patient);
+
+    public List<Patient> GetAddictCandidates();
+
+    public string GetChronicConditions(int patientId);
 }
