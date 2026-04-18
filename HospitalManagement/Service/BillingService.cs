@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace HospitalManagement.Service;
 
-internal class BillingService
+internal class BillingService : IBillingService
 {
     private readonly MedicalHistoryRepository _historyRepo;
     private readonly MedicalRecordRepository _recordRepo;

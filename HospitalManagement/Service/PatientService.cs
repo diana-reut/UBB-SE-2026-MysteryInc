@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace HospitalManagement.Service;
 
-internal class PatientService
+internal class PatientService : IPatientService
 {
     private readonly PatientRepository _patientRepo;
 

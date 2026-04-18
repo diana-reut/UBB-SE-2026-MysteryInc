@@ -3,7 +3,7 @@ using HospitalManagement.Integration;
 using System;
 using System.Collections.Generic;
 
-namespace HospitalManagement.Interfaces.Service;
+namespace HospitalManagement.Service;
 
 internal interface IPatientService
 {

@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 
 namespace HospitalManagement.Service;
 
-internal class PrescriptionService
+internal class PrescriptionService : IPrescriptionService
 {
     private readonly PrescriptionRepository _prescriptionRepository;
 
