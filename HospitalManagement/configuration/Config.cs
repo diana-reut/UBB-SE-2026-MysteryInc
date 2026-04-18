@@ -10,7 +10,7 @@ namespace HospitalManagement.Configuration
 
         public static void Load()
         {
-            string filePath = Path.Combine(AppContext.BaseDirectory, "configuration", "appsettings.template.json");
+            string filePath = Path.Combine(AppContext.BaseDirectory, "Configuration", "appsettings.local.json");
 
             if (!File.Exists(filePath))
             {
