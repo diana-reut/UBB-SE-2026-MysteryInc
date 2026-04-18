@@ -2,7 +2,7 @@
 
 namespace HospitalManagement.Integration.External;
 
-public class StaffProxy : IExternalProvider  // THIS IS A SKELETON FOR THE NEXT TEAM , MEDICAL STAFF PART , IN THEIR TEMPORARY LIST LOGIC SHOULD IMPLEMENT THIS
+internal class StaffProxy : IExternalProvider  // THIS IS A SKELETON FOR THE NEXT TEAM , MEDICAL STAFF PART , IN THEIR TEMPORARY LIST LOGIC SHOULD IMPLEMENT THIS
 {
     private readonly ExternalPatientPublisher _publisher;
 

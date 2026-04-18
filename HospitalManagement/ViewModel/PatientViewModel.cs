@@ -280,7 +280,7 @@ namespace HospitalManagement.ViewModel
                 try
                 {
                     // Use BillingService to calculate the final price correctly
-                    decimal calculatedFinalPrice = _billingService.ApplyDiscount(BasePrice, discount);
+                    decimal calculatedFinalPrice = BillingService.ApplyDiscount(BasePrice, discount);
                     
                     // Update the medical record with discount and final price
                     SelectedMedicalRecord.DiscountApplied = discount;

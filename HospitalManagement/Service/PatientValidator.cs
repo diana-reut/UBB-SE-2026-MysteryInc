@@ -8,9 +8,9 @@ using System.Text.RegularExpressions;
 
 namespace HospitalManagement.Service;
 
-public class PatientValidator
+internal static class PatientValidator
 {
-    public void ValidateUpdate(Patient newDetails, Patient existingPatient)
+    public static void ValidateUpdate(Patient newDetails, Patient existingPatient)
     {
         if (newDetails is null || existingPatient is null)
         {
@@ -28,7 +28,7 @@ public class PatientValidator
         }
     }
 
-    public ValidationResult ValidatePatient(Patient patient)
+    public static ValidationResult ValidatePatient(Patient patient)
     {
         var result = new ValidationResult();
         // for this line above if there is an error replace with this: var result = new global::ValidationResult();
@@ -135,7 +135,7 @@ public class PatientValidator
         }
     }
 
-    public ValidationResult ValidateMedicalHistory(MedicalHistory history, MedicalHistory? existingHistory = null)
+    public static ValidationResult ValidateMedicalHistory(MedicalHistory history, MedicalHistory? existingHistory = null)
     {
         var result = new ValidationResult();
 

@@ -46,7 +46,7 @@ namespace HospitalManagement.ViewModel
             Prescriptions.Clear();
             InfoMessage = string.Empty;
 
-            var fakeDoctors = MockDoctorProvider.GetFakeDoctors();
+            var fakeDoctors = MockDoctorProvider.FakeDoctors;
             var random = new Random();
 
             bool hasActiveFilter = 

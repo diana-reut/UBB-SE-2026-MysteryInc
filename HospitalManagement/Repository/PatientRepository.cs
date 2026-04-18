@@ -365,5 +365,4 @@ internal class PatientRepository
         string query = $"DELET FROM Patient WHERE PatientID={id}";
         _ = _context.ExecuteNonQuery(query);
     }
-
 }

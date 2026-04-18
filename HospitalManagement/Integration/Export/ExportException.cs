@@ -2,10 +2,12 @@
 
 namespace HospitalManagement.Integration.Export;
 
-public class ExportException : Exception
+internal class ExportException : Exception
 {
     public ExportException(string message)
-        : base(message) { }
+        : base(message)
+    {
+    }
 
     public ExportException()
     {

@@ -1,6 +1,6 @@
 ﻿namespace HospitalManagement.Entity.DTOs;
 
-public class DoctorDTO
+internal class DoctorDTO
 {
     public int DoctorId { get; set; }
 

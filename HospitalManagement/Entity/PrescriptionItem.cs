@@ -1,6 +1,6 @@
 ﻿namespace HospitalManagement.Entity;
 
-public class PrescriptionItem
+internal class PrescriptionItem
 {
     public int PrescrItemId { get; set; }
 

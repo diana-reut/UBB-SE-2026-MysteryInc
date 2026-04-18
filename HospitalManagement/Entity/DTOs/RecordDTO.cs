@@ -3,7 +3,7 @@ using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Entity.DTOs;
 
-public class RecordDTO
+internal class RecordDTO
 {
     public int ExternalRecordId { get; set; }
 

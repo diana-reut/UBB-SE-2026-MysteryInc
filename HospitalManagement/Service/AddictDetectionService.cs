@@ -82,7 +82,7 @@ internal class AddictDetectionService
         var reportBuilder = new System.Text.StringBuilder();
 
         _ = reportBuilder.AppendLine("==================================================")
-            .AppendLine( "           LAW ENFORCEMENT ALERT REPORT           ")
+            .AppendLine("           LAW ENFORCEMENT ALERT REPORT           ")
             .AppendLine("==================================================")
             .AppendLine(CultureInfo.InvariantCulture, $"DATE GENERATED: {DateTime.Now:yyyy-MM-dd HH:mm}")
             .AppendLine(CultureInfo.InvariantCulture, $"SUBJECT: {patient.FirstName} {patient.LastName} (CNP: {patient.Cnp})")

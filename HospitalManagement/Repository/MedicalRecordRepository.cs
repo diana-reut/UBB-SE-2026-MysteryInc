@@ -16,7 +16,7 @@ internal class MedicalRecordRepository
         _context = context;
     }
 
-    public List<MedicalRecord> GetByHistoryId(int historyId) //RP15
+    public List<MedicalRecord> GetByHistoryId(int historyId) // RP15
     {
         var records = new List<MedicalRecord>();
         string query = $"SELECT * FROM MedicalRecord WHERE HistoryID={historyId}";
@@ -27,10 +27,11 @@ internal class MedicalRecordRepository
                 records.Add(MapToMedicalRecord(reader));
             }
         }
+
         return records;
     }
 
-    public MedicalRecord? GetById(int id) //RP15
+    public MedicalRecord? GetById(int id) // RP15
     {
         string query = $"SELECT * FROM MedicalRecord WHERE RecordID={id}";
         using SqlDataReader reader = _context.ExecuteQuery(query);
@@ -237,8 +238,8 @@ internal class MedicalRecordRepository
     {
         _context.EnsureConnectionOpen();
         var records = new List<MedicalRecord>();
-        string query = $"SELECT * FROM MedicalRecord";
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        const string Query = "SELECT * FROM MedicalRecord";
+        using (SqlDataReader reader = _context.ExecuteQuery(Query))
         {
             while (reader.Read())
             {

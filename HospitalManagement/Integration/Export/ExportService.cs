@@ -43,6 +43,6 @@ internal class ExportService
             items = _prescriptionRepo.GetItems(prescription.Id);
         }
 
-        return _pdfGen.GenerateRecordPDF(record, patient, prescription, items);
+        return PDFGenerator.GenerateRecordPDF(record, patient, prescription, items);
     }
 }

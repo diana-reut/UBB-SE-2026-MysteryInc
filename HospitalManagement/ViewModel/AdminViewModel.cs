@@ -338,7 +338,7 @@ namespace HospitalManagement.ViewModel
                 isValid = false;
             }
             // This cross-references the CNP digits against the Sex/DOB fields
-            else if (!_patientService.ValidateCNP(NewPatient.Cnp, NewPatient.Sex, NewPatient.Dob))
+            else if (!PatientService.ValidateCNP(NewPatient.Cnp, NewPatient.Sex, NewPatient.Dob))
             {
                 ValidationErrors.Add("CNP logic error: It doesn't match the Sex or Birth Date provided.");
                 isValid = false;

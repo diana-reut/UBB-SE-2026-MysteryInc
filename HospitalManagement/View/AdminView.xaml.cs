@@ -106,7 +106,7 @@ namespace HospitalManagement.View
                                         medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
                                         
                                         // CreateMedicalHistory will handle saving allergies from MedicalHistory.Allergies
-                                        patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory, new List<Allergy>());
+                                        patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
 
                                         ContentDialog successAlert = new ContentDialog
                                         {

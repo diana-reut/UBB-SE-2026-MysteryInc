@@ -96,7 +96,7 @@ internal class BloodCompatibilityService
             .Take(20)];
     }
 
-    public int CalculateScore(Patient donor, Patient recipient)
+    public static int CalculateScore(Patient donor, Patient recipient)
     {
         int total = 0;
 
@@ -129,7 +129,7 @@ internal class BloodCompatibilityService
         return total;
     }
 
-    public bool IsBloodMatch(BloodType? donor, BloodType receiver)
+    public static bool IsBloodMatch(BloodType? donor, BloodType receiver)
     {
         if (donor is null)
         {
@@ -159,7 +159,7 @@ internal class BloodCompatibilityService
         return false;
     }
 
-    public bool IsRhMatch(RhEnum? donor, RhEnum receiver)
+    public static bool IsRhMatch(RhEnum? donor, RhEnum receiver)
     {
         if (donor is null)
         {

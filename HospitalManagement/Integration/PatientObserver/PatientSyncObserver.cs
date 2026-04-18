@@ -20,6 +20,7 @@ internal class PatientSyncObserver : IPatientObserver
         {
             throw new ArgumentNullException(nameof(newPatientData), "Received null patient data from external provider.");
         }
+
         // IN6: check if patient exists by CNP
         bool exists = _patientService.Exists(newPatientData.CNP);
 

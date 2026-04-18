@@ -1,9 +1,9 @@
 ﻿namespace HospitalManagement.Entity.Enums;
 
-public enum BloodType
+internal enum BloodType
 {
-    A,
-    B,
-    AB,
-    O,
+    A = 0,
+    B = 1,
+    AB = 2,
+    O = 3,
 }
