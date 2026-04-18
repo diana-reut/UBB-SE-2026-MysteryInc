@@ -13,8 +13,9 @@ using System.Linq;
 using Microsoft.UI;
 namespace HospitalManagement.View
 {
-    internal sealed partial class AdminView : Window, IDisposable
+    internal sealed partial class AdminView : Window
     {
+        // NOTE it is very wierd that the view model passes logic onto the view but we will keep it like that because I will go mad fixing it
         private readonly AdminViewModel _viewModel;
 
         internal AdminView(AdminViewModel adminViewModel)
@@ -34,7 +35,6 @@ namespace HospitalManagement.View
             // 3. Initialize ViewModel & Bindings
             _viewModel = adminViewModel ?? throw new ArgumentNullException(nameof(adminViewModel));
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-            Closed += AdminView_Closed;
 
             // 4. Set DataContext
             if (Content is FrameworkElement rootElement)
@@ -60,33 +60,37 @@ namespace HospitalManagement.View
                         {
                             try
                             {
+                                // FIXME : This needs to be moved in a service, tf are allergies doing here
                                 // Load all available allergies from database
                                 var allergiesList = new List<Allergy>();
-                                string allergyQuery = "SELECT AllergyId, AllergyName, AllergyType, AllergyCategory FROM Allergy";
-                                using (SqlDataReader reader = _dbContext.ExecuteQuery(allergyQuery))
+                                const string AllergyQuery = "SELECT AllergyId, AllergyName, AllergyType, AllergyCategory FROM Allergy";
+                                using (SqlDataReader reader = _dbContext.ExecuteQuery(AllergyQuery))
                                 {
                                     while (reader.Read())
                                     {
                                         allergiesList.Add(new Allergy
                                         {
                                             AllergyId = (int)reader["AllergyId"],
-                                            AllergyName = reader["AllergyName"].ToString(),
+                                            AllergyName = reader["AllergyName"]?.ToString(),
                                             AllergyType = reader["AllergyType"]?.ToString(),
-                                            AllergyCategory = reader["AllergyCategory"]?.ToString()
+                                            AllergyCategory = reader["AllergyCategory"]?.ToString(),
                                         });
                                     }
                                 }
 
-                                var medicalHistoryDialog = new MedicalHistoryDialog();
-                                medicalHistoryDialog.XamlRoot = rootElement.XamlRoot;
+                                var medicalHistoryDialog = new MedicalHistoryDialog
+                                {
+                                    XamlRoot = rootElement.XamlRoot,
+                                };
                                 medicalHistoryDialog.Initialize(allergiesList);
 
-                                var result = await medicalHistoryDialog.ShowAsync();
+                                ContentDialogResult result = await medicalHistoryDialog.ShowAsync();
 
-                                if (result == ContentDialogResult.Primary && medicalHistoryDialog.MedicalHistory != null)
+                                if (result == ContentDialogResult.Primary && medicalHistoryDialog.MedicalHistory is not null)
                                 {
                                     try
                                     {
+                                        // FIXME: make use of dependency injection
                                         var hRepo = new MedicalHistoryRepository(_dbContext);
                                         var patientRepo = new PatientRepository(_dbContext);
                                         var recordRepo = new MedicalRecordRepository(_dbContext);
@@ -97,37 +101,37 @@ namespace HospitalManagement.View
                                         // CreateMedicalHistory will handle saving allergies from MedicalHistory.Allergies
                                         patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory, new List<Allergy>());
 
-                                        ContentDialog successAlert = new ContentDialog
+                                        var successAlert = new ContentDialog
                                         {
                                             Title = "Success",
                                             Content = "Medical history saved successfully!",
                                             CloseButtonText = "OK",
-                                            XamlRoot = rootElement.XamlRoot
+                                            XamlRoot = rootElement.XamlRoot,
                                         };
-                                        await successAlert.ShowAsync();
+                                        ContentDialogResult contentDialogResult = await successAlert.ShowAsync();
                                     }
                                     catch (Exception ex)
                                     {
-                                        ContentDialog errorAlert = new ContentDialog
+                                        var errorAlert = new ContentDialog
                                         {
                                             Title = "Error",
                                             Content = $"Error saving medical history: {ex.Message}",
                                             CloseButtonText = "OK",
-                                            XamlRoot = rootElement.XamlRoot
+                                            XamlRoot = rootElement.XamlRoot,
                                         };
-                                        await errorAlert.ShowAsync();
+                                        ContentDialogResult contentDialogResult = await errorAlert.ShowAsync();
                                     }
                                 }
                                 else if (medicalHistoryDialog.WasSkipped)
                                 {
-                                    ContentDialog skipAlert = new ContentDialog
+                                    var skipAlert = new ContentDialog
                                     {
                                         Title = "Skipped",
                                         Content = "You can add medical history later from the patient profile.",
                                         CloseButtonText = "OK",
-                                        XamlRoot = rootElement.XamlRoot
+                                        XamlRoot = rootElement.XamlRoot,
                                     };
-                                    await skipAlert.ShowAsync();
+                                    ContentDialogResult contentDialogResult = await skipAlert.ShowAsync();
                                 }
                             }
                             catch (Exception ex)
@@ -138,38 +142,38 @@ namespace HospitalManagement.View
 
                     _viewModel.ConfirmAction = async (message, title) =>
                         {
-                            ContentDialog confirmDialog = new ContentDialog
+                            var confirmDialog = new ContentDialog
                             {
                                 Title = title,
                                 Content = message,
                                 PrimaryButtonText = "Yes, Archive",
                                 CloseButtonText = "Cancel",
                                 DefaultButton = ContentDialogButton.Close,
-                                XamlRoot = rootElement.XamlRoot
+                                XamlRoot = rootElement.XamlRoot,
                             };
 
-                            var result = await confirmDialog.ShowAsync();
+                            ContentDialogResult result = await confirmDialog.ShowAsync();
                             return result == ContentDialogResult.Primary;
                         };
 
                     _viewModel.RequestDateAction = async (message, title) =>
                         {
-                            DatePicker datePicker = new DatePicker
+                            var datePicker = new DatePicker
                             {
                                 Header = message,
-                                HorizontalAlignment = HorizontalAlignment.Stretch
+                                HorizontalAlignment = HorizontalAlignment.Stretch,
                             };
 
-                            ContentDialog dialog = new ContentDialog
+                            var dialog = new ContentDialog
                             {
                                 Title = title,
                                 Content = datePicker,
                                 PrimaryButtonText = "Confirm",
                                 CloseButtonText = "Cancel",
-                                XamlRoot = rootElement.XamlRoot
+                                XamlRoot = rootElement.XamlRoot,
                             };
 
-                            var result = await dialog.ShowAsync();
+                            ContentDialogResult result = await dialog.ShowAsync();
 
                             if (result == ContentDialogResult.Primary)
                             {
@@ -182,7 +186,7 @@ namespace HospitalManagement.View
                     // Organ Donor Dialog Logic
                     _viewModel.OpenOrganDonorDialogAction = async (deceasedPatient) =>
                         {
-                            if (deceasedPatient == null)
+                            if (deceasedPatient is null)
                             {
                                 _viewModel.ShowAlertAction?.Invoke("Patient not selected.");
                                 return;
@@ -190,6 +194,8 @@ namespace HospitalManagement.View
 
                             try
                             {
+
+                                // FIXME: make use of dependency injection
                                 // Create Services
                                 var prRepo = new PrescriptionRepository(_dbContext);
                                 var tRepo = new TransplantRepository(_dbContext);
@@ -197,12 +203,16 @@ namespace HospitalManagement.View
                                 var transplantService = new TransplantService(tRepo, (PatientRepository)pRepo, (MedicalRecordRepository)rRepo, new BloodCompatibilityService(pRepo, hRepo), hRepo);
 
                                 // Create ViewModel
-                                var organDonorViewModel = new OrganDonorViewModel(transplantService, pRepo, hRepo);
-                                organDonorViewModel?.DeceasedPatient = deceasedPatient;
+                                var organDonorViewModel = new OrganDonorViewModel(transplantService, pRepo, hRepo)
+                                {
+                                    DeceasedPatient = deceasedPatient,
+                                };
 
                                 // Create Dialog
-                                var dialog = new OrganDonorDialog();
-                                dialog.XamlRoot = rootElement.XamlRoot;
+                                var dialog = new OrganDonorDialog
+                                {
+                                    XamlRoot = rootElement.XamlRoot,
+                                };
 
                                 // Initialize with confirmation callback
                                 dialog.Initialize(
@@ -237,6 +247,7 @@ namespace HospitalManagement.View
                 UpdateView(_viewModel.CurrentView);
             }
         }
+
         private async void OpenAddPatientDialog(object sender, RoutedEventArgs e)
         {
             AddPatientDialog dialog = new AddPatientDialog();
@@ -249,11 +260,6 @@ namespace HospitalManagement.View
                 _viewModel.NewPatient = dialog.NewPatient;
                 _viewModel.AddPatientCommand.Execute(null);
             }
-        }
-
-        private void AdminView_Closed(object sender, WindowEventArgs args) 
-        {
-            Dispose();
         }
 
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs? e)
@@ -279,43 +285,44 @@ namespace HospitalManagement.View
 
         private void OpenStatisticsWindow()
         {
+            // FIXME: Pass statistics via constructor
             var statisticsWindow = new StatisticsWindow(_dbContext);
             statisticsWindow.Activate();
         }
 
         private void OpenArchive_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (this.Content is Microsoft.UI.Xaml.FrameworkElement fe && fe.DataContext is AdminViewModel vm)
+            if (Content is FrameworkElement fe && fe.DataContext is AdminViewModel vm)
             {
                 vm.IsArchivedMode = true;
             }
             // Alternatively, if the Window itself holds the DataContext:
-            else if (this is Microsoft.UI.Xaml.Window w && w.Content is Microsoft.UI.Xaml.FrameworkElement feWindow && feWindow.DataContext is AdminViewModel vmWin)
+            else if (Content is FrameworkElement feWindow && feWindow.DataContext is AdminViewModel vmWin)
             {
                 vmWin.IsArchivedMode = true;
             }
-            
         }
 
         private void BackToActive_Click(object sender, RoutedEventArgs e)
         {
-            if (this.Content is FrameworkElement root && root.DataContext is AdminViewModel vm)
+            if (Content is FrameworkElement root && root.DataContext is AdminViewModel vm)
             {
                 vm.IsArchivedMode = false;
             }
         }
 
-        private void OpenPage_Click(object sender, RoutedEventArgs e) => OpenStatisticsWindow();
+        private void OpenPage_Click(object sender, RoutedEventArgs e)
+        {
+            OpenStatisticsWindow();
+        }
 
         private void PatientListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
-            if (_viewModel?.SelectedPatient != null)
+            if (_viewModel?.SelectedPatient is not null)
             {
-                var patientView = new PatientView(_viewModel.SelectedPatient.Id, () => { });
+                using var patientView = new PatientView(_viewModel.SelectedPatient.Id, () => { });
                 patientView.Activate();
             }
         }
-
-        public void Dispose() => _dbContext?.Dispose();
     }
 }
