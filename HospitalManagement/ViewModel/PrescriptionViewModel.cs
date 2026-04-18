@@ -11,8 +11,8 @@ namespace HospitalManagement.ViewModel;
 
 internal class PrescriptionViewModel
 {
-    private readonly PrescriptionService _prescriptionService;
-    private readonly AddictDetectionService _addictDetectionService;
+    private readonly IPrescriptionService _prescriptionService;
+    private readonly IAddictDetectionService _addictDetectionService;
 
 
     public ObservableCollection<Prescription> Prescriptions { get; set; }
@@ -28,8 +28,8 @@ internal class PrescriptionViewModel
     private const int PageSize = 9;
 
     public PrescriptionViewModel(
-        PrescriptionService prescriptionService,
-        AddictDetectionService addictDetectionService)
+        IPrescriptionService prescriptionService,
+        IAddictDetectionService addictDetectionService)
     {
         _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
         _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));

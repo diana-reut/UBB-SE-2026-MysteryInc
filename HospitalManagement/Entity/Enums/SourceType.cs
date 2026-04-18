@@ -1,8 +1,8 @@
 ﻿namespace HospitalManagement.Entity.Enums;
 
-public enum SourceType
+internal enum SourceType
 {
-    ER,
-    App,
-    Admin,
+    ER = 0,
+    App = 1,
+    Admin = 2,
 }

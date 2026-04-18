@@ -2,7 +2,7 @@
 
 namespace HospitalManagement.Integration.External;
 
-public interface IExternalProvider
+internal interface IExternalProvider
 {
     public RecordDTO FetchRecordByPatientId(int patientId);
 

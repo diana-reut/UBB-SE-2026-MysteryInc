@@ -7,7 +7,7 @@ namespace HospitalManagement.ViewModel;
 
 internal class PharmacistViewModel : INotifyPropertyChanged
 {
-    private readonly GhostService _ghostService;
+    private readonly IGhostService _ghostService;
 
 
     private string? _currentView;

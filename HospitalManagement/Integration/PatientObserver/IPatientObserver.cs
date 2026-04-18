@@ -2,7 +2,7 @@
 
 namespace HospitalManagement.Integration.PatientObserver;
 
-public interface IPatientObserver
+internal interface IPatientObserver
 {
     public void OnNewExternalPatient(ExternalPatientDTO newPatientData);
 }

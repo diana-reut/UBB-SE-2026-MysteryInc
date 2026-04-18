@@ -14,14 +14,15 @@ namespace HospitalManagement.View;
 
 internal sealed partial class StatisticsWindow : Window, IDisposable
 {
-    private readonly HospitalDbContext _dbContext;
-    private readonly StatisticsService _statisticsService;
-    private string _currentStatistic = "";
-    private readonly bool _ownsDbContext;
-
-    public StatisticsWindow(HospitalDbContext? dbContext = null)
+    internal sealed partial class StatisticsWindow : Window
     {
-        InitializeComponent();
+        private IDbContext _dbContext;
+        private IStatisticsService _statisticsService;
+        private string _currentStatistic;
+
+        public StatisticsWindow(IDbContext dbContext = null)
+        {
+            this.InitializeComponent();
 
         // Use provided context or create new one
         if (dbContext is null)

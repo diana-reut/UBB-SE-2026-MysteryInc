@@ -8,9 +8,9 @@ using Paragraph = iText.Layout.Element.Paragraph;
 
 namespace HospitalManagement.Integration.Export;
 
-public class PDFGenerator
+internal static class PDFGenerator
 {
-    public string GenerateRecordPDF(
+    public static string GenerateRecordPDF(
         MedicalRecord record,
         Patient patient,
         Prescription? prescription,

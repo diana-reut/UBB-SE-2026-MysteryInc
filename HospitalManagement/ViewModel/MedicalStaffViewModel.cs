@@ -18,10 +18,10 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
     private string _searchQuery = "";
     private string _errorMessage = "";
     private ObservableCollection<Patient> _searchResults = [];
-    private readonly PatientService _patientService;
+    private readonly IPatientService _patientService;
     private Patient? _selectedPatient;
 
-    private readonly GhostService _ghostService;
+    private readonly IGhostService _ghostService;
 
     private bool _isExorcismAlertVisible;
 

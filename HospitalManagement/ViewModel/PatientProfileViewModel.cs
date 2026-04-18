@@ -11,9 +11,11 @@ namespace HospitalManagement.ViewModel;
 
 internal class PatientProfileViewModel : INotifyPropertyChanged
 {
-    private Patient? _patient;
-    private MedicalRecord? _selectedRecord;
-    private readonly PatientService _patientService;
+    public class PatientProfileViewModel : INotifyPropertyChanged
+    {
+        private Patient? _patient;
+        private MedicalRecord? _selectedRecord;
+        private readonly IPatientService _patientService;
 
     public Patient? CurrentPatient
     {

@@ -6,14 +6,14 @@ using HospitalManagement.Entity;
 
 namespace HospitalManagement.Service;
 
-internal class BillingService
+internal class BillingService : IBillingService
 {
-    private readonly MedicalHistoryRepository _historyRepo;
+    private readonly IMedicalHistoryRepository _historyRepo;
     private readonly MedicalRecordRepository _recordRepo;
     private readonly PrescriptionRepository _prescriptionRepo;
     private readonly TransplantRepository _transplantRepo;
 
-    public BillingService(MedicalHistoryRepository historyRepo, MedicalRecordRepository recordRepo, PrescriptionRepository prescriptionRepo, TransplantRepository transplantRepo)
+    public BillingService(IMedicalHistoryRepository historyRepo, MedicalRecordRepository recordRepo, PrescriptionRepository prescriptionRepo, TransplantRepository transplantRepo)
     {
         _historyRepo = historyRepo;
         _recordRepo = recordRepo;

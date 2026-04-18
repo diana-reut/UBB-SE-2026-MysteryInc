@@ -9,19 +9,19 @@ using System.Linq;
 
 namespace HospitalManagement.Service;
 
-internal class PatientService
+internal class PatientService : IPatientService
 {
-    private readonly PatientRepository _patientRepo;
+    private readonly IPatientRepository _patientRepo;
 
-    private readonly MedicalHistoryRepository _historyRepo;
-    private readonly MedicalRecordRepository _recordRepo;
-    private readonly PrescriptionRepository? _prescriptionRepo;
+    private readonly IMedicalHistoryRepository _historyRepo;
+    private readonly IMedicalRecordRepository _recordRepo;
+    private readonly IPrescriptionRepository? _prescriptionRepo;
 
     public PatientService(
-        PatientRepository patientRepo,
-        MedicalHistoryRepository historyRepo,
-        MedicalRecordRepository recordRepo,
-        PrescriptionRepository? prescriptionRepo = null)
+        IPatientRepository patientRepo,
+        IMedicalHistoryRepository historyRepo,
+        IMedicalRecordRepository recordRepo,
+        IPrescriptionRepository? prescriptionRepo = null)
     {
         _patientRepo = patientRepo;
         _historyRepo = historyRepo;
@@ -240,7 +240,7 @@ internal class PatientService
     // <summary>
     // SV3: Initializes the clinical profile for a patient.
     // </summary>
-    public void CreateMedicalHistory(int patientId, MedicalHistory history, List<Allergy> allergies)
+    public void CreateMedicalHistory(int patientId, MedicalHistory history)
     {
         // 1. Validate the patient exists
         _ = _patientRepo.GetById(patientId) ?? throw new ArgumentException($"Patient with ID {patientId} not found.");

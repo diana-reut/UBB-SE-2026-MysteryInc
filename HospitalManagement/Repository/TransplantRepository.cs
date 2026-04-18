@@ -2,15 +2,15 @@
 using HospitalManagement.Database;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
-public class TransplantRepository
+internal class TransplantRepository : ITransplantRepository
 {
-    private readonly HospitalDbContext _context;
+    private readonly IDbContext _context;
 
-    public TransplantRepository(HospitalDbContext context)
+    public TransplantRepository(IDbContext context)
     {
         _context = context;
     }
@@ -130,7 +130,7 @@ public class TransplantRepository
                 TransplantId = (int)reader["TransplantID"],
                 ReceiverId = (int)reader["ReceiverID"],
                 DonorId = reader["DonorID"] == DBNull.Value ? null : (int)reader["DonorID"],
-                OrganType = reader["OrganType"] as string ?? string.Empty,
+                OrganType = reader["OrganType"] as string ?? "",
                 RequestDate = (DateTime)reader["RequestDate"],
                 TransplantDate = reader["TransplantDate"] == DBNull.Value ? null : (DateTime)reader["TransplantDate"],
                 Status = Enum.Parse<Entity.Enums.TransplantStatus>(reader.GetString(reader.GetOrdinal("Status"))),

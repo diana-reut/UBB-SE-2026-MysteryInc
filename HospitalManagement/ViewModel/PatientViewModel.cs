@@ -9,13 +9,13 @@ using HospitalManagement.Service;
 using HospitalManagement.Integration.Export;
 using System.Collections.Generic;
 
-namespace HospitalManagement.ViewModel;
-
-internal class PatientViewModel : INotifyPropertyChanged
+namespace HospitalManagement.ViewModel
 {
-    private readonly PatientService _patientService;
-    private readonly ExportService? _exportService;
-    private readonly BillingService? _billingService;
+    internal class PatientViewModel : INotifyPropertyChanged
+    {
+        private readonly IPatientService _patientService;
+        private readonly ExportService? _exportService;
+        private readonly IBillingService? _billingService;
 
     private Patient? _selectedPatient;
 
@@ -188,18 +188,18 @@ internal class PatientViewModel : INotifyPropertyChanged
 
     public Action<Prescription>? OpenPrescriptionDialogAction { get; set; }
 
-    public PatientViewModel(PatientService patientService, ExportService? exportService = null, BillingService? billingService = null)
-    {
-        _patientService = patientService;
-        _exportService = exportService;
-        _billingService = billingService;
-        MedicalRecords = [];
-        Allergies = [];
-        BackCommand = new RelayCommand(GoBack);
-        ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
-        ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
-        ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
-    }
+        public PatientViewModel(IPatientService patientService, IExportService exportService = null, IBillingService billingService = null)
+        {
+            _patientService = patientService;
+            _exportService = exportService;
+            _billingService = billingService;
+            MedicalRecords = [];
+            Allergies = [];
+            BackCommand = new RelayCommand(GoBack);
+            ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
+            ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
+            ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
+        }
 
     public void LoadFullPatientProfile(int id)
     {

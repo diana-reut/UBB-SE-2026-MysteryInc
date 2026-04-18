@@ -12,7 +12,7 @@ namespace HospitalManagement.ViewModel;
 
 internal class StatisticsViewModel : INotifyPropertyChanged
 {
-    private readonly StatisticsService _statisticsService;
+    private readonly IStatisticsService _statisticsService;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -71,7 +71,7 @@ internal class StatisticsViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    public StatisticsViewModel(StatisticsService statisticsService)
+    public StatisticsViewModel(IStatisticsService statisticsService)
     {
         _statisticsService = statisticsService;
         SelectedStatistic = MenuOptions[0];

@@ -1,30 +1,33 @@
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
+using HospitalManagement.Entity;
+using HospitalManagement.Service;
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using HospitalManagement.ViewModel;
-using HospitalManagement.Repository;
-using HospitalManagement.Service;
-using HospitalManagement.Database;
-using HospitalManagement.Entity;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 
 namespace HospitalManagement.View;
 
-internal sealed partial class AdminView : Window, IDisposable
+internal sealed partial class AdminView : Window
 {
+    // NOTE it is very wierd that the view model passes logic onto the view but we will keep it like that because I will go mad fixing it
     private readonly AdminViewModel _viewModel;
-    private readonly HospitalDbContext _dbContext;
+    private readonly OrganDonorViewModel _organDonorViewModel;
+    private readonly IAllergyService _allergyService;
+    private readonly IPatientService _patientService;
+    private readonly ITransplantService _transplantService;
+    private StatisticsWindow _statisticsWindow;
 
-    public AdminView()
+    public AdminView(AdminViewModel adminViewModel, OrganDonorViewModel organDonorViewModel, IAllergyService allergyService, IPatientService patientService, ITransplantService transplantService)
     {
         InitializeComponent();
 
         // 1. Maximize Logic
         nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-        Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+        WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
         if (appWindow.Presenter is OverlappedPresenter presenter)
         {
@@ -32,29 +35,23 @@ internal sealed partial class AdminView : Window, IDisposable
         }
 
         // 2. Dependency Injection
-        _dbContext = new HospitalDbContext();
-        var pRepo = new PatientRepository(_dbContext);
-        var hRepo = new MedicalHistoryRepository(_dbContext);
-        var rRepo = new MedicalRecordRepository(_dbContext);
-        var service = new PatientService(pRepo, hRepo, rRepo);
+        _allergyService = allergyService ?? throw new ArgumentNullException(nameof(allergyService));
+        _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
+        _transplantService = transplantService ?? throw new ArgumentNullException(nameof(transplantService));
+        _organDonorViewModel = organDonorViewModel ?? throw new ArgumentNullException(nameof(organDonorViewModel));
 
         // 3. Initialize ViewModel & Bindings
-        _viewModel = new AdminViewModel(service);
+        _viewModel = adminViewModel ?? throw new ArgumentNullException(nameof(adminViewModel));
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
-        Closed += AdminView_Closed;
 
         // 4. Set DataContext
         if (Content is FrameworkElement rootElement)
         {
             rootElement.DataContext = _viewModel;
-
-            // YOUR CODE: Alert Logic
             rootElement.Loaded += (s, e) =>
             {
-                if (rootElement.DataContext is AdminViewModel vm)
-                {
-                    // Alert Logic
-                    vm.ShowAlertAction = async (message) =>
+                // Alert Logic
+                _viewModel.ShowAlertAction = async (message) =>
                     {
                         var alert = new ContentDialog
                         {
@@ -63,36 +60,22 @@ internal sealed partial class AdminView : Window, IDisposable
                             CloseButtonText = "OK",
                             XamlRoot = rootElement.XamlRoot,
                         };
-                        _ = await alert.ShowAsync();
+                        ContentDialogResult _ = await alert?.ShowAsync();
                     };
 
-                    // Medical History Dialog - Show directly on UI thread
-                    vm.ShowMedicalHistoryAction = async (newPatientId) =>
+                // Medical History Dialog - Show directly on UI thread
+                _viewModel.ShowMedicalHistoryAction = async (newPatientId) =>
                     {
                         try
                         {
                             // Load all available allergies from database
-                            var allergiesList = new List<Allergy>();
-                            const string AllergyQuery = "SELECT AllergyId, AllergyName, AllergyType, AllergyCategory FROM Allergy";
-                            await using (SqlDataReader reader = _dbContext.ExecuteQuery(AllergyQuery))
-                            {
-                                while (await reader.ReadAsync())
-                                {
-                                    allergiesList.Add(new Allergy
-                                    {
-                                        AllergyId = (int)reader["AllergyId"],
-                                        AllergyName = reader["AllergyName"].ToString() ?? "",
-                                        AllergyType = reader["AllergyType"]?.ToString(),
-                                        AllergyCategory = reader["AllergyCategory"]?.ToString(),
-                                    });
-                                }
-                            }
+                            IEnumerable<Allergy> allergiesList = _allergyService.GetAllergies();
 
                             var medicalHistoryDialog = new MedicalHistoryDialog
                             {
                                 XamlRoot = rootElement.XamlRoot,
                             };
-                            medicalHistoryDialog.Initialize(allergiesList);
+                            medicalHistoryDialog.Initialize([.. allergiesList]);
 
                             ContentDialogResult result = await medicalHistoryDialog.ShowAsync();
 
@@ -100,15 +83,10 @@ internal sealed partial class AdminView : Window, IDisposable
                             {
                                 try
                                 {
-                                    var hRepo = new MedicalHistoryRepository(_dbContext);
-                                    var patientRepo = new PatientRepository(_dbContext);
-                                    var recordRepo = new MedicalRecordRepository(_dbContext);
-                                    var patientService = new PatientService(patientRepo, hRepo, recordRepo);
-
                                     medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
 
                                     // CreateMedicalHistory will handle saving allergies from MedicalHistory.Allergies
-                                    patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory, []);
+                                    _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
 
                                     var successAlert = new ContentDialog
                                     {
@@ -117,7 +95,7 @@ internal sealed partial class AdminView : Window, IDisposable
                                         CloseButtonText = "OK",
                                         XamlRoot = rootElement.XamlRoot,
                                     };
-                                    _ = await successAlert.ShowAsync();
+                                    ContentDialogResult contentDialogResult = await successAlert.ShowAsync();
                                 }
                                 catch (Exception ex)
                                 {
@@ -128,7 +106,7 @@ internal sealed partial class AdminView : Window, IDisposable
                                         CloseButtonText = "OK",
                                         XamlRoot = rootElement.XamlRoot,
                                     };
-                                    _ = await errorAlert.ShowAsync();
+                                    ContentDialogResult contentDialogResult = await errorAlert.ShowAsync();
                                 }
                             }
                             else if (medicalHistoryDialog.WasSkipped)
@@ -140,7 +118,7 @@ internal sealed partial class AdminView : Window, IDisposable
                                     CloseButtonText = "OK",
                                     XamlRoot = rootElement.XamlRoot,
                                 };
-                                _ = await skipAlert.ShowAsync();
+                                ContentDialogResult contentDialogResult = await skipAlert.ShowAsync();
                             }
                         }
                         catch (Exception ex)
@@ -149,7 +127,7 @@ internal sealed partial class AdminView : Window, IDisposable
                         }
                     };
 
-                    vm.ConfirmAction = async (message, title) =>
+                _viewModel.ConfirmAction = async (message, title) =>
                     {
                         var confirmDialog = new ContentDialog
                         {
@@ -165,7 +143,7 @@ internal sealed partial class AdminView : Window, IDisposable
                         return result == ContentDialogResult.Primary;
                     };
 
-                    vm.RequestDateAction = async (message, title) =>
+                _viewModel.RequestDateAction = async (message, title) =>
                     {
                         var datePicker = new DatePicker
                         {
@@ -192,29 +170,17 @@ internal sealed partial class AdminView : Window, IDisposable
                         return null;
                     };
 
-                    // Organ Donor Dialog Logic
-                    vm.OpenOrganDonorDialogAction = async (deceasedPatient) =>
+                // Organ Donor Dialog Logic
+                _viewModel.OpenOrganDonorDialogAction = async (deceasedPatient) =>
                     {
                         if (deceasedPatient is null)
                         {
-                            vm.ShowAlertAction?.Invoke("Patient not selected.");
+                            _viewModel.ShowAlertAction?.Invoke("Patient not selected.");
                             return;
                         }
 
                         try
                         {
-                            // Create Services
-                            var prRepo = new PrescriptionRepository(_dbContext);
-                            var tRepo = new TransplantRepository(_dbContext);
-                            var hRepo = new MedicalHistoryRepository(_dbContext);
-                            var transplantService = new TransplantService(tRepo, pRepo, rRepo, new BloodCompatibilityService(pRepo, hRepo), hRepo);
-
-                            // Create ViewModel
-                            var organDonorViewModel = new OrganDonorViewModel(transplantService, pRepo, hRepo)
-                            {
-                                DeceasedPatient = deceasedPatient,
-                            };
-
                             // Create Dialog
                             var dialog = new OrganDonorDialog
                             {
@@ -223,40 +189,38 @@ internal sealed partial class AdminView : Window, IDisposable
 
                             // Initialize with confirmation callback
                             dialog.Initialize(
-                                organDonorViewModel,
+                                _organDonorViewModel,
                                 (transplantId, donorId, score) =>
                                 {
                                     try
                                     {
                                         // Perform the assignment
-                                        transplantService.AssignDonor(transplantId, donorId, score);
+                                        _transplantService.AssignDonor(transplantId, donorId, score);
 
                                         // Defer alert display until dialog is fully closed
-                                        _ = rootElement.DispatcherQueue.TryEnqueue(() => vm.ShowAlertAction?.Invoke($"Successfully assigned organ from donor {deceasedPatient.FirstName} {deceasedPatient.LastName}."));
+                                        bool showedSuccessMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Successfully assigned organ from donor {deceasedPatient.FirstName} {deceasedPatient.LastName}."));
                                     }
                                     catch (Exception ex)
                                     {
                                         // Defer error alert display until dialog is fully closed
-                                        _ = rootElement.DispatcherQueue.TryEnqueue(() => vm.ShowAlertAction?.Invoke($"Error assigning organ: {ex.Message}"));
+                                        bool showedErrorMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Error assigning organ: {ex.Message}"));
                                     }
                                 });
 
                             // Show the dialog
-                            _ = await dialog.ShowAsync();
+                            ContentDialogResult _ = await dialog.ShowAsync();
                         }
                         catch (Exception ex)
                         {
-                            vm.ShowAlertAction?.Invoke($"Error opening organ donor dialog: {ex.Message}");
+                            _viewModel.ShowAlertAction?.Invoke($"Error opening organ donor dialog: {ex.Message}");
                         }
                     };
-                }
             };
 
             UpdateView(_viewModel.CurrentView);
         }
     }
 
-    // YOUR CODE: Add Patient Dialog Logic
     private async void OpenAddPatientDialogAsync(object sender, RoutedEventArgs e)
     {
         var dialog = new AddPatientDialog
@@ -273,15 +237,13 @@ internal sealed partial class AdminView : Window, IDisposable
         }
     }
 
-
-    // COLLEAGUE'S CODE: Navigation & Statistics Logic
-    private void AdminView_Closed(object sender, WindowEventArgs args)
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs? e)
     {
-        Dispose();
-    }
+        if (e is null)
+        {
+            return;
+        }
 
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
         if (e.PropertyName == nameof(AdminViewModel.CurrentView))
         {
             UpdateView(_viewModel.CurrentView);
@@ -298,16 +260,11 @@ internal sealed partial class AdminView : Window, IDisposable
 
     private void OpenStatisticsWindow()
     {
-        using var statisticsWindow = new StatisticsWindow(_dbContext);
-        statisticsWindow.Activate();
+        _statisticsWindow = (App.Current as App)!.Services.GetRequiredService<StatisticsWindow>();
+        _statisticsWindow.Activate();
     }
 
-    public void Dispose()
-    {
-        _dbContext?.Dispose();
-    }
-
-    private void OpenArchive_Click(object sender, RoutedEventArgs e)
+    private void OpenArchive_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         if (Content is FrameworkElement fe && fe.DataContext is AdminViewModel vm)
         {
@@ -342,5 +299,3 @@ internal sealed partial class AdminView : Window, IDisposable
         }
     }
 }
-
-

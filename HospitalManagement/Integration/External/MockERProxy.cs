@@ -4,7 +4,7 @@ using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Integration.External;
 
-public class MockERProxy : IExternalProvider
+internal class MockERProxy : IExternalProvider
 {
     private readonly ExternalPatientPublisher _publisher;
 

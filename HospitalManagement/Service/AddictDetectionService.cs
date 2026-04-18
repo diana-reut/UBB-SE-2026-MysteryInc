@@ -7,12 +7,12 @@ using System.Linq;
 
 namespace HospitalManagement.Service;
 
-internal class AddictDetectionService
+internal class AddictDetectionService : IAddictDetectionService
 {
     private readonly PrescriptionRepository _prescriptionRepository;
-    private readonly MedicalHistoryRepository _medicalHistoryRepository;
+    private readonly IMedicalHistoryRepository _medicalHistoryRepository;
 
-    public AddictDetectionService(PrescriptionRepository prescriptionRepository, MedicalHistoryRepository medicalHistoryRepository)
+    public AddictDetectionService(PrescriptionRepository prescriptionRepository, IMedicalHistoryRepository medicalHistoryRepository)
     {
         _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
         _medicalHistoryRepository = medicalHistoryRepository ?? throw new ArgumentNullException(nameof(medicalHistoryRepository));
@@ -82,7 +82,7 @@ internal class AddictDetectionService
         var reportBuilder = new System.Text.StringBuilder();
 
         _ = reportBuilder.AppendLine("==================================================")
-            .AppendLine( "           LAW ENFORCEMENT ALERT REPORT           ")
+            .AppendLine("           LAW ENFORCEMENT ALERT REPORT           ")
             .AppendLine("==================================================")
             .AppendLine(CultureInfo.InvariantCulture, $"DATE GENERATED: {DateTime.Now:yyyy-MM-dd HH:mm}")
             .AppendLine(CultureInfo.InvariantCulture, $"SUBJECT: {patient.FirstName} {patient.LastName} (CNP: {patient.Cnp})")

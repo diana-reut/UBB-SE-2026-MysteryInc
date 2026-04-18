@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11626.88 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HospitalManagement", "HospitalManagement\HospitalManagement.csproj", "{F37F63A4-20D6-4E71-98F1-DEB8FE44F97F}"
 EndProject
@@ -28,6 +28,7 @@ Global
 		{F37F63A4-20D6-4E71-98F1-DEB8FE44F97F}.Release|Any CPU.Build.0 = Release|x86
 		{F37F63A4-20D6-4E71-98F1-DEB8FE44F97F}.Release|x64.ActiveCfg = Release|x64
 		{F37F63A4-20D6-4E71-98F1-DEB8FE44F97F}.Release|x64.Build.0 = Release|x64
+		{F37F63A4-20D6-4E71-98F1-DEB8FE44F97F}.Release|x64.Deploy.0 = Release|x64
 		{F37F63A4-20D6-4E71-98F1-DEB8FE44F97F}.Release|x86.ActiveCfg = Release|x86
 		{F37F63A4-20D6-4E71-98F1-DEB8FE44F97F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection

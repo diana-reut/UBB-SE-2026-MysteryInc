@@ -4,7 +4,7 @@ using HospitalManagement.Integration.PatientObserver;
 
 namespace HospitalManagement.Integration.External;
 
-public class ExternalPatientPublisher
+internal class ExternalPatientPublisher
 {
     private readonly List<IPatientObserver> _observers = [];
 
