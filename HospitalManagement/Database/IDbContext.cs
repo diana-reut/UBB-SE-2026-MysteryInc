@@ -2,7 +2,7 @@
 
 namespace HospitalManagement.Database;
 
-public interface IDbContext
+internal interface IDbContext
 {
     public SqlDataReader ExecuteQuery(string sql);
 
