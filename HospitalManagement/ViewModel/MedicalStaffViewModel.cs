@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml;
 
 namespace HospitalManagement.ViewModel
 {
-    public class MedicalStaffViewModel : INotifyPropertyChanged
+    internal class MedicalStaffViewModel : INotifyPropertyChanged
     {
         private string _searchQuery = string.Empty;
         private string _errorMessage = string.Empty;

@@ -4,7 +4,7 @@ using System;
 
 namespace HospitalManagement.View
 {
-    public sealed partial class PrescriptionDialog : ContentDialog
+    internal sealed partial class PrescriptionDialog : ContentDialog
     {
         public PrescriptionDialog()
         {

@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace HospitalManagement.View
 {
-    public sealed partial class StatisticsWindow : Window
+    internal sealed partial class StatisticsWindow : Window
     {
         private HospitalDbContext _dbContext;
         private IStatisticsService _statisticsService;

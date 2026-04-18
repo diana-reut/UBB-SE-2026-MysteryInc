@@ -58,7 +58,7 @@ namespace HospitalManagement.ViewModel
                 foreach (var donor in topDonors)
                 {
                     // Now this has all the data it needs and will not crash!
-                    int matchScore = BloodCompatibilityService.CalculateScore(donor, recipient);
+                    int matchScore = bloodService.CalculateScore(donor, recipient);
 
                     displayList.Add(new DonorMatchModel
                     {
