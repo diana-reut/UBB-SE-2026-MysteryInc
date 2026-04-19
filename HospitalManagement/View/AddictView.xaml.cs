@@ -23,7 +23,7 @@ namespace HospitalManagement.View
 
         private async void OnNotifyPoliceClicked(object sender, RoutedEventArgs e)
         {
-            if (ViewModel != null && sender is Button btn && btn.Tag is int patientId)
+            if (ViewModel != null && sender is Button btn && btn.CommandParameter is int patientId)
             {
                 string reportText = ViewModel.GetPoliceReportMessage(patientId);
 
@@ -38,8 +38,7 @@ namespace HospitalManagement.View
                
                 if (result == ContentDialogResult.Primary)
                 {
-                    
-                    ViewModel.RemoveFlaggedPatient(patientId);
+                    ViewModel.ConfirmPoliceAlert(patientId);
                 }
             }
         }

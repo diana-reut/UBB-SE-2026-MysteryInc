@@ -105,7 +105,7 @@
                                         Foreground="White" 
                                         Height="40" 
                                         BorderThickness="0"
-                                        Command="{Binding ElementName=Root, Path=ViewModel.ConfirmPoliceAlertCommand}"
+                                        Click="OnNotifyPoliceClicked"
                                         CommandParameter="{x:Bind Id}"> 
                                     <Button.Resources>
                                         <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#C53030"/>
