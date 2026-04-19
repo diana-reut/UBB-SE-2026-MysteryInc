@@ -199,9 +199,6 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     public Patient NewPatient { get; set; }
 
-    // --- Validation Errors (For the red labels) ---
-    public ObservableCollection<string> ValidationErrors { get; set; }
-
     private string _cnpError;
 
     public string CnpError
@@ -290,7 +287,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         LoadArchivedPatientsCommand = new RelayCommand(LoadArchivedPatients);
 
         NewPatient = new Patient { Dob = DateTime.Today };
-        ValidationErrors = [];
+       
         // No parameters in the lambda here
         AddPatientCommand = new RelayCommand(AddPatient);
         ArchivePatientCommand = new RelayCommand(ArchivePatient);
@@ -315,17 +312,12 @@ internal class AdminViewModel : INotifyPropertyChanged
         GhostSightingCommand = new RelayCommand(() => _ghostService.SawAGhost());
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
 
-
-
-
-
         LoadAllPatients();
 
 
         CurrentView = "AdminDashboard";
     }
 
-    // --- VM6: Load All Patients (The Method) ---
     public void LoadAllPatients()
     {
         var emptyFilter = new PatientFilter();
@@ -383,82 +375,29 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    // --- VM8: Add Patient Logic ---
-
     private void AddPatient()
     {
-        // 1. Safety Check: If the dialog somehow sent us nothing, stop.
         if (NewPatient is null)
         {
             return;
         }
-
-        // 2. Clear previous errors and prepare the "Validation List"
-        ValidationErrors.Clear();
-        bool isValid = true;
-
-        // --- Check Name (Strings) ---
-        if (string.IsNullOrWhiteSpace(NewPatient.FirstName) || string.IsNullOrWhiteSpace(NewPatient.LastName))
-        {
-            ValidationErrors.Add("First and Last Name cannot be empty.");
-            isValid = false;
-        }
-
-        // --- Check CNP (13 Digits & Business Logic) ---
-        if (string.IsNullOrWhiteSpace(NewPatient.Cnp) || NewPatient.Cnp.Length != 13 || !NewPatient.Cnp.All(char.IsDigit))
-        {
-            ValidationErrors.Add("CNP must be exactly 13 digits.");
-            isValid = false;
-        }
-        // This cross-references the CNP digits against the Sex/DOB fields
-        else if (!_patientService.ValidateCNP(NewPatient.Cnp, NewPatient.Sex, NewPatient.Dob))
-        {
-            ValidationErrors.Add("CNP logic error: It doesn't match the Sex or Birth Date provided.");
-            isValid = false;
-        }
-
-        // --- Check Phone (10 Digits) ---
-        if (string.IsNullOrWhiteSpace(NewPatient.PhoneNo) || NewPatient.PhoneNo.Length != 10 || !NewPatient.PhoneNo.All(char.IsDigit))
-        {
-            ValidationErrors.Add("Phone number must be exactly 10 digits.");
-            isValid = false;
-        }
-
-        // --- Check Date (Logic) ---
-        if (NewPatient.Dob >= DateTime.Today)
-        {
-            ValidationErrors.Add("Birth Date must be in the past.");
-            isValid = false;
-        }
-
-        // 3. STOP if any check failed and show the user WHY
-        if (!isValid)
-        {
-            string allErrors = string.Join("\n", ValidationErrors);
-            ShowAlertAction?.Invoke($"Cannot Save Patient:\n{allErrors}");
-            return;
-        }
-
-        // 4. DATABASE HAND-OFF (Only happens if all checks pass!)
         try
         {
-            Patient patient = _patientService.CreatePatient(NewPatient);
-
-            int newPatientId = NewPatient.Id;
-
-            // Refresh the list so the new patient appears immediately
+            Patient createdPatient = _patientService.CreatePatient(NewPatient);
             LoadAllPatients();
+            _ = ShowMedicalHistoryAction?.Invoke(createdPatient.Id);
 
-            // Show medical history dialog for this patient (skip success alert to avoid dialog conflict)
-            _ = ShowMedicalHistoryAction?.Invoke(newPatientId);
-
-            // Clear the form data for the next patient
             NewPatient = new Patient { Dob = DateTime.Today.AddYears(-20) };
             OnPropertyChanged(nameof(NewPatient));
+
+            CloseAddPatientWindow?.Invoke();
+        }
+        catch (ArgumentException ex)
+        {
+            ShowAlertAction?.Invoke(ex.Message);
         }
         catch (Exception ex)
         {
-            // This catches SQL connection errors or table name typos
             ShowAlertAction?.Invoke($"Database Error: {ex.Message}");
         }
     }
@@ -684,8 +623,6 @@ internal class AdminViewModel : INotifyPropertyChanged
             return;
         }
 
-        // 1. Trigger the Specialized Dialog (UI Callback)
-        // We'll reuse our ShowDialog pattern to get the Date from the View
         DateTime? chosenDate = await (RequestDateAction?.Invoke("Enter Date of Death:", "Mark as Deceased") ?? Task.FromResult<DateTime?>(null));
         if (chosenDate is null)
         {
