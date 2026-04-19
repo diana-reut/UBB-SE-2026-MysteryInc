@@ -1,5 +1,6 @@
 ﻿using HospitalManagement.Database;
 using HospitalManagement.Integration.Export;
+using HospitalManagement.Integration.External;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
@@ -65,6 +66,7 @@ public partial class App : Application
         _ = services.AddSingleton<IAllergyService, AllergyService>();
         _ = services.AddSingleton<ITransplantService, TransplantService>();
         _ = services.AddSingleton<IExportService, ExportService>();
+        _ = services.AddSingleton<IImportService, ImportService>();
         _ = services.AddSingleton<IBillingService, BillingService>();
         _ = services.AddTransient<IAddictDetectionService, AddictDetectionService>();
         _ = services.AddTransient<IPrescriptionService, PrescriptionService>();
@@ -87,6 +89,14 @@ public partial class App : Application
         _ = services.AddTransient<BloodDonorsView>();
         _ = services.AddTransient<StatisticsViewModel>();
         _ = services.AddTransient<StatisticsWindow>();
+        _ = services.AddTransient<PatientProfileViewModel>();
+        _ = services.AddTransient<PatientProfileView>();
+
+
+        // MORE
+        _ = services.AddSingleton<IExternalProvider, MockERProxy>();
+        _ = services.AddSingleton<IExternalProvider, MockStaffProxy>();
+        _ = services.AddSingleton<IExternalPatientPublisher, ExternalPatientPublisher>();
 
         return services.BuildServiceProvider();
     }

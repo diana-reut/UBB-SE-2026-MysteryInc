@@ -10,15 +10,15 @@ namespace HospitalManagement.Service;
 internal class ImportService : IImportService
 {
     private readonly IPatientService _patientService;
-    private readonly MedicalRecordRepository _recordRepo;
-    private readonly PrescriptionRepository _prescriptionRepo;
+    private readonly IMedicalRecordRepository _recordRepo;
+    private readonly IPrescriptionRepository _prescriptionRepo;
     private readonly IExternalProvider _externalER;
     private readonly IExternalProvider _externalAppointment;
 
     public ImportService(
         IPatientService patientService,
-        MedicalRecordRepository recordRepo,
-        PrescriptionRepository prescriptionRepo,
+        IMedicalRecordRepository recordRepo,
+        IPrescriptionRepository prescriptionRepo,
         IExternalProvider externalER,
         IExternalProvider externalAppointment)
     {

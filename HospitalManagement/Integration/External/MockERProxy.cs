@@ -6,9 +6,9 @@ namespace HospitalManagement.Integration.External;
 
 internal class MockERProxy : IExternalProvider
 {
-    private readonly ExternalPatientPublisher _publisher;
+    private readonly IExternalPatientPublisher _publisher;
 
-    public MockERProxy(ExternalPatientPublisher publisher)
+    public MockERProxy(IExternalPatientPublisher publisher)
     {
         _publisher = publisher;
     }
