@@ -92,6 +92,7 @@ public partial class App : Application
         _ = services.AddTransient<PatientProfileViewModel>();
         _ = services.AddTransient<PatientProfileView>();
         _ = services.AddTransient<MedicalStaffViewModel>();
+
         
 
 

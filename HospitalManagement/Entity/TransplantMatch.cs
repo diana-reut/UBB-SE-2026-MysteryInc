@@ -1,6 +1,6 @@
 using System;
 
-namespace HospitalManagement.ViewModel;
+namespace HospitalManagement.Entity;
 
 /// <summary>
 /// View model representation of a transplant match for display in the DataGrid.

@@ -14,7 +14,7 @@ internal sealed partial class MedicalStaffView : Window
     public MedicalStaffView()
     {
         InitializeComponent();
-        ViewModel = new MedicalStaffViewModel();
+        ViewModel = (App.Current as App).Services.GetService<MedicalStaffViewModel>();
 
         if (Content is FrameworkElement rootElement)
         {
