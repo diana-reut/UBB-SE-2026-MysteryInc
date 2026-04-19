@@ -15,17 +15,13 @@ internal sealed partial class AdminView : Window
 {
     // NOTE it is very wierd that the view model passes logic onto the view but we will keep it like that because I will go mad fixing it
     private readonly AdminViewModel _viewModel;
-    private readonly OrganDonorViewModel _organDonorViewModel;
     private readonly IAllergyService _allergyService;
     private readonly IPatientService _patientService;
     private readonly ITransplantService _transplantService;
     private StatisticsWindow _statisticsWindow;
 
-    public AdminView(AdminViewModel adminViewModel, OrganDonorViewModel organDonorViewModel, IAllergyService allergyService, IPatientService patientService, ITransplantService transplantService)
+    private void SetupWindow()
     {
-        InitializeComponent();
-
-        // 1. Maximize Logic
         nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
         var appWindow = AppWindow.GetFromWindowId(windowId);
@@ -33,12 +29,18 @@ internal sealed partial class AdminView : Window
         {
             presenter.Maximize();
         }
+    }
+
+    public AdminView(AdminViewModel adminViewModel, IAllergyService allergyService, IPatientService patientService, ITransplantService transplantService)
+    {
+        InitializeComponent();
+        SetupWindow();
 
         // 2. Dependency Injection
         _allergyService = allergyService ?? throw new ArgumentNullException(nameof(allergyService));
         _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         _transplantService = transplantService ?? throw new ArgumentNullException(nameof(transplantService));
-        _organDonorViewModel = organDonorViewModel ?? throw new ArgumentNullException(nameof(organDonorViewModel));
+
 
         // 3. Initialize ViewModel & Bindings
         _viewModel = adminViewModel ?? throw new ArgumentNullException(nameof(adminViewModel));
@@ -175,45 +177,31 @@ internal sealed partial class AdminView : Window
                     {
                         if (deceasedPatient is null)
                         {
-                            _viewModel.ShowAlertAction?.Invoke("Patient not selected.");
                             return;
                         }
 
-                        try
-                        {
-                            // Create Dialog
-                            var dialog = new OrganDonorDialog
+                        IServiceProvider scope = (Application.Current as App).Services;
+
+                        OrganDonorDialog dialog = scope.GetRequiredService<OrganDonorDialog>();
+
+                        dialog.XamlRoot = rootElement.XamlRoot;
+
+
+                        // Initialize with confirmation callback
+                        dialog.Initialize(
+                            (transplantId, donorId, score) =>
                             {
-                                XamlRoot = rootElement.XamlRoot,
-                            };
-
-                            // Initialize with confirmation callback
-                            dialog.Initialize(
-                                _organDonorViewModel,
-                                (transplantId, donorId, score) =>
+                                try
                                 {
-                                    try
-                                    {
-                                        // Perform the assignment
-                                        _transplantService.AssignDonor(transplantId, donorId, score);
-
-                                        // Defer alert display until dialog is fully closed
-                                        bool showedSuccessMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Successfully assigned organ from donor {deceasedPatient.FirstName} {deceasedPatient.LastName}."));
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        // Defer error alert display until dialog is fully closed
-                                        bool showedErrorMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Error assigning organ: {ex.Message}"));
-                                    }
-                                });
-
-                            // Show the dialog
-                            ContentDialogResult _ = await dialog.ShowAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            _viewModel.ShowAlertAction?.Invoke($"Error opening organ donor dialog: {ex.Message}");
-                        }
+                                    _transplantService.AssignDonor(transplantId, donorId, score);
+                                    bool showedSuccessMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Successfully assigned organ from donor {deceasedPatient.FirstName} {deceasedPatient.LastName}."));
+                                }
+                                catch (Exception ex)
+                                {
+                                    bool showedErrorMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Error assigning organ: {ex.Message}"));
+                                }
+                            });
+                        ContentDialogResult _ = await dialog.ShowAsync();
                     };
             };
 
@@ -292,9 +280,9 @@ internal sealed partial class AdminView : Window
 
     private void PatientListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
-        int patientId = _viewModel.SelectedPatient.Id;
         if (_viewModel?.SelectedPatient is not null)
         {
+            int patientId = _viewModel.SelectedPatient.Id;
             IServiceProvider scope = (Application.Current as App).Services;
             PatientView patientWindow = scope.GetRequiredService<PatientView>();
 

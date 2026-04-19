@@ -125,7 +125,7 @@
                                             <TextBlock Foreground="White" FontSize="12" FontWeight="Bold">
                                                 <Run Text="{Binding ConsultationDate}"/>
                                             </TextBlock>
-                                            <TextBlock Text="{Binding ConsultationSource}" 
+                                            <TextBlock Text="{Binding SourceType}" 
                                                        Foreground="LightGray" FontSize="11"/>
                                         </StackPanel>
                                     </Border>
@@ -257,10 +257,17 @@
 
             <!-- Empty State for Right Section -->
             <Border Grid.Column="1" Background="#2C3A4A" CornerRadius="10" Padding="20" 
-                    Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource BoolToVis}}">
+        Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource NullToVisibilityConverter}}">
+                <ScrollViewer>
+                </ScrollViewer>
+            </Border>
+
+            <Border Grid.Column="1" Background="#2C3A4A" CornerRadius="10" Padding="20" 
+        Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter='Invert'}">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
-                    <TextBlock Text="Select a consultation to view details" 
-                               Foreground="Gray" FontSize="16" TextAlignment="Center"/>
+                    <FontIcon Glyph="&#xE946;" FontSize="48" Foreground="Gray"/>
+                    <TextBlock Text="Select a consultation from the left to view details" 
+                   Foreground="Gray" FontSize="16" TextAlignment="Center"/>
                 </StackPanel>
             </Border>
         </Grid>

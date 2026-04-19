@@ -788,9 +788,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    /// Report ghost sighting (paranormal activity logging)
-    /// </summary>
+    // Report ghost sighting (paranormal activity logging)
     private void ReportGhost()
     {
         // part of this was deleting during merge so idk what comes here
@@ -805,9 +803,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         catch (Exception ex) {
             ShowAlertAction?.Invoke($"Error: {ex.Message}");
         }
-
     }
-
 
     // --- INotifyPropertyChanged Implementation ---
     public event PropertyChangedEventHandler PropertyChanged;
