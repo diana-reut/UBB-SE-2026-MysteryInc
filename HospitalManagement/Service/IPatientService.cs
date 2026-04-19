@@ -39,4 +39,6 @@ internal interface IPatientService
     public void UpdatePatient(Patient data);
 
     public bool ValidateCNP(string cnp, Sex sex, DateTime dob);
+
+    public Patient GetById(int patientId);
 }
