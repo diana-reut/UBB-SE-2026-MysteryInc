@@ -68,6 +68,7 @@ public partial class App : Application
         _ = services.AddSingleton<IBillingService, BillingService>();
         _ = services.AddTransient<IAddictDetectionService, AddictDetectionService>();
         _ = services.AddTransient<IPrescriptionService, PrescriptionService>();
+        _ = services.AddSingleton<IStatisticsService, StatisticsService>();
 
         // ViewModels & Windows
         _ = services.AddTransient<AdminViewModel>();
@@ -80,8 +81,11 @@ public partial class App : Application
         _ = services.AddTransient<PharmacistView>();
         _ = services.AddTransient<PrescriptionViewModel>();
         _ = services.AddTransient<PrescriptionView>();
-
         _ = services.AddTransient<OrganDonorViewModel>();
+        _ = services.AddTransient<OrganDonorDialog>();
+        _ = services.AddTransient<BloodDonorsViewModel>();
+        _ = services.AddTransient<BloodDonorsView>();
+        _ = services.AddTransient<StatisticsViewModel>();
         _ = services.AddTransient<StatisticsWindow>();
 
         return services.BuildServiceProvider();

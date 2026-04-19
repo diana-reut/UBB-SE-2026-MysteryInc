@@ -1,15 +1,17 @@
-﻿using System;
+﻿using HospitalManagement.Database;
+using HospitalManagement.Entity;
+using HospitalManagement.Integration;
+using HospitalManagement.Repository;
+using HospitalManagement.Service;
+using HospitalManagement.View;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using HospitalManagement.Entity;
-using HospitalManagement.Integration;
-using HospitalManagement.Service;
-using HospitalManagement.Database;
-using HospitalManagement.Repository;
-using Microsoft.UI.Xaml;
 
 namespace HospitalManagement.ViewModel;
 
@@ -173,7 +175,9 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
         };
 
         // Launch your brand new page!
-        var donorsPage = new View.BloodDonorsView(SelectedPatient.Id);
+        IServiceProvider scope = (Application.Current as App).Services;
+        BloodDonorsView donorsPage = scope.GetRequiredService<BloodDonorsView>();
+        donorsPage.Initialize(SelectedPatient.Id);
         donorsWindow.Content = donorsPage;
         donorsWindow.Activate();
     }
