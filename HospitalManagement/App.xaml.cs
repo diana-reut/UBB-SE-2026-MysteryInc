@@ -55,18 +55,24 @@ public partial class App : Application
         _ = services.AddSingleton<IMedicalRecordRepository, MedicalRecordRepository>();
         _ = services.AddSingleton<IAllergyRepository, AllergyRepository>();
         _ = services.AddSingleton<ITransplantRepository, TransplantRepository>();
+        _ = services.AddSingleton<IPrescriptionRepository, PrescriptionRepository>();
 
         // Services
         _ = services.AddSingleton<IBloodCompatibilityService, BloodCompatibilityService>();
         _ = services.AddSingleton<IPatientService, PatientService>();
         _ = services.AddSingleton<IAllergyService, AllergyService>();
         _ = services.AddSingleton<ITransplantService, TransplantService>();
+        _ = services.AddSingleton<IAddictDetectionService,AddictDetectionService>();
+        _ = services.AddSingleton<IPrescriptionService,PrescriptionService>();
 
         // ViewModels & Windows
         _ = services.AddTransient<AdminViewModel>();
         _ = services.AddTransient<OrganDonorViewModel>();
         _ = services.AddTransient<StatisticsWindow>();
         _ = services.AddTransient<AdminView>();
+        _ = services.AddTransient<AddictViewModel>();
+        _ = services.AddTransient<PharmacistViewModel>();
+        _ = services.AddTransient<PrescriptionViewModel>();
 
         return services.BuildServiceProvider();
     }

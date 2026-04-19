@@ -98,14 +98,16 @@ internal sealed partial class PatientProfileView : Page
                     doctorName: null
                 );
 
-                var prescriptionPage = new PrescriptionView
-                {
-                    ViewModel = prescriptionVM,
-                };
-                if (prescriptionPage.Content is FrameworkElement root)
-                {
-                    root.DataContext = prescriptionVM;
-                }
+                //var prescriptionPage = new PrescriptionView
+                //{
+                //    ViewModel = prescriptionVM,
+                //};
+                //if (prescriptionPage.Content is FrameworkElement root)
+                //{
+                //    root.DataContext = prescriptionVM;
+                //}
+                var prescriptionPage = new PrescriptionView();
+                prescriptionPage.DataContext = prescriptionVM;
 
                 prescriptionWindow.Content = prescriptionPage;
                 prescriptionWindow.Activate();
