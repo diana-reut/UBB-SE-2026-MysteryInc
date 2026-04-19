@@ -1,7 +1,5 @@
-﻿using HospitalManagement.Database;
-using HospitalManagement.Entity;
+﻿using HospitalManagement.Entity;
 using HospitalManagement.Integration;
-using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,14 +96,10 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
 
     public MedicalStaffViewModel()
     {
-        using var dbContext = new HospitalDbContext();
-        var patientRepo = new PatientRepository(dbContext);
-        var historyRepo = new MedicalHistoryRepository(dbContext);
-        var recordRepo = new MedicalRecordRepository(dbContext);
 
-        _patientService = new PatientService(patientRepo, historyRepo, recordRepo);
+        _patientService = (App.Current as App).Services.GetService<IPatientService>();
 
-        _ghostService = GhostService.Instance;
+        _ghostService = (App.Current as App).Services.GetService<IGhostService>();
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
 

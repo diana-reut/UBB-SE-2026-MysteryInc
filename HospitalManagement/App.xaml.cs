@@ -70,6 +70,7 @@ public partial class App : Application
         _ = services.AddTransient<IAddictDetectionService, AddictDetectionService>();
         _ = services.AddTransient<IPrescriptionService, PrescriptionService>();
         _ = services.AddSingleton<IStatisticsService, StatisticsService>();
+        _ = services.AddSingleton<IGhostService, GhostService>();
 
         // ViewModels & Windows
         _ = services.AddTransient<AdminViewModel>();
@@ -90,6 +91,8 @@ public partial class App : Application
         _ = services.AddTransient<StatisticsWindow>();
         _ = services.AddTransient<PatientProfileViewModel>();
         _ = services.AddTransient<PatientProfileView>();
+        _ = services.AddTransient<MedicalStaffViewModel>();
+        
 
 
         // MORE

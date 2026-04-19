@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using HospitalManagement.Service;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.ViewModel;
 
@@ -47,7 +48,7 @@ internal class PharmacistViewModel : INotifyPropertyChanged
 
     public PharmacistViewModel()
     {
-        _ghostService = GhostService.Instance;
+        _ghostService = (App.Current as App).Services.GetService<IGhostService>();
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
 
         ShowPrescriptionsCommand = new RelayCommand(ShowPrescriptions);

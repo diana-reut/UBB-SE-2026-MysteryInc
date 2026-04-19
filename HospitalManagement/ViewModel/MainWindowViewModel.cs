@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using HospitalManagement.Service;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.ViewModel;
 
@@ -14,7 +15,7 @@ internal class MainWindowViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     // I SAW A GHOST LOGIC
-    private readonly GhostService _ghostService;
+    private readonly IGhostService _ghostService;
 
     private bool _isExorcismAlertVisible;
 
@@ -55,7 +56,7 @@ internal class MainWindowViewModel : INotifyPropertyChanged
         RedirectToPharmacistRoleCommand = new RelayCommand(RedirectToPharmacistRole);
         // GhostSightingCommand = new RelayCommand(RecordGhostSighting);
 
-        _ghostService = GhostService.Instance;
+        _ghostService = (App.Current as App).Services.GetService<IGhostService>();
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         GhostSightingCommand = new RelayCommand(() => _ghostService.SawAGhost());
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();

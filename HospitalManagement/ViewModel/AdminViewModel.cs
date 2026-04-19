@@ -10,7 +10,7 @@ using HospitalManagement.Integration;
 using HospitalManagement.Service;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.ViewModel;
 
@@ -276,6 +276,8 @@ internal class AdminViewModel : INotifyPropertyChanged
     // --- Constructor ---
     public AdminViewModel(IPatientService patientService)
     {
+        _ghostService = (App.Current as App).Services.GetService<IGhostService>();
+
         _patientService = patientService;
 
         NavigateToStatisticsCommand = new RelayCommand(NavigateToStatistics);
@@ -307,7 +309,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
 
         // Ghost addition
-        _ghostService = GhostService.Instance;
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         GhostSightingCommand = new RelayCommand(() => _ghostService.SawAGhost());
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
