@@ -1,4 +1,5 @@
 ﻿using HospitalManagement.Database;
+using HospitalManagement.Integration.Export;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
@@ -62,17 +63,25 @@ public partial class App : Application
         _ = services.AddSingleton<IPatientService, PatientService>();
         _ = services.AddSingleton<IAllergyService, AllergyService>();
         _ = services.AddSingleton<ITransplantService, TransplantService>();
-        _ = services.AddSingleton<IAddictDetectionService,AddictDetectionService>();
-        _ = services.AddSingleton<IPrescriptionService,PrescriptionService>();
+        _ = services.AddSingleton<IExportService, ExportService>();
+        _ = services.AddSingleton<IBillingService, BillingService>();
+        _ = services.AddTransient<IAddictDetectionService, AddictDetectionService>();
+        _ = services.AddTransient<IPrescriptionService, PrescriptionService>();
 
         // ViewModels & Windows
         _ = services.AddTransient<AdminViewModel>();
+        _ = services.AddTransient<AdminView>();
+        _ = services.AddTransient<PatientViewModel>();
+        _ = services.AddTransient<PatientView>();
+        _ = services.AddTransient<AddictViewModel>();
+        _ = services.AddTransient<AddictView>();
+        _ = services.AddTransient<PharmacistViewModel>();
+        _ = services.AddTransient<PharmacistView>();
+        _ = services.AddTransient<PrescriptionViewModel>();
+        _ = services.AddTransient<PrescriptionView>();
+
         _ = services.AddTransient<OrganDonorViewModel>();
         _ = services.AddTransient<StatisticsWindow>();
-        _ = services.AddTransient<AdminView>();
-        _ = services.AddTransient<AddictViewModel>();
-        _ = services.AddTransient<PharmacistViewModel>();
-        _ = services.AddTransient<PrescriptionViewModel>();
 
         return services.BuildServiceProvider();
     }

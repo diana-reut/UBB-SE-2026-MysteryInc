@@ -1,9 +1,11 @@
+using HospitalManagement.Entity;
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using HospitalManagement.ViewModel;
-using HospitalManagement.Entity;
 using System;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace HospitalManagement.View;
 
@@ -98,16 +100,12 @@ internal sealed partial class PatientProfileView : Page
                     doctorName: null
                 );
 
-                //var prescriptionPage = new PrescriptionView
-                //{
-                //    ViewModel = prescriptionVM,
-                //};
-                //if (prescriptionPage.Content is FrameworkElement root)
-                //{
-                //    root.DataContext = prescriptionVM;
-                //}
-                var prescriptionPage = new PrescriptionView();
-                prescriptionPage.DataContext = prescriptionVM;
+                IServiceProvider scope = (Application.Current as App).Services;
+                PrescriptionView prescriptionPage = scope.GetRequiredService<PrescriptionView>();
+                if (prescriptionPage.Content is FrameworkElement root)
+                {
+                    root.DataContext = prescriptionVM;
+                }
 
                 prescriptionWindow.Content = prescriptionPage;
                 prescriptionWindow.Activate();

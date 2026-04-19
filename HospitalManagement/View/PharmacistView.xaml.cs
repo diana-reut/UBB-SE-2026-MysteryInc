@@ -1,10 +1,8 @@
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using HospitalManagement.ViewModel;
-using HospitalManagement.Database;
-using HospitalManagement.Repository;
-using HospitalManagement.Service;
-using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace HospitalManagement.View;
 
@@ -12,10 +10,14 @@ internal sealed partial class PharmacistView : Window
 {
     public PharmacistViewModel ViewModel { get; }
 
-    public PharmacistView()
+    private readonly IServiceProvider _services;
+
+    public PharmacistView(PharmacistViewModel viewModel, IServiceProvider services)
     {
         ViewModel = (App.Current as App).Services.GetService<PharmacistViewModel>();
         InitializeComponent();
+        _services = services;
+        _viewModel = viewModel;
 
         // Deschiderea Full Screen (Maximizatã)
         nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -26,7 +28,11 @@ internal sealed partial class PharmacistView : Window
             presenter.Maximize();
         }
 
-        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        _viewModel = new PharmacistViewModel();
+        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        _viewModel = new PharmacistViewModel();
+        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         // Setãm DataContext-ul pentru bindings
         if (Content is FrameworkElement rootElement)
@@ -48,19 +54,19 @@ internal sealed partial class PharmacistView : Window
 
     private void UpdateView(string viewName)
     {
-        switch (viewName)
-        {
-            case "Prescriptions":
-            {
-                MainContentArea.Content = new PrescriptionView();
-                    break;
-            }
-            case "Addicts":
-            {
-                    MainContentArea.Content = new AddictView();
+                PrescriptionView prescriptionView = _services.GetRequiredService<PrescriptionView>();
+                MainContentArea.Content = prescriptionView;
+                break;
+                prescriptionView.DataContext = prescriptionVM;
 
-                    break;
+                MainContentArea.Content = prescriptionView;
+                AddictView addictView = _services.GetRequiredService<AddictView>();
+                MainContentArea.Content = addictView;
+                break;
 
+                // 6. Afi?eazã efectiv controlul pe ecran
+                MainContentArea.Content = addictView;
+                break;
             }
             default:
                 break;

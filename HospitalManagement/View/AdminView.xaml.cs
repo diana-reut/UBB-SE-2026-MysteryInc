@@ -292,10 +292,14 @@ internal sealed partial class AdminView : Window
 
     private void PatientListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
+        int patientId = _viewModel.SelectedPatient.Id;
         if (_viewModel?.SelectedPatient is not null)
         {
-            using var patientView = new PatientView(_viewModel.SelectedPatient.Id, () => { });
-            patientView.Activate();
+            IServiceProvider scope = (Application.Current as App).Services;
+            PatientView patientWindow = scope.GetRequiredService<PatientView>();
+
+            patientWindow.Initialize(patientId, () => { });
+            patientWindow.Activate();
         }
     }
 }

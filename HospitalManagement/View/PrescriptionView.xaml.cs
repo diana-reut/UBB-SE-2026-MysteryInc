@@ -10,11 +10,14 @@ internal sealed partial class PrescriptionView : UserControl
 {
     public ViewModel.PrescriptionViewModel ViewModel { get; }
 
-    public PrescriptionView()
+    public PrescriptionView(PrescriptionViewModel viewModel)
     {
         ViewModel = (App.Current as App).Services.GetService<PrescriptionViewModel>();
         this.DataContext = ViewModel;
         InitializeComponent();
+        ViewModel = viewModel;
+        DataContext = ViewModel;
+
         DateFromPicker.DateChanged += DateFromPicker_DateChanged;
         DateToPicker.DateChanged += DateToPicker_DateChanged;
     }
