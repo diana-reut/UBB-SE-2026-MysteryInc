@@ -385,4 +385,9 @@ internal class PatientService : IPatientService
 
         return _prescriptionRepo.GetByRecordId(recordId);
     }
+
+    public Patient? GetById(int id)
+    {
+        return _patientRepo.GetById(id);
+    }
 }

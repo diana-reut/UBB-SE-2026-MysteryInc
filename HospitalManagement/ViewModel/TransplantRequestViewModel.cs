@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using HospitalManagement.Database;
-using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using Microsoft.UI.Xaml;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.ViewModel;
 
@@ -22,7 +21,6 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
     public Visibility UrgentVisibility => IsUrgent ? Visibility.Visible : Visibility.Collapsed;
 
     public Visibility WarningVisibility => !string.IsNullOrEmpty(WarningMessage) ? Visibility.Visible : Visibility.Collapsed;
-
 
     private string? _selectedOrgan;
 
@@ -43,17 +41,10 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
     public TransplantRequestViewModel(int patientId)
     {
         _patientId = patientId;
+        _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
+        PatientService? ps = (Application.Current as App)!.Services.GetRequiredService<PatientService>();
 
-        using var dbContext = new HospitalDbContext();
-        var patientRepo = new PatientRepository(dbContext);
-        var historyRepo = new MedicalHistoryRepository(dbContext);
-        var recordRepo = new MedicalRecordRepository(dbContext);
-        var transplantRepo = new TransplantRepository(dbContext);
-
-        var bloodService = new BloodCompatibilityService(patientRepo, historyRepo);
-        _transplantService = new TransplantService(transplantRepo, patientRepo, recordRepo, bloodService, historyRepo);
-
-        Entity.Patient? patient = patientRepo.GetById(patientId);
+        Entity.Patient? patient = ps.GetById(patientId);
         if (patient is not null)
         {
             PatientName = $"{patient.FirstName} {patient.LastName}";
