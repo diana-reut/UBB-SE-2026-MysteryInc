@@ -8,7 +8,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.View;
 
@@ -16,10 +15,9 @@ internal sealed partial class AdminView : Window
 {
     // NOTE it is very wierd that the view model passes logic onto the view but we will keep it like that because I will go mad fixing it
     private readonly AdminViewModel _viewModel;
-    private readonly IAllergyService _allergyService;
     private readonly IPatientService _patientService;
     private readonly ITransplantService _transplantService;
-    private StatisticsWindow _statisticsWindow;
+    private StatisticsWindow? _statisticsWindow;
 
     private void SetupWindow()
     {
@@ -32,19 +30,17 @@ internal sealed partial class AdminView : Window
         }
     }
 
-    public AdminView(AdminViewModel adminViewModel, IAllergyService allergyService, IPatientService patientService, ITransplantService transplantService)
+    public AdminView()
     {
         InitializeComponent();
         SetupWindow();
 
         // 2. Dependency Injection
-        _allergyService = allergyService ?? throw new ArgumentNullException(nameof(allergyService));
-        _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-        _transplantService = transplantService ?? throw new ArgumentNullException(nameof(transplantService));
-
+        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
+        _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
 
         // 3. Initialize ViewModel & Bindings
-        _viewModel = adminViewModel ?? throw new ArgumentNullException(nameof(adminViewModel));
+        _viewModel = (Application.Current as App)!.Services.GetRequiredService<AdminViewModel>();
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         // 4. Set DataContext
@@ -71,14 +67,11 @@ internal sealed partial class AdminView : Window
                     {
                         try
                         {
-                            // Load all available allergies from database
-                            IEnumerable<Allergy> allergiesList = _allergyService.GetAllergies();
-
                             var medicalHistoryDialog = new MedicalHistoryDialog
                             {
                                 XamlRoot = rootElement.XamlRoot,
                             };
-                            medicalHistoryDialog.Initialize([.. allergiesList]);
+                            medicalHistoryDialog.Initialize();
 
                             ContentDialogResult result = await medicalHistoryDialog.ShowAsync();
 
@@ -87,29 +80,13 @@ internal sealed partial class AdminView : Window
                                 try
                                 {
                                     medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
-
-                                    // CreateMedicalHistory will handle saving allergies from MedicalHistory.Allergies
                                     _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
 
-                                    var successAlert = new ContentDialog
-                                    {
-                                        Title = "Success",
-                                        Content = "Medical history saved successfully!",
-                                        CloseButtonText = "OK",
-                                        XamlRoot = rootElement.XamlRoot,
-                                    };
-                                    ContentDialogResult contentDialogResult = await successAlert.ShowAsync();
+                                    _viewModel.ShowAlertAction?.Invoke("Medical history saved successfully!");
                                 }
                                 catch (Exception ex)
                                 {
-                                    var errorAlert = new ContentDialog
-                                    {
-                                        Title = "Error",
-                                        Content = $"Error saving medical history: {ex.Message}",
-                                        CloseButtonText = "OK",
-                                        XamlRoot = rootElement.XamlRoot,
-                                    };
-                                    ContentDialogResult contentDialogResult = await errorAlert.ShowAsync();
+                                    _viewModel.ShowAlertAction?.Invoke($"Error saving medical history: {ex.Message}");
                                 }
                             }
                             else if (medicalHistoryDialog.WasSkipped)
@@ -181,14 +158,10 @@ internal sealed partial class AdminView : Window
                             return;
                         }
 
-                        IServiceProvider scope = (Application.Current as App).Services;
-
-                        OrganDonorDialog dialog = scope.GetRequiredService<OrganDonorDialog>();
-
+                        OrganDonorDialog dialog = (Application.Current as App)!.Services.GetRequiredService<OrganDonorDialog>();
                         dialog.XamlRoot = rootElement.XamlRoot;
 
 
-                        // Initialize with confirmation callback
                         dialog.Initialize(
                             (transplantId, donorId, score) =>
                             {
@@ -249,11 +222,11 @@ internal sealed partial class AdminView : Window
 
     private void OpenStatisticsWindow()
     {
-        _statisticsWindow = (App.Current as App)!.Services.GetRequiredService<StatisticsWindow>();
+        _statisticsWindow = (Application.Current as App)!.Services.GetRequiredService<StatisticsWindow>();
         _statisticsWindow.Activate();
     }
 
-    private void OpenArchive_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void OpenArchive_Click(object sender, RoutedEventArgs e)
     {
         if (Content is FrameworkElement fe && fe.DataContext is AdminViewModel vm)
         {
@@ -284,7 +257,7 @@ internal sealed partial class AdminView : Window
         if (_viewModel?.SelectedPatient is not null)
         {
             int patientId = _viewModel.SelectedPatient.Id;
-            IServiceProvider scope = (Application.Current as App).Services;
+            IServiceProvider scope = (Application.Current as App)!.Services;
             PatientView patientWindow = scope.GetRequiredService<PatientView>();
 
             patientWindow.Initialize(patientId, () => { });
