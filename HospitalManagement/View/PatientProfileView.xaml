@@ -69,6 +69,7 @@
 
                     <Expander Header="File Records" HorizontalAlignment="Stretch">
                         <ListView ItemsSource="{x:Bind ViewModel.CurrentPatient.MedicalHistory.MedicalRecords, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedRecord, Mode=TwoWay}"
                                   DoubleTapped="RecordList_DoubleTapped"
                                   SelectionMode="Single">
                             <ListView.ItemTemplate>
