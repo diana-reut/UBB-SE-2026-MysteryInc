@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace HospitalManagement.ViewModel;
 
-internal class PatientProfileViewModel : INotifyPropertyChangedltatii
+internal class PatientProfileViewModel : INotifyPropertyChanged
 {
     private Patient? _patient;
     private MedicalRecord? _selectedRecord;
