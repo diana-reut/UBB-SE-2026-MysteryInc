@@ -9,9 +9,9 @@ namespace HospitalManagement.Service;
 
 internal class PrescriptionService : IPrescriptionService
 {
-    private readonly PrescriptionRepository _prescriptionRepository;
+    private readonly IPrescriptionRepository _prescriptionRepository;
 
-    internal PrescriptionService(PrescriptionRepository prescriptionRepository)
+    public PrescriptionService(IPrescriptionRepository prescriptionRepository)
     {
         _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
     }

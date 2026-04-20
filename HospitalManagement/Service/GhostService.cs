@@ -7,11 +7,6 @@ internal sealed class GhostService : IGhostService
 {
     private static readonly GhostService ServiceInstance = new();
 
-    public static GhostService Instance => ServiceInstance;
-
-    private GhostService()
-    {
-    }
 
     private readonly List<DateTime> _sightings = [];
 

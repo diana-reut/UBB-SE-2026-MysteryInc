@@ -4,9 +4,9 @@ namespace HospitalManagement.Integration.External;
 
 internal class ERProxy : IExternalProvider // THIS IS A SKELETON FOR THE NEXT TEAM , ER PART , IN THEIR TEMPORARY LIST LOGIC SHOULD IMPLEMENT THIS
 {
-    private readonly ExternalPatientPublisher _publisher;
+    private readonly IExternalPatientPublisher _publisher;
 
-    public ERProxy(ExternalPatientPublisher publisher)
+    public ERProxy(IExternalPatientPublisher publisher)
     {
         _publisher = publisher;
     }

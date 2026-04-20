@@ -2,8 +2,6 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Windowing;
-using HospitalManagement.Database;
-using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
@@ -12,36 +10,17 @@ using System.Linq;
 
 namespace HospitalManagement.View;
 
-internal sealed partial class StatisticsWindow : Window, IDisposable
+internal sealed partial class StatisticsWindow : Window
 {
-    private readonly IDbContext _dbContext;
     private readonly IStatisticsService _statisticsService;
     private string _currentStatistic;
-    private readonly bool _ownsDbContext;
 
-    public StatisticsWindow(IDbContext dbContext)
+    public StatisticsWindow(IStatisticsService statisticsService)
     {
         InitializeComponent();
 
+        _statisticsService = statisticsService ?? throw new ArgumentNullException(nameof(statisticsService));
         _currentStatistic = "";
-
-        // Use provided context or create new one
-        if (dbContext is null)
-        {
-            _dbContext = new HospitalDbContext();
-            _ownsDbContext = true;
-        }
-        else
-        {
-            _dbContext = dbContext;
-            _ownsDbContext = false;
-        }
-
-        // Initialize service
-        var pRepo = new PatientRepository(_dbContext);
-        var prRepo = new PrescriptionRepository(_dbContext);
-        var rRepo = new MedicalRecordRepository(_dbContext);
-        _statisticsService = new StatisticsService(pRepo, rRepo, prRepo);
 
         ConfigureWindow();
         LoadInitialStatistics();
@@ -57,13 +36,6 @@ internal sealed partial class StatisticsWindow : Window, IDisposable
         {
             presenter.Restore();
         }
-
-        Closed += StatisticsWindow_Closed;
-    }
-
-    private void StatisticsWindow_Closed(object sender, WindowEventArgs args)
-    {
-        Dispose();
     }
 
     private void LoadInitialStatistics()
@@ -354,13 +326,5 @@ internal sealed partial class StatisticsWindow : Window, IDisposable
     {
         ErrorInfoBar.Message = message;
         ErrorInfoBar.IsOpen = true;
-    }
-
-    public void Dispose()
-    {
-        if (_ownsDbContext)
-        {
-            _dbContext.Dispose();
-        }
     }
 }

@@ -1,15 +1,15 @@
-﻿using System;
+﻿using HospitalManagement.Entity;
+using HospitalManagement.Integration;
+using HospitalManagement.Service;
+using HospitalManagement.View;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using HospitalManagement.Entity;
-using HospitalManagement.Integration;
-using HospitalManagement.Service;
-using HospitalManagement.Database;
-using HospitalManagement.Repository;
-using Microsoft.UI.Xaml;
 
 namespace HospitalManagement.ViewModel;
 
@@ -96,14 +96,8 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
 
     public MedicalStaffViewModel()
     {
-        using var dbContext = new HospitalDbContext();
-        var patientRepo = new PatientRepository(dbContext);
-        var historyRepo = new MedicalHistoryRepository(dbContext);
-        var recordRepo = new MedicalRecordRepository(dbContext);
-
-        _patientService = new PatientService(patientRepo, historyRepo, recordRepo);
-
-        _ghostService = GhostService.Instance;
+        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
+        _ghostService = (Application.Current as App)!.Services.GetRequiredService<IGhostService>();
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
 
@@ -173,7 +167,9 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
         };
 
         // Launch your brand new page!
-        var donorsPage = new View.BloodDonorsView(SelectedPatient.Id);
+        IServiceProvider scope = (Application.Current as App)!.Services;
+        BloodDonorsView donorsPage = scope.GetRequiredService<BloodDonorsView>();
+        donorsPage.Initialize(SelectedPatient.Id);
         donorsWindow.Content = donorsPage;
         donorsWindow.Activate();
     }
@@ -191,7 +187,7 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
         };
 
         // Launch the correctly named page!
-        var requestPage = new View.TransplantRequestView(SelectedPatient.Id, requestWindow);
+        var requestPage = new TransplantRequestView(SelectedPatient.Id, requestWindow);
 
         requestWindow.Content = requestPage;
         requestWindow.Activate();

@@ -1,5 +1,7 @@
-using Microsoft.UI.Xaml;
 using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
 
 
 
@@ -12,7 +14,7 @@ internal sealed partial class MedicalStaffView : Window
     public MedicalStaffView()
     {
         InitializeComponent();
-        ViewModel = new MedicalStaffViewModel();
+        ViewModel = (App.Current as App).Services.GetService<MedicalStaffViewModel>();
 
         if (Content is FrameworkElement rootElement)
         {
@@ -34,7 +36,9 @@ internal sealed partial class MedicalStaffView : Window
             };
 
             // 3. Instantiate your Page passing the actual Patient Id
-            var profilePage = new PatientProfileView(selectedPatient.Id);
+            IServiceProvider scope = (Application.Current as App).Services;
+            PatientProfileView profilePage = scope.GetRequiredService<PatientProfileView>();
+            profilePage.Initialize(selectedPatient.Id);
 
             // 4. Attach and show
             newWindow.Content = profilePage;

@@ -7,10 +7,15 @@ internal sealed partial class BloodDonorsView : Page
 {
     public BloodDonorsViewModel ViewModel { get; }
 
-    public BloodDonorsView(int patientId)
+    public BloodDonorsView(BloodDonorsViewModel viewModel)
     {
-        // Pass the patient ID so it knows exactly who to search for!
-        ViewModel = new BloodDonorsViewModel(patientId);
         InitializeComponent();
+        ViewModel = viewModel;
+        DataContext = ViewModel;
+    }
+
+    public void Initialize(int patientId)
+    {
+        ViewModel.LoadCompatibleDonors(patientId);
     }
 }

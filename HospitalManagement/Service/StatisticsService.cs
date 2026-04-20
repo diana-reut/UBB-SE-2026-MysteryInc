@@ -8,11 +8,11 @@ namespace HospitalManagement.Service;
 
 internal class StatisticsService : IStatisticsService
 {
-    private readonly PatientRepository _patientRepo;
-    private readonly MedicalRecordRepository _recordRepo;
-    private readonly PrescriptionRepository _prescriptionRepo;
+    private readonly IPatientRepository _patientRepo;
+    private readonly IMedicalRecordRepository _recordRepo;
+    private readonly IPrescriptionRepository _prescriptionRepo;
 
-    public StatisticsService(PatientRepository patientRepo, MedicalRecordRepository recordRepo, PrescriptionRepository prescriptionRepo)
+    public StatisticsService(IPatientRepository patientRepo, IMedicalRecordRepository recordRepo, IPrescriptionRepository prescriptionRepo)
     {
         _patientRepo = patientRepo;
         _recordRepo = recordRepo;

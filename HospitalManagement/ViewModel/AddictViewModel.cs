@@ -1,13 +1,15 @@
-﻿using System;
+﻿using HospitalManagement.Entity;
+using HospitalManagement.Service;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using HospitalManagement.Entity;
-using HospitalManagement.Service;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 
 namespace HospitalManagement.ViewModel;
 
-internal class AddictViewModel
+internal partial class AddictViewModel
 {
     private readonly IAddictDetectionService _addictDetectionService;
 
@@ -71,5 +73,24 @@ internal class AddictViewModel
 
             // pe viitor, daca se cere la backend, aici am putea schimba starea in baza de date ca ex: "Reported = true"
         }
+    }
+
+    private void PlayPoliceAlert()
+    {
+        _ = Task.Run(() =>
+        {
+            Console.Beep(1200, 200);
+            Console.Beep(800, 200);
+            Console.Beep(1200, 200);
+            Console.Beep(800, 200);
+            Console.Beep(1500, 500);
+        });
+    }
+
+    [RelayCommand]
+    public void ConfirmPoliceAlert(int patientId)
+    {
+        PlayPoliceAlert();
+        RemoveFlaggedPatient(patientId);
     }
 }

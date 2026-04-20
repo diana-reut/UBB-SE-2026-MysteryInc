@@ -4,7 +4,6 @@ namespace HospitalManagement.Service;
 
 internal interface IGhostService
 {
-    public static abstract GhostService Instance { get; }
 
     public event EventHandler? ExorcismTriggered;
 

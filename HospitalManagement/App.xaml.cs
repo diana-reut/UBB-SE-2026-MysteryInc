@@ -1,4 +1,6 @@
 ﻿using HospitalManagement.Database;
+using HospitalManagement.Integration.Export;
+using HospitalManagement.Integration.External;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
@@ -18,6 +20,7 @@ namespace HospitalManagement;
 public partial class App : Application
 {
     public IServiceProvider Services { get; }
+
     private Window? _window;
 
     /// <summary>
@@ -55,18 +58,54 @@ public partial class App : Application
         _ = services.AddSingleton<IMedicalRecordRepository, MedicalRecordRepository>();
         _ = services.AddSingleton<IAllergyRepository, AllergyRepository>();
         _ = services.AddSingleton<ITransplantRepository, TransplantRepository>();
+        _ = services.AddSingleton<IPrescriptionRepository, PrescriptionRepository>();
 
         // Services
         _ = services.AddSingleton<IBloodCompatibilityService, BloodCompatibilityService>();
         _ = services.AddSingleton<IPatientService, PatientService>();
         _ = services.AddSingleton<IAllergyService, AllergyService>();
         _ = services.AddSingleton<ITransplantService, TransplantService>();
+        _ = services.AddSingleton<IExportService, ExportService>();
+        _ = services.AddSingleton<IImportService, ImportService>();
+        _ = services.AddSingleton<IBillingService, BillingService>();
+        _ = services.AddTransient<IAddictDetectionService, AddictDetectionService>();
+        _ = services.AddTransient<IPrescriptionService, PrescriptionService>();
+        _ = services.AddSingleton<IStatisticsService, StatisticsService>();
+        _ = services.AddSingleton<IGhostService, GhostService>();
 
         // ViewModels & Windows
         _ = services.AddTransient<AdminViewModel>();
-        _ = services.AddTransient<OrganDonorViewModel>();
-        _ = services.AddTransient<StatisticsWindow>();
         _ = services.AddTransient<AdminView>();
+        _ = services.AddTransient<PatientViewModel>();
+        _ = services.AddTransient<PatientView>();
+        _ = services.AddTransient<AddictViewModel>();
+        _ = services.AddTransient<AddictView>();
+        _ = services.AddTransient<PharmacistViewModel>();
+        _ = services.AddTransient<PharmacistView>();
+        _ = services.AddTransient<PrescriptionViewModel>();
+        _ = services.AddTransient<PrescriptionView>();
+        _ = services.AddTransient<OrganDonorViewModel>();
+        _ = services.AddTransient<OrganDonorDialog>();
+        _ = services.AddTransient<BloodDonorsViewModel>();
+        _ = services.AddTransient<BloodDonorsView>();
+        _ = services.AddTransient<StatisticsViewModel>();
+        _ = services.AddTransient<StatisticsWindow>();
+        _ = services.AddTransient<PatientProfileViewModel>();
+        _ = services.AddTransient<PatientProfileView>();
+        _ = services.AddTransient<MedicalStaffViewModel>();
+        _ = services.AddTransient<TransplantRequestViewModel>();
+        _ = services.AddSingleton<Func<int, TransplantRequestViewModel>>(serviceProvider =>
+            id =>
+            {
+                TransplantRequestViewModel vm = serviceProvider.GetRequiredService<TransplantRequestViewModel>();
+                vm.Initialize(id);
+                return vm;
+            });
+
+        // MORE
+        _ = services.AddSingleton<IExternalProvider, MockERProxy>();
+        _ = services.AddSingleton<IExternalProvider, MockStaffProxy>();
+        _ = services.AddSingleton<IExternalPatientPublisher, ExternalPatientPublisher>();
 
         return services.BuildServiceProvider();
     }

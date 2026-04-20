@@ -1,16 +1,23 @@
+using HospitalManagement.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class PrescriptionView : UserControl
 {
-    public ViewModel.PrescriptionViewModel ViewModel { get; set; } = null!;
+    public ViewModel.PrescriptionViewModel ViewModel { get; }
 
-    public PrescriptionView()
+    public PrescriptionView(PrescriptionViewModel viewModel)
     {
+        ViewModel = (App.Current as App).Services.GetService<PrescriptionViewModel>();
+        this.DataContext = ViewModel;
         InitializeComponent();
+        ViewModel = viewModel;
+        DataContext = ViewModel;
+
         DateFromPicker.DateChanged += DateFromPicker_DateChanged;
         DateToPicker.DateChanged += DateToPicker_DateChanged;
     }

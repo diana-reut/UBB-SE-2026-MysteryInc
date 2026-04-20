@@ -21,6 +21,7 @@
     <None Remove="configuration\appsettings.template.json" />
     <None Remove="Database\script1_create_database.sql" />
     <None Remove="View\AddPatientDialog.xaml" />
+    <None Remove="View\PoliceAlertDialog.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,6 +57,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="CommunityToolkit.Common" Version="8.2.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" Version="8.2.251219" />
     <PackageReference Include="iText7" Version="9.5.0" />
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.5.0" />
@@ -76,6 +79,9 @@
     <None Update="configuration\appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="View\PoliceAlertDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="View\AddPatientDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

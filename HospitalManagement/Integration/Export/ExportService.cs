@@ -4,17 +4,17 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Integration.Export;
 
-internal class ExportService
+internal class ExportService : IExportService
 {
-    private readonly MedicalRecordRepository _recordRepo;
-    private readonly PrescriptionRepository _prescriptionRepo;
-    private readonly PatientRepository _patientRepo;
+    private readonly IMedicalRecordRepository _recordRepo;
+    private readonly IPrescriptionRepository _prescriptionRepo;
+    private readonly IPatientRepository _patientRepo;
     private readonly IMedicalHistoryRepository _historyRepo;
 
     public ExportService(
-        MedicalRecordRepository recordRepo,
-        PrescriptionRepository prescriptionRepo,
-        PatientRepository patientRepo,
+        IMedicalRecordRepository recordRepo,
+        IPrescriptionRepository prescriptionRepo,
+        IPatientRepository patientRepo,
         IMedicalHistoryRepository historyRepo)
     {
         _recordRepo = recordRepo;
