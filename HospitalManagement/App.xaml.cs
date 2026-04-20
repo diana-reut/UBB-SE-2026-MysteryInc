@@ -20,6 +20,7 @@ namespace HospitalManagement;
 public partial class App : Application
 {
     public IServiceProvider Services { get; }
+
     private Window? _window;
 
     /// <summary>
@@ -93,8 +94,13 @@ public partial class App : Application
         _ = services.AddTransient<PatientProfileView>();
         _ = services.AddTransient<MedicalStaffViewModel>();
         _ = services.AddTransient<TransplantRequestViewModel>();
-        
-
+        _ = services.AddSingleton<Func<int, TransplantRequestViewModel>>(serviceProvider =>
+            id =>
+            {
+                TransplantRequestViewModel vm = serviceProvider.GetRequiredService<TransplantRequestViewModel>();
+                vm.Initialize(id);
+                return vm;
+            });
 
         // MORE
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();
