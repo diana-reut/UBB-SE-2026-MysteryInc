@@ -96,8 +96,10 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
 
     public MedicalStaffViewModel()
     {
-        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
-        _ghostService = (Application.Current as App)!.Services.GetRequiredService<IGhostService>();
+
+        _patientService = (App.Current as App).Services.GetService<IPatientService>();
+
+        _ghostService = (App.Current as App).Services.GetService<IGhostService>();
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
 
@@ -167,7 +169,7 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
         };
 
         // Launch your brand new page!
-        IServiceProvider scope = (Application.Current as App)!.Services;
+        IServiceProvider scope = (Application.Current as App).Services;
         BloodDonorsView donorsPage = scope.GetRequiredService<BloodDonorsView>();
         donorsPage.Initialize(SelectedPatient.Id);
         donorsWindow.Content = donorsPage;
@@ -187,7 +189,7 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
         };
 
         // Launch the correctly named page!
-        var requestPage = new TransplantRequestView(SelectedPatient.Id, requestWindow);
+        var requestPage = new View.TransplantRequestView(SelectedPatient.Id, requestWindow);
 
         requestWindow.Content = requestPage;
         requestWindow.Activate();

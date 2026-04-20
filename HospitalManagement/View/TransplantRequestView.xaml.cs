@@ -1,6 +1,4 @@
 using System;
-using HospitalManagement.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -14,8 +12,7 @@ internal sealed partial class TransplantRequestView : Page
 
     public TransplantRequestView(int patientId, Window parentWindow)
     {
-        Func<int, TransplantRequestViewModel> vmFactory = (Application.Current as App)!.Services.GetRequiredService<Func<int, TransplantRequestViewModel>>();
-        ViewModel = vmFactory(patientId);
+        ViewModel = new ViewModel.TransplantRequestViewModel(patientId);
         _parentWindow = parentWindow;
         InitializeComponent();
     }

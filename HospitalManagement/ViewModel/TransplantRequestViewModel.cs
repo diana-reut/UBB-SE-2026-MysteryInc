@@ -1,16 +1,15 @@
-﻿using HospitalManagement.Service;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using HospitalManagement.Service;
+using Microsoft.UI.Xaml;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.ViewModel;
 
 internal class TransplantRequestViewModel : INotifyPropertyChanged
 {
     private readonly ITransplantService _transplantService;
-    private readonly IPatientService _patientService;
-    private int _patientId;
+    private readonly int _patientId;
 
     public string PatientName { get; set; } = null!;
 
@@ -39,16 +38,13 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
         }
     }
 
-    public TransplantRequestViewModel()
-    {
-        _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
-        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
-    }
-
-    public void Initialize(int patientId)
+    public TransplantRequestViewModel(int patientId)
     {
         _patientId = patientId;
-        Entity.Patient patient = _patientService.GetById(patientId);
+        _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
+        PatientService? ps = (Application.Current as App)!.Services.GetRequiredService<PatientService>();
+
+        Entity.Patient? patient = ps.GetById(patientId);
         if (patient is not null)
         {
             PatientName = $"{patient.FirstName} {patient.LastName}";
@@ -56,12 +52,6 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
 
         IsUrgent = _transplantService.IsUrgent(patientId);
         WarningMessage = _transplantService.GetChronicWarning(patientId);
-
-        OnPropertyChanged(nameof(PatientName));
-        OnPropertyChanged(nameof(IsUrgent));
-        OnPropertyChanged(nameof(UrgentVisibility));
-        OnPropertyChanged(nameof(WarningMessage));
-        OnPropertyChanged(nameof(WarningVisibility));
     }
 
     public void SubmitRequest()
