@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:entity="using:HospitalManagement.Entity"
     xmlns:converters="using:HospitalManagement.Converters"
-    Title="Patient Medical Information">
+    Title="Patient Medical Information"
+    >
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -43,97 +44,97 @@
             <!-- Left Section: General Medical Information (Scrollable) -->
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="15">
-                <!-- Patient Info Card -->
-                <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
-                    <StackPanel Spacing="10">
-                        <TextBlock Text="Patient Information" FontSize="16" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Foreground="LightGray"><Run Text="Name: "/><Run Text="{Binding SelectedPatient.FirstName}"/></TextBlock>
-                        <TextBlock Foreground="LightGray"><Run Text="Last Name: "/><Run Text="{Binding SelectedPatient.LastName}"/></TextBlock>
-                        <TextBlock Foreground="LightGray"><Run Text="DOB: "/><Run Text="{Binding SelectedPatient.Dob}"/></TextBlock>
-                    </StackPanel>
-                </Border>
-
-                <!-- Medical History Card -->
-                <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
-                    <StackPanel Spacing="10">
-                        <TextBlock Text="Medical History" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                        
-                        <!-- Blood Type -->
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Blood Type" Foreground="Gray" FontSize="12"/>
-                            <TextBlock Text="{Binding MedicalHistory.BloodType}" 
-                                       Foreground="White" FontWeight="SemiBold" FontSize="14"/>
+                    <!-- Patient Info Card -->
+                    <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Patient Information" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Foreground="LightGray"><Run Text="Name: "/><Run Text="{Binding SelectedPatient.FirstName}"/></TextBlock>
+                            <TextBlock Foreground="LightGray"><Run Text="Last Name: "/><Run Text="{Binding SelectedPatient.LastName}"/></TextBlock>
+                            <TextBlock Foreground="LightGray"><Run Text="DOB: "/><Run Text="{Binding SelectedPatient.Dob}"/></TextBlock>
                         </StackPanel>
+                    </Border>
 
-                        <!-- RH Factor -->
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="RH Factor" Foreground="Gray" FontSize="12"/>
-                            <TextBlock Text="{Binding MedicalHistory.Rh}" 
+                    <!-- Medical History Card -->
+                    <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Medical History" FontSize="14" FontWeight="Bold" Foreground="White"/>
+
+                            <!-- Blood Type -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Blood Type" Foreground="Gray" FontSize="12"/>
+                                <TextBlock Text="{Binding MedicalHistory.BloodType}" 
                                        Foreground="White" FontWeight="SemiBold" FontSize="14"/>
-                        </StackPanel>
+                            </StackPanel>
 
-                        <!-- Chronic Conditions -->
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Chronic Conditions" Foreground="Gray" FontSize="12"/>
-                            <TextBlock Text="{Binding ChronicConditionsFormatted}" 
+                            <!-- RH Factor -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="RH Factor" Foreground="Gray" FontSize="12"/>
+                                <TextBlock Text="{Binding MedicalHistory.Rh}" 
+                                       Foreground="White" FontWeight="SemiBold" FontSize="14"/>
+                            </StackPanel>
+
+                            <!-- Chronic Conditions -->
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Chronic Conditions" Foreground="Gray" FontSize="12"/>
+                                <TextBlock Text="{Binding ChronicConditionsFormatted}" 
                                        Foreground="White" TextWrapping="WrapWholeWords" FontSize="12"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </Border>
+                    </Border>
 
-                <!-- Allergies Card -->
-                <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
-                    <StackPanel Spacing="10">
-                        <TextBlock Text="Allergies" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                        
-                        <ListView ItemsSource="{Binding Allergies}" 
+                    <!-- Allergies Card -->
+                    <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Allergies" FontSize="14" FontWeight="Bold" Foreground="White"/>
+
+                            <ListView ItemsSource="{Binding Allergies}" 
                                   SelectionMode="None"
                                   Height="Auto"
                                   BorderThickness="0">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#3A4A5A" CornerRadius="6" Padding="12" Margin="0,5,0,0" BorderThickness="1" BorderBrush="#4A5A6A">
-                                        <TextBlock Text="{Binding}" 
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#3A4A5A" CornerRadius="6" Padding="12" Margin="0,5,0,0" BorderThickness="1" BorderBrush="#4A5A6A">
+                                            <TextBlock Text="{Binding}" 
                                                    FontWeight="SemiBold" Foreground="White" FontSize="13"/>
-                                    </Border>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
 
-                        <TextBlock Text="No allergies recorded" 
+                            <TextBlock Text="No allergies recorded" 
                                    Foreground="Gray" FontSize="12" Visibility="{Binding Allergies.Count, Converter={StaticResource BoolToVis}}"/>
-                    </StackPanel>
-                </Border>
+                        </StackPanel>
+                    </Border>
 
-                <!-- Medical Records List -->
-                <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
-                    <StackPanel Spacing="10">
-                        <TextBlock Text="Consultations" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                        
-                        <ListView ItemsSource="{Binding MedicalRecords}" 
+                    <!-- Medical Records List -->
+                    <Border Background="#2C3A4A" CornerRadius="10" Padding="15">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Consultations" FontSize="14" FontWeight="Bold" Foreground="White"/>
+
+                            <ListView ItemsSource="{Binding MedicalRecords}" 
                                   SelectedItem="{Binding SelectedMedicalRecord, Mode=TwoWay}"
                                   SelectionMode="Single"
                                   Height="200"
                                   BorderThickness="1"
                                   BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="entity:MedicalRecord">
-                                    <Border Padding="10" 
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="entity:MedicalRecord">
+                                        <Border Padding="10" 
                                             BorderBrush="{ThemeResource SystemControlBackgroundBaseLowBrush}"
                                             BorderThickness="0,0,0,1">
-                                        <StackPanel Spacing="3">
-                                            <TextBlock Foreground="White" FontSize="12" FontWeight="Bold">
+                                            <StackPanel Spacing="3">
+                                                <TextBlock Foreground="White" FontSize="12" FontWeight="Bold">
                                                 <Run Text="{Binding ConsultationDate}"/>
-                                            </TextBlock>
-                                            <TextBlock Text="{Binding SourceType}" 
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding ConsultationSource}" 
                                                        Foreground="LightGray" FontSize="11"/>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </StackPanel>
-                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
 
@@ -206,7 +207,7 @@
                         <!-- Billing Section -->
                         <StackPanel Spacing="10" Margin="0,15,0,0">
                             <TextBlock Text="Billing Information" FontSize="16" FontWeight="Bold" Foreground="White"/>
-                            
+
                             <!-- Base Price Display -->
                             <StackPanel Spacing="5">
                                 <TextBlock Text="Base Price (Calculated)" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
@@ -220,7 +221,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                
+
                                 <!-- Final Price (visible only after discount applied) -->
                                 <StackPanel Grid.Column="0" Spacing="5"
                                             Visibility="{Binding DiscountApplied, Converter={StaticResource BoolToVis}}">
@@ -228,7 +229,7 @@
                                     <TextBlock Text="{Binding FinalPrice}" 
                                                Foreground="#00FF00" FontSize="14" FontWeight="Bold"/>
                                 </StackPanel>
-                                
+
                                 <!-- Apply Discount Button (visible when discount not applied) -->
                                 <Button Grid.Column="1" 
                                         Content="🎡 Apply Discount" 
@@ -257,17 +258,10 @@
 
             <!-- Empty State for Right Section -->
             <Border Grid.Column="1" Background="#2C3A4A" CornerRadius="10" Padding="20" 
-        Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource NullToVisibilityConverter}}">
-                <ScrollViewer>
-                </ScrollViewer>
-            </Border>
-
-            <Border Grid.Column="1" Background="#2C3A4A" CornerRadius="10" Padding="20" 
-        Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter='Invert'}">
+                    Visibility="{Binding SelectedMedicalRecord, Converter={StaticResource BoolToVis}}">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
-                    <FontIcon Glyph="&#xE946;" FontSize="48" Foreground="Gray"/>
-                    <TextBlock Text="Select a consultation from the left to view details" 
-                   Foreground="Gray" FontSize="16" TextAlignment="Center"/>
+                    <TextBlock Text="Select a consultation to view details" 
+                               Foreground="Gray" FontSize="16" TextAlignment="Center"/>
                 </StackPanel>
             </Border>
         </Grid>
