@@ -163,6 +163,7 @@ internal sealed partial class AdminView : Window
 
 
                         dialog.Initialize(
+                            deceasedPatient,
                             (transplantId, donorId, score) =>
                             {
                                 try

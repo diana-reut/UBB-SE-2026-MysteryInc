@@ -1,3 +1,4 @@
+using HospitalManagement.Entity;
 using HospitalManagement.ViewModel;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -45,9 +46,9 @@ internal sealed partial class OrganDonorDialog : ContentDialog
 
 
     // Initialize the dialog with a deceased donor and handle confirmation.
-    public void Initialize(Action<int, int, float> onAssigned)
+    public void Initialize(Patient donor, Action<int, int, float> onAssigned)
     {
-        // deceased patient nu facea nimic asa ca l am scos
+        ViewModel.DeceasedPatient = donor;
         ViewModel.OnAssignmentConfirmed = onAssigned;
     }
 }
