@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace HospitalManagement.ViewModel;
 
-internal class PatientProfileViewModel : INotifyPropertyChanged
+internal class PatientProfileViewModel : INotifyPropertyChangedltatii
 {
     private Patient? _patient;
     private MedicalRecord? _selectedRecord;
@@ -33,6 +33,11 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
 
         set
         {
+            if (_patient == value)
+            {
+                return;
+            }
+
             _patient = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(FormattedChronicConditions));
@@ -46,6 +51,11 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
 
         set
         {
+            if (_selectedRecord == value)
+            {
+                return;
+            }
+
             _selectedRecord = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(SelectedRecord));
