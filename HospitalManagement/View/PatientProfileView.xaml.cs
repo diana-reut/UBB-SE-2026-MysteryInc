@@ -1,33 +1,41 @@
 using HospitalManagement.Entity;
 using HospitalManagement.ViewModel;
+using HospitalManagement.Service;
+using HospitalManagement.Integration.Export;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
-using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class PatientProfileView : Page
 {
     public PatientProfileViewModel ViewModel { get; }
+
+    private readonly IPatientService _patientService;
+    private readonly IImportService _importService;
+    private readonly IExportService _exportService;
     private readonly IServiceProvider _services;
 
-    public PatientProfileView()
+    public PatientProfileView(
+        PatientProfileViewModel viewModel,
+        IPatientService patientService,
+        IImportService importService,
+        IExportService exportService,
+        IServiceProvider services)
     {
         InitializeComponent();
 
-        _services = (Application.Current as App)!.Services;
-        ViewModel = _services.GetRequiredService<PatientProfileViewModel>();
+        ViewModel = viewModel;
+        _patientService = patientService;
+        _importService = importService;
+        _exportService = exportService;
+        _services = services;
+
         DataContext = ViewModel;
-
-        // Initialize Callbacks
-        ViewModel.ShowAlertAction = OnShowAlert;
-        ViewModel.OpenFileAction = OnOpenFile;
-        ViewModel.ShowPrescriptionAction = OnShowPrescriptionAsync;
-
-        Loaded += Page_Loaded;
+        Loaded += Page_LoadedAsync;
     }
 
     public void Initialize(int patientId)
@@ -35,29 +43,19 @@ internal sealed partial class PatientProfileView : Page
         ViewModel.LoadFullPatientProfile(patientId);
     }
 
-    private void Page_Loaded(object sender, RoutedEventArgs e)
+    private async void Page_LoadedAsync(object sender, RoutedEventArgs e)
     {
-        ViewModel.CheckHighRiskStatus();
-    }
-
-    private async void ViewPrescription_ClickAsync(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.ViewPrescriptionAsync();
-    }
-
-    private void ExportPDF_ClickAsync(object sender, RoutedEventArgs e)
-    {
-        ViewModel.ExportSelectedRecord();
-    }
-
-    private void ImportER_ClickAsync(object sender, RoutedEventArgs e)
-    {
-        ViewModel.ImportRecords(isER: true);
-    }
-
-    private void ImportStaff_ClickAsync(object sender, RoutedEventArgs e)
-    {
-        ViewModel.ImportRecords(isER: false);
+        if (ViewModel.CurrentPatient is not null && _patientService.IsHighRiskPatient(ViewModel.CurrentPatient.Id))
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "High Risk Patient Alert",
+                Content = "Warning: This patient is flagged as High Risk (10+ ER visits recently).",
+                CloseButtonText = "Acknowledge",
+                XamlRoot = Content.XamlRoot,
+            };
+            await dialog.ShowAsync();
+        }
     }
 
     private void RecordList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -68,31 +66,91 @@ internal sealed partial class PatientProfileView : Page
         }
     }
 
-    // --- ViewModel Callback Implementations ---
-
-    private void OnShowAlert(string title, string content)
+    private async void ViewPrescription_ClickAsync(object sender, RoutedEventArgs e)
     {
-        ShowAlert(title, content);
-    }
-
-    private void OnOpenFile(string path)
-    {
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        if (ViewModel.SelectedRecord is null)
         {
-            FileName = path,
-            UseShellExecute = true
-        });
+            return;
+        }
+
+        Prescription? actualPrescription = _patientService.GetPrescriptionByRecordId(ViewModel.SelectedRecord.Id);
+
+        if (actualPrescription is not null)
+        {
+            var prescriptionWindow = new Window { Title = "Prescription Details" };
+
+            PrescriptionView prescriptionPage = _services.GetRequiredService<PrescriptionView>();
+
+            // Note: If your PrescriptionView doesn't have an Initialize method, 
+            // you might need to set the DataContext or apply filters to its internal ViewModel here
+            prescriptionPage.ViewModel.ApplyFilterCommand(actualPrescription.Id, null, null, null, null, null);
+
+            prescriptionWindow.Content = prescriptionPage;
+            prescriptionWindow.Activate();
+        }
+        else
+        {
+            ShowAlert("No Prescription", "This consultation does not have an associated prescription.");
+        }
     }
 
-    private async Task OnShowPrescriptionAsync(int prescriptionId)
+    private async void ExportPDF_ClickAsync(object sender, RoutedEventArgs e)
     {
-        var prescriptionWindow = new Window { Title = "Prescription Details" };
-        var prescriptionPage = _services.GetRequiredService<PrescriptionView>();
+        if (ViewModel.SelectedRecord is null)
+        {
+            return;
+        }
 
-        prescriptionPage.ViewModel.ApplyFilterCommand(prescriptionId, null, null, null, null, null);
+        try
+        {
+            // Just one line of code thanks to DI!
+            string savedFilePath = _exportService.ExportRecordToPDF(ViewModel.SelectedRecord.Id);
 
-        prescriptionWindow.Content = prescriptionPage;
-        prescriptionWindow.Activate();
+            using (System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = savedFilePath,
+                UseShellExecute = true,
+            }))
+            {
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowAlert("Export Failed", ex.Message);
+        }
+    }
+
+    private async void ImportER_ClickAsync(object sender, RoutedEventArgs e) => await HandleImportAsync(isER: true);
+
+    private async void ImportStaff_ClickAsync(object sender, RoutedEventArgs e) => await HandleImportAsync(isER: false);
+
+    private async System.Threading.Tasks.Task HandleImportAsync(bool isER)
+    {
+        if (ViewModel.CurrentPatient is null)
+        {
+            return;
+        }
+
+        try
+        {
+            int patientId = ViewModel.CurrentPatient.Id;
+
+            if (isER)
+            {
+                _importService.ImportFromER(patientId, 1);
+            }
+            else
+            {
+                _importService.ImportFromAppointment(patientId, 1);
+            }
+
+            ViewModel.LoadFullPatientProfile(patientId);
+            ShowAlert("Import Successful", "Records imported correctly.");
+        }
+        catch (Exception ex)
+        {
+            ShowAlert("Import Failed", ex.Message);
+        }
     }
 
     private async void ShowAlert(string title, string content)
@@ -102,7 +160,7 @@ internal sealed partial class PatientProfileView : Page
             Title = title,
             Content = content,
             CloseButtonText = "OK",
-            XamlRoot = this.XamlRoot,
+            XamlRoot = Content.XamlRoot,
         };
         await dialog.ShowAsync();
     }
