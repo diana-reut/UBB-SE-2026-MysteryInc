@@ -1,10 +1,13 @@
-using Microsoft.UI.Xaml.Controls;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
+using HospitalManagement.Service;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 
 namespace HospitalManagement.View;
 
@@ -18,21 +21,30 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
     private readonly ObservableCollection<AllergyEntry> _allergyList = [];
     private List<Allergy> _availableAllergies = [];
 
+    private readonly IAllergyService _allergyService;
+
     public MedicalHistoryDialog()
     {
         InitializeComponent();
+        _allergyService = (Application.Current as App)!.Services.GetRequiredService<IAllergyService>();
         Closing += MedicalHistoryDialog_Closing;
         AllergiesList.ItemsSource = _allergyList;
     }
 
-    public void Initialize(List<Allergy> availableAllergies)
+    public void Initialize()
     {
-        _availableAllergies = availableAllergies;
+        try
+        {
+            _availableAllergies = _allergyService.GetAllergies().ToList();
 
-        // Bind allergies to ComboBox
-        AllergyNameEntry.ItemsSource = _availableAllergies;
-        AllergyNameEntry.DisplayMemberPath = "AllergyName";
-        AllergyNameEntry.SelectedValuePath = "AllergyId";
+            AllergyNameEntry.ItemsSource = _availableAllergies;
+            AllergyNameEntry.DisplayMemberPath = "AllergyName";
+            AllergyNameEntry.SelectedValuePath = "AllergyId";
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load allergies in Dialog: {ex.Message}");
+        }
     }
 
     private void MedicalHistoryDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
@@ -44,7 +56,7 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
         }
     }
 
-    private void AddAllergyButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void AddAllergyButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -81,7 +93,7 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
         }
     }
 
-    private void RemoveAllergyButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void RemoveAllergyButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
