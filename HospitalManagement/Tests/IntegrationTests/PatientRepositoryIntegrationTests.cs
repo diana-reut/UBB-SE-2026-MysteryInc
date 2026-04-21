@@ -12,8 +12,9 @@ using HospitalManagement.Configuration;
 
 namespace HospitalManagement.Tests.IntegrationTests;
 
+
 [TestClass]
-internal class PatientRepositoryIntegrationTests
+public class PatientRepositoryIntegrationTests
 {
     private IDbContext _context;
     private IPatientRepository _repo;
@@ -21,7 +22,8 @@ internal class PatientRepositoryIntegrationTests
     [TestInitialize]
     public void Setup()
     {
-        string json = File.ReadAllText("testconfig.local.json");
+        string filePath = Path.Combine(AppContext.BaseDirectory, "configuration", "testconfig.local.json");
+        string json = File.ReadAllText(filePath);
         string connStr = JsonSerializer.Deserialize<JsonElement>(json)
                             .GetProperty("ConnectionStrings")
                             .GetProperty("DefaultConnection")
@@ -42,4 +44,13 @@ internal class PatientRepositoryIntegrationTests
     {
         (_context as IDisposable)?.Dispose();
     }
+
+    [TestMethod]
+    public void Setup_ShouldConnectToDatabase()
+    {
+        var patients = _repo.GetAll(true);
+        Assert.IsNotNull(patients);
+    }
+
+
 }

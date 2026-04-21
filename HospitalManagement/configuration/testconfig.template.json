@@ -1,5 +1,5 @@
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=YOUR_DB;Integrated Security=true;"
+    "DefaultConnection": "Server=YOUR_SERVER;Database=YOUR_DB;Integrated Security=true;TrustServerCertificate=True"
   }
 }

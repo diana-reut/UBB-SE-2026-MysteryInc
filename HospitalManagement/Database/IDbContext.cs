@@ -1,10 +1,9 @@
-﻿using Microsoft.Data.SqlClient;
-using System;
+﻿using System;
 using System.Data;
 
 namespace HospitalManagement.Database;
 
-internal interface IDbContext : IDisposable
+public interface IDbContext : IDisposable
 {
     // added this
     public void EnsureConnectionOpen();
