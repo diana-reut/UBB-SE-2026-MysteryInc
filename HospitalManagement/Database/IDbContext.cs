@@ -8,7 +8,7 @@ internal interface IDbContext : IDisposable
     // added this
     public void EnsureConnectionOpen();
 
-    public IDataReader ExecuteQuery(string sql);
+    public SqlDataReader ExecuteQuery(string sql);
 
     public int ExecuteNonQuery(string sql);
 
