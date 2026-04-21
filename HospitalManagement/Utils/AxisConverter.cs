@@ -4,7 +4,7 @@ using LiveChartsCore.SkiaSharpView;
 
 namespace HospitalManagement.Utils;
 
-public class AxisConverter : IValueConverter
+internal class AxisConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, string language)
     {

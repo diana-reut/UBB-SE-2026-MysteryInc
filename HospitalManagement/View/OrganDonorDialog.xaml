@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:HospitalManagement.Utils"
     xmlns:local="using:HospitalManagement.ViewModel"
+    xmlns:entities ="using:HospitalManagement.Entity"
     Title="Organ Donor Assignment"
     PrimaryButtonText="Confirm Assignment"
     CloseButtonText="Cancel"
@@ -80,7 +81,7 @@
                 </ListView.Header>
 
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="local:TransplantMatch">
+                    <DataTemplate x:DataType="entities:TransplantMatch">
                         <Grid Padding="12,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="150"/>

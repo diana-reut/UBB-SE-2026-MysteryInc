@@ -101,9 +101,12 @@
                                         </Flyout>
                                     </Button.Flyout>
                                 </Button>
-
-                                <Button Background="{StaticResource DangerRed}" Foreground="White" Height="40" BorderThickness="0"
-                                        Tag="{x:Bind Id}" Click="OnNotifyPoliceClicked">
+                                <Button Background="{StaticResource DangerRed}" 
+                                        Foreground="White" 
+                                        Height="40" 
+                                        BorderThickness="0"
+                                        Click="OnNotifyPoliceClicked"
+                                        CommandParameter="{x:Bind Id}"> 
                                     <Button.Resources>
                                         <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#C53030"/>
                                         <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>

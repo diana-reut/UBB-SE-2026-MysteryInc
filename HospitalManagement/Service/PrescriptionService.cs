@@ -7,11 +7,11 @@ using HospitalManagement.Integration;
 
 namespace HospitalManagement.Service;
 
-public class PrescriptionService
+internal class PrescriptionService : IPrescriptionService
 {
-    private readonly PrescriptionRepository _prescriptionRepository;
+    private readonly IPrescriptionRepository _prescriptionRepository;
 
-    public PrescriptionService(PrescriptionRepository prescriptionRepository)
+    public PrescriptionService(IPrescriptionRepository prescriptionRepository)
     {
         _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
     }

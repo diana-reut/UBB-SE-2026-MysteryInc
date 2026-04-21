@@ -1,48 +1,48 @@
-using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using HospitalManagement.ViewModel;
-using HospitalManagement.Database;
-using HospitalManagement.Repository;
-using HospitalManagement.Service;
-using HospitalManagement.Entity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
 
 
-namespace HospitalManagement.View
+
+namespace HospitalManagement.View;
+
+internal sealed partial class MedicalStaffView : Window
 {
-    public sealed partial class MedicalStaffView : Window
+    public MedicalStaffViewModel ViewModel { get; }
+
+    public MedicalStaffView()
     {
-        public MedicalStaffViewModel ViewModel { get; }
+        InitializeComponent();
+        ViewModel = (App.Current as App).Services.GetService<MedicalStaffViewModel>();
 
-        public MedicalStaffView()
+        if (Content is FrameworkElement rootElement)
         {
-            this.InitializeComponent();
-            ViewModel = new MedicalStaffViewModel();
-
-            if (Content is FrameworkElement rootElement)
-            {
-                rootElement.DataContext = ViewModel;
-            }
+            rootElement.DataContext = ViewModel;
         }
+    }
 
-        // This goes in the code-behind of the page that lists all the patients
-        private void PatientList_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    // This goes in the code-behind of the page that lists all the patients
+    private void PatientList_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    {
+        // 1. Cast the sender to a ListView, then check if the selected item is your Patient class
+        if (sender is Microsoft.UI.Xaml.Controls.ListView listView
+            && listView.SelectedItem is Entity.Patient selectedPatient)
         {
-            // 1. Cast the sender to a ListView, then check if the selected item is your Patient class
-            if (sender is Microsoft.UI.Xaml.Controls.ListView listView &&
-                listView.SelectedItem is HospitalManagement.Entity.Patient selectedPatient)
+            // 2. Create the Window
+            var newWindow = new Window
             {
-                // 2. Create the Window
-                var newWindow = new Window();
-                newWindow.Title = "Patient Medical Profile";
+                Title = "Patient Medical Profile",
+            };
 
-                // 3. Instantiate your Page passing the actual Patient Id
-                var profilePage = new HospitalManagement.View.PatientProfileView(selectedPatient.Id);
+            // 3. Instantiate your Page passing the actual Patient Id
+            IServiceProvider scope = (Application.Current as App).Services;
+            PatientProfileView profilePage = scope.GetRequiredService<PatientProfileView>();
+            profilePage.Initialize(selectedPatient.Id);
 
-                // 4. Attach and show
-                newWindow.Content = profilePage;
-                newWindow.Activate();
-            }
+            // 4. Attach and show
+            newWindow.Content = profilePage;
+            newWindow.Activate();
         }
     }
 }

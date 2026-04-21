@@ -1,169 +1,166 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq; 
+using System.Linq;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.DTOs;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
 
-namespace HospitalManagement.ViewModel
+namespace HospitalManagement.ViewModel;
+
+internal class PrescriptionViewModel
 {
-    internal class PrescriptionViewModel
+    private readonly IPrescriptionService _prescriptionService;
+    private readonly IAddictDetectionService _addictDetectionService;
+
+
+    public ObservableCollection<Prescription> Prescriptions { get; set; }
+
+    public ObservableCollection<Patient> AddictCandidates { get; set; }
+
+    public PrescriptionFilter ActiveFilter { get; set; }
+
+    public int CurrentPage { get; set; }
+
+    public string InfoMessage { get; set; } = "";
+
+    private const int PageSize = 9;
+
+    public PrescriptionViewModel(
+        IPrescriptionService prescriptionService,
+        IAddictDetectionService addictDetectionService)
     {
-      
-        private readonly PrescriptionService _prescriptionService;
-        private readonly AddictDetectionService _addictDetectionService;
+        _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
+        _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
 
-        
-        public ObservableCollection<Prescription> Prescriptions { get; set; }
+        Prescriptions = [];
+        AddictCandidates = [];
 
-        public ObservableCollection<Patient> AddictCandidates { get; set; }
+        ActiveFilter = new PrescriptionFilter();
+        CurrentPage = 1;
+        LoadPrescriptions();
+    }
 
-        public PrescriptionFilter ActiveFilter { get; set; }
-        public int CurrentPage { get; set; }
-        public string InfoMessage { get; set; } = string.Empty;
+    public void UpdatePageData()
+    {
+        Prescriptions.Clear();
+        InfoMessage = "";
 
-        private const int PageSize = 9;
+        List<DoctorDTO> fakeDoctors = MockDoctorProvider.FakeDoctors;
+        var random = new Random();
 
-        public PrescriptionViewModel(
-            PrescriptionService prescriptionService, 
-            AddictDetectionService addictDetectionService)
+        bool hasActiveFilter =
+            ActiveFilter.PrescriptionId.HasValue
+                || !string.IsNullOrWhiteSpace(ActiveFilter.MedName)
+                || ActiveFilter.DateFrom.HasValue
+                || ActiveFilter.DateTo.HasValue
+                || !string.IsNullOrWhiteSpace(ActiveFilter.PatientName)
+                || !string.IsNullOrWhiteSpace(ActiveFilter.DoctorName);
+
+        List<Prescription> targetList;
+
+        if (hasActiveFilter)
         {
-            _prescriptionService = prescriptionService ?? throw new ArgumentNullException(nameof(prescriptionService));
-            _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
-
-            Prescriptions = new ObservableCollection<Prescription>();
-            AddictCandidates = new ObservableCollection<Patient>();
-            
-            ActiveFilter = new PrescriptionFilter();
-            CurrentPage = 1;
-            LoadPrescriptions();
+            List<Prescription> allFilteredResults = _prescriptionService.ApplyFilter(ActiveFilter);
+            targetList = [.. allFilteredResults
+                .Skip((CurrentPage - 1) * PageSize)
+                .Take(PageSize)];
+        }
+        else
+        {
+            targetList = _prescriptionService.GetLatestPrescriptions(PageSize, CurrentPage);
         }
 
-        public void UpdatePageData()
+        foreach (Prescription item in targetList)
         {
-            Prescriptions.Clear();
-            InfoMessage = string.Empty;
-
-            var fakeDoctors = MockDoctorProvider.GetFakeDoctors();
-            var random = new Random();
-
-            bool hasActiveFilter = 
-                ActiveFilter.PrescriptionId.HasValue || 
-                !string.IsNullOrWhiteSpace(ActiveFilter.MedName) ||
-                ActiveFilter.DateFrom.HasValue || 
-                ActiveFilter.DateTo.HasValue || 
-                !string.IsNullOrWhiteSpace(ActiveFilter.PatientName) || 
-                !string.IsNullOrWhiteSpace(ActiveFilter.DoctorName);
-
-            List<Prescription> targetList;
-
-            if (hasActiveFilter)
+            if (!(!string.IsNullOrEmpty(item.DoctorName) && !item.DoctorName.Contains("Unknown")))
             {
-                var allFilteredResults = _prescriptionService.ApplyFilter(ActiveFilter);
-                targetList = allFilteredResults
-                                    .Skip((CurrentPage - 1) * PageSize)
-                                    .Take(PageSize)
-                                    .ToList();
-            }
-            else
-            {
-                targetList = _prescriptionService.GetLatestPrescriptions(PageSize, CurrentPage);
+                DoctorDTO randomDoc = fakeDoctors[random.Next(fakeDoctors.Count)];
+                item.DoctorName = $"Dr. {randomDoc.FirstName} {randomDoc.LastName}";
             }
 
-            foreach (var item in targetList)
+            Prescriptions.Add(item);
+        }
+    }
+
+    public void LoadPrescriptions()
+    {
+        CurrentPage = 1;
+        UpdatePageData();
+    }
+
+    public void ApplyFilterCommand(int? searchId, string? medName, DateTime? dateFrom, DateTime? dateTo, string? patientName, string? doctorName)
+    {
+        InfoMessage = "";
+        CurrentPage = 1;
+
+        ActiveFilter.PrescriptionId = searchId;
+        ActiveFilter.MedName = medName;
+        ActiveFilter.DateFrom = dateFrom;
+        ActiveFilter.DateTo = dateTo;
+        ActiveFilter.PatientName = patientName;
+        ActiveFilter.DoctorName = doctorName;
+
+        try
+        {
+            UpdatePageData();
+
+            if (Prescriptions.Count == 0)
             {
-                if (string.IsNullOrEmpty(item.DoctorName) || item.DoctorName.Contains("Unknown"))
-                {
-                    var randomDoc = fakeDoctors[random.Next(fakeDoctors.Count)];
-                    item.DoctorName = $"Dr. {randomDoc.FirstName} {randomDoc.LastName}";
-                }
-                
-                Prescriptions.Add(item);
+                InfoMessage = "No prescriptions found matching those criteria.";
             }
         }
-
-        public void LoadPrescriptions() 
+        catch (Exception ex)
         {
-            CurrentPage = 1;
+            InfoMessage = ex.Message;
+        }
+    }
+
+    public void NextPage()
+    {
+        if (Prescriptions.Count == PageSize)
+        {
+            CurrentPage++;
             UpdatePageData();
         }
+    }
 
-        public void ApplyFilterCommand(int? searchId, string? medName, DateTime? dateFrom, DateTime? dateTo, string? patientName, string? doctorName)
+    public void PrevPage()
+    {
+        if (CurrentPage > 1)
         {
-            InfoMessage = string.Empty;
-            CurrentPage = 1; 
+            CurrentPage--;
+            UpdatePageData();
+        }
+    }
 
-            ActiveFilter.PrescriptionId = searchId;
-            ActiveFilter.MedName = medName;
-            ActiveFilter.DateFrom = dateFrom;
-            ActiveFilter.DateTo = dateTo;
-            ActiveFilter.PatientName = patientName;
-            ActiveFilter.DoctorName = doctorName;
+    public Prescription ShowMedsList(int id)
+    {
+        return _prescriptionService.GetPrescriptionDetails(id);
+    }
 
-            try
-            {
-                UpdatePageData();
+    public void SeeAllAddicts()
+    {
+        AddictCandidates.Clear();
+        List<Patient> candidates = _addictDetectionService.GetAddictCandidates();
 
-                if (Prescriptions.Count == 0)
-                {
-                    InfoMessage = "No prescriptions found matching those criteria.";
-                }
-            }
-            catch (Exception ex)
-            {
-                InfoMessage = ex.Message; 
-            }
+        foreach (Patient candidate in candidates)
+        {
+            AddictCandidates.Add(candidate);
+        }
+    }
+
+
+    public string NotifyPolice(int patientId)
+    {
+        Patient? flaggedPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
+
+        if (flaggedPatient is null)
+        {
+            return "Error: Patient data not completely synced or patient ID is invalid.";
         }
 
-        public void NextPage()
-        {
-            if (Prescriptions.Count == PageSize)
-            {
-                CurrentPage++;
-                UpdatePageData();
-            }
-        }
-
-        public void PrevPage()
-        {
-            if (CurrentPage > 1)
-            {
-                CurrentPage--;
-                UpdatePageData();
-            }
-        }
-        
-     
-        public Prescription ShowMedsList(int id)
-        {
-            return _prescriptionService.GetPrescriptionDetails(id);
-        }
-  
-        public void SeeAllAddicts()
-        {
-            AddictCandidates.Clear();
-            
-            var candidates = _addictDetectionService.GetAddictCandidates();
-            
-            foreach(var candidate in candidates)
-            {
-                AddictCandidates.Add(candidate);
-            }
-        }
-
-  
-        public string NotifyPolice(int patientId)
-        {
-            var flaggedPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
-
-            if (flaggedPatient == null)
-            {
-                return "Error: Patient data not completely synced or patient ID is invalid.";
-            }
-
-            return _addictDetectionService.BuildPoliceReport(flaggedPatient);
-        }
+        return _addictDetectionService.BuildPoliceReport(flaggedPatient);
     }
 }

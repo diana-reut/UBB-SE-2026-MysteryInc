@@ -52,7 +52,7 @@
                         Background="#FFD700" Foreground="Black" 
                         Content="SPIN" FontWeight="Bold" FontSize="16"
                         HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Click="SpinButton_Click"
+                        Click="SpinButton_ClickAsync"
                         IsEnabled="{Binding IsPrimaryButtonEnabled}"/>
             </Grid>
         </Border>

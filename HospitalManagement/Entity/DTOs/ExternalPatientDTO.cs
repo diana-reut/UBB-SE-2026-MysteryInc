@@ -3,7 +3,7 @@ using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Entity.DTOs;
 
-public class ExternalPatientDTO
+internal class ExternalPatientDTO
 {
     public string CNP { get; set; } = "";
 

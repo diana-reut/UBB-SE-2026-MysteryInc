@@ -1,8 +1,9 @@
 ﻿using Microsoft.Data.SqlClient;
+using System;
 
 namespace HospitalManagement.Database;
 
-public interface IDbContext
+internal interface IDbContext : IDisposable
 {
     void BeginTransaction();
     void CommitTransaction();

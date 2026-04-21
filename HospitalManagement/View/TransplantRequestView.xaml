@@ -42,7 +42,7 @@
             <TextBlock x:Name="ErrorText" Foreground="#D13438" Visibility="Collapsed" TextWrapping="Wrap"/>
 
             <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
-                <Button Content="Submit Request" Click="Submit_Click" Style="{StaticResource AccentButtonStyle}"/>
+                <Button Content="Submit Request" Click="Submit_ClickAsync" Style="{StaticResource AccentButtonStyle}"/>
                 <Button Content="Cancel" Click="Cancel_Click"/>
             </StackPanel>
         </StackPanel>

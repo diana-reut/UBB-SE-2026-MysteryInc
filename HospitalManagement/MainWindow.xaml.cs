@@ -1,7 +1,9 @@
+using HospitalManagement.View;
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using HospitalManagement.ViewModel;
-using Microsoft.UI;
 
 namespace HospitalManagement;
 
@@ -37,14 +39,14 @@ public sealed partial class MainWindow : Window
         {
             if (_viewModel.CurrentView?.ToString() == "PharmacistDashboard")
             {
-                var pharmacistWindow = new View.PharmacistView();
+                PharmacistView pharmacistWindow = (App.Current as App).Services.GetRequiredService<PharmacistView>();
                 pharmacistWindow.Activate();
                 Close();
             }
             // AICI VA CONECTATI VOI CU IF ELSE
             else if (_viewModel.CurrentView?.ToString() == "AdminDashboard")
             {
-                using var adminWindow = new View.AdminView();
+                AdminView adminWindow = (App.Current as App)!.Services.GetRequiredService<View.AdminView>();
 
                 // 1. Get the ViewModel from the window we just created
                 if (adminWindow.Content is FrameworkElement root && root.DataContext is AdminViewModel adminVM)

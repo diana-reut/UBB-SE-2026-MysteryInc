@@ -1,80 +1,61 @@
 using Microsoft.UI.Xaml.Controls;
 using HospitalManagement.Entity;
 using System;
-using Visibility = Microsoft.UI.Xaml.Visibility; // Fixes the Visibility error
-using System.Linq;
+using HospitalManagement.Validators;
 
-namespace HospitalManagement.View
+namespace HospitalManagement.View;
+
+internal sealed partial class AddPatientDialog : ContentDialog
 {
-    public sealed partial class AddPatientDialog : ContentDialog
+    public Patient NewPatient { get; private set; } = null!;
+
+    public AddPatientDialog()
     {
-        public Patient NewPatient { get; private set; }
+        InitializeComponent();
+    }
 
-        public AddPatientDialog()
+    private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    {
+        bool formHasError = false;
+        (TextBlock Error, bool Valid)[] validationResults =
+        [
+            (Error: FirstNameError, Valid: ValidationHelper.IsValidName(FirstNameEntry.Text)),
+            (Error: LastNameError, Valid: ValidationHelper.IsValidName(LastNameEntry.Text)),
+            (Error: CnpError, Valid: ValidationHelper.IsValidCnp(CnpEntry.Text)),
+            (Error: PhoneError, Valid: ValidationHelper.IsValidPhone(PhoneEntry.Text)),
+            (Error: EmergencyError, Valid: ValidationHelper.IsValidPhone(EmergencyEntry.Text)),
+        ];
+
+        for (int i = 0; i < validationResults.Length; i++)
         {
-            this.InitializeComponent();
+            (TextBlock error, bool valid) = validationResults[i];
+            if (valid)
+            {
+                error.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+            else
+            {
+                error.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                formHasError = true;
+            }
         }
 
-        private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+
+        if (formHasError)
         {
-            // 1. Reset all error states using the full namespace to avoid CS0176
-            FirstNameError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            LastNameError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            CnpError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            PhoneError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            EmergencyError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-
-            bool hasError = false;
-
-            // 2. Validate Fields
-            if (string.IsNullOrWhiteSpace(FirstNameEntry.Text))
-            {
-                FirstNameError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                hasError = true;
-            }
-
-            if (string.IsNullOrWhiteSpace(LastNameEntry.Text))
-            {
-                LastNameError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                hasError = true;
-            }
-
-            if (string.IsNullOrWhiteSpace(CnpEntry.Text) || CnpEntry.Text.Length != 13)
-            {
-                CnpError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                hasError = true;
-            }
-
-            if (string.IsNullOrWhiteSpace(PhoneEntry.Text) || PhoneEntry.Text.Length != 10 || !PhoneEntry.Text.All(char.IsDigit))
-            {
-                PhoneError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                hasError = true;
-            }
-
-            if (string.IsNullOrWhiteSpace(EmergencyEntry.Text) || EmergencyEntry.Text.Length != 10 || !EmergencyEntry.Text.All(char.IsDigit))
-            {
-                EmergencyError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                hasError = true;
-            }
-
-            // 3. Block if any field is invalid
-            if (hasError)
-            {
-                args.Cancel = true;
-                return;
-            }
-
-            // 4. Success: Map data
-            this.NewPatient = new Patient
-            {
-                FirstName = FirstNameEntry.Text,
-                LastName = LastNameEntry.Text,
-                Sex = Enum.Parse<HospitalManagement.Entity.Enums.Sex>((SexEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "M"),
-                Dob = DobEntry.Date?.DateTime ?? DateTime.Now,
-                Cnp = CnpEntry.Text,
-                PhoneNo = PhoneEntry.Text,
-                EmergencyContact = EmergencyEntry.Text
-            };
+            args.Cancel = true;
+            return;
         }
+
+        NewPatient = new Patient
+        {
+            FirstName = FirstNameEntry.Text,
+            LastName = LastNameEntry.Text,
+            Sex = Enum.Parse<Entity.Enums.Sex>((SexEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "M"),
+            Dob = DobEntry.Date?.DateTime ?? DateTime.Now,
+            Cnp = CnpEntry.Text,
+            PhoneNo = PhoneEntry.Text,
+            EmergencyContact = EmergencyEntry.Text,
+        };
     }
 }

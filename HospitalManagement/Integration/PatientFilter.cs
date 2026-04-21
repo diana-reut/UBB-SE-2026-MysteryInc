@@ -3,7 +3,7 @@ using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Integration;
 
-public class PatientFilter
+internal class PatientFilter
 {
     public string? NamePart { get; set; }
 

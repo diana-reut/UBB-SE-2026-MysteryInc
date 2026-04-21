@@ -7,18 +7,18 @@ using HospitalManagement.Integration.External;
 
 namespace HospitalManagement.Service;
 
-internal class ImportService
+internal class ImportService : IImportService
 {
-    private readonly PatientService _patientService;
-    private readonly MedicalRecordRepository _recordRepo;
-    private readonly PrescriptionRepository _prescriptionRepo;
+    private readonly IPatientService _patientService;
+    private readonly IMedicalRecordRepository _recordRepo;
+    private readonly IPrescriptionRepository _prescriptionRepo;
     private readonly IExternalProvider _externalER;
     private readonly IExternalProvider _externalAppointment;
 
     public ImportService(
-        PatientService patientService,
-        MedicalRecordRepository recordRepo,
-        PrescriptionRepository prescriptionRepo,
+        IPatientService patientService,
+        IMedicalRecordRepository recordRepo,
+        IPrescriptionRepository prescriptionRepo,
         IExternalProvider externalER,
         IExternalProvider externalAppointment)
     {

@@ -4,7 +4,7 @@ using HospitalManagement.Configuration;
 
 namespace HospitalManagement.Database;
 
-public class HospitalDbContext : IDisposable, IDbContext
+internal sealed partial class HospitalDbContext : IDbContext, IDisposable
 {
     private readonly SqlConnection _connection;
     private SqlTransaction? _transaction;

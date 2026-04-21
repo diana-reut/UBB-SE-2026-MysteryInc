@@ -1,96 +1,79 @@
 using System;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using HospitalManagement.ViewModel;
-using HospitalManagement.Repository;
-using HospitalManagement.Service;
-using HospitalManagement.Database;
-using HospitalManagement.Entity;
-using HospitalManagement.Integration.Export;
 
-namespace HospitalManagement.View
+namespace HospitalManagement.View;
+
+internal sealed partial class PatientView : Window
 {
-    public sealed partial class PatientView : Window, IDisposable
+    public PatientViewModel ViewModel { get; }
+
+    private Action _goBackCallback;
+
+    public PatientView(PatientViewModel viewModel)
     {
-        private PatientViewModel _viewModel;
-        private HospitalDbContext _dbContext;
-        private Action _goBackCallback;
+        _goBackCallback = null!;
+        InitializeComponent();
+        ViewModel = viewModel;
 
-        public PatientView(int patientId, Action goBackCallback)
+        if (Content is FrameworkElement rootElement)
         {
-            this.InitializeComponent();
+            rootElement.DataContext = ViewModel;
+        }
 
-            // 1. Maximize Logic
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
-            var appWindow = AppWindow.GetFromWindowId(windowId);
-            if (appWindow.Presenter is OverlappedPresenter presenter)
+        MaximizeWindow();
+
+        SetupViewModelActions();
+    }
+
+    public void Initialize(int patientId, Action goBackCallback)
+    {
+        _goBackCallback = goBackCallback;
+        ViewModel.GoBackAction = GoBack;
+
+        ViewModel.LoadFullPatientProfile(patientId);
+    }
+
+    private void SetupViewModelActions()
+    {
+        ViewModel.OpenRouletteAction = async (basePrice, onComplete) =>
+        {
+            var rouletteDialog = new DiscountRouletteDialog
             {
-                presenter.Maximize();
-            }
-
-            _goBackCallback = goBackCallback;
-
-            // 2. Dependency Injection
-            _dbContext = new HospitalDbContext();
-            var pRepo = new PatientRepository(_dbContext);
-            var hRepo = new MedicalHistoryRepository(_dbContext);
-            var rRepo = new MedicalRecordRepository(_dbContext);
-            var prescRepo = new PrescriptionRepository(_dbContext);
-            var tRepo = new TransplantRepository(_dbContext);
-            var service = new PatientService(pRepo, hRepo, rRepo, prescRepo);
-            var pdfGen = new PDFGenerator();
-            var exportService = new ExportService(pdfGen, rRepo, prescRepo, pRepo, hRepo);
-            var billingService = new BillingService(hRepo, rRepo, prescRepo, tRepo);
-
-            // 3. Initialize ViewModel
-            _viewModel = new PatientViewModel(service, exportService, billingService);
-            _viewModel.GoBackAction = GoBack;
-            
-            // 4. Set up Roulette Dialog handler
-            _viewModel.OpenRouletteAction = async (basePrice, onComplete) =>
-            {
-                var rouletteDialog = new DiscountRouletteDialog();
-                rouletteDialog.XamlRoot = this.Content.XamlRoot;
-                rouletteDialog.Initialize(basePrice);
-                rouletteDialog.OnSpinComplete = onComplete;
-                await rouletteDialog.ShowAsync();
+                XamlRoot = Content.XamlRoot,
             };
+            rouletteDialog.Initialize(basePrice);
+            rouletteDialog.OnSpinComplete = onComplete;
+            _ = await rouletteDialog.ShowAsync();
+        };
 
-            // 4b. Set up Prescription Dialog handler
-            _viewModel.OpenPrescriptionDialogAction = async (prescription) =>
+        ViewModel.OpenPrescriptionDialogAction = async (prescription) =>
+        {
+            var prescriptionDialog = new PrescriptionDialog
             {
-                var prescriptionDialog = new PrescriptionDialog();
-                prescriptionDialog.XamlRoot = this.Content.XamlRoot;
-                prescriptionDialog.Initialize(prescription);
-                await prescriptionDialog.ShowAsync();
+                XamlRoot = Content.XamlRoot,
             };
-            
-            // 5. Set DataContext
-            if (this.Content is FrameworkElement rootElement)
-            {
-                rootElement.DataContext = _viewModel;
-            }
+            prescriptionDialog.Initialize(prescription);
+            _ = await prescriptionDialog.ShowAsync();
+        };
+    }
 
-            // 6. Load patient data using ID
-            _viewModel.LoadFullPatientProfile(patientId);
-        }
+    private void MaximizeWindow()
+    {
+        IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
 
-        private void GoBack()
+        if (appWindow.Presenter is OverlappedPresenter presenter)
         {
-            _goBackCallback?.Invoke();
-            this.Close();
+            presenter.Maximize();
         }
+    }
 
-        private void Window_Closed(object sender, WindowEventArgs args)
-        {
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            _dbContext?.Dispose();
-        }
+    private void GoBack()
+    {
+        _goBackCallback?.Invoke();
+        Close();
     }
 }

@@ -4,22 +4,19 @@ using HospitalManagement.Repository;
 
 namespace HospitalManagement.Integration.Export;
 
-internal class ExportService
+internal class ExportService : IExportService
 {
-    private readonly PDFGenerator _pdfGen;
-    private readonly MedicalRecordRepository _recordRepo;
-    private readonly PrescriptionRepository _prescriptionRepo;
-    private readonly PatientRepository _patientRepo;
-    private readonly MedicalHistoryRepository _historyRepo;
+    private readonly IMedicalRecordRepository _recordRepo;
+    private readonly IPrescriptionRepository _prescriptionRepo;
+    private readonly IPatientRepository _patientRepo;
+    private readonly IMedicalHistoryRepository _historyRepo;
 
     public ExportService(
-        PDFGenerator pdfGen,
-        MedicalRecordRepository recordRepo,
-        PrescriptionRepository prescriptionRepo,
-        PatientRepository patientRepo,
-        MedicalHistoryRepository historyRepo)
+        IMedicalRecordRepository recordRepo,
+        IPrescriptionRepository prescriptionRepo,
+        IPatientRepository patientRepo,
+        IMedicalHistoryRepository historyRepo)
     {
-        _pdfGen = pdfGen;
         _recordRepo = recordRepo;
         _prescriptionRepo = prescriptionRepo;
         _patientRepo = patientRepo;
@@ -43,6 +40,6 @@ internal class ExportService
             items = _prescriptionRepo.GetItems(prescription.Id);
         }
 
-        return _pdfGen.GenerateRecordPDF(record, patient, prescription, items);
+        return PDFGenerator.GenerateRecordPDF(record, patient, prescription, items);
     }
 }

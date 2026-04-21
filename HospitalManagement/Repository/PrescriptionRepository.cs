@@ -9,7 +9,7 @@ using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
-public class PrescriptionRepository
+internal class PrescriptionRepository : IPrescriptionRepository
 {
     private readonly IDbContext _context;
 
@@ -357,7 +357,7 @@ public class PrescriptionRepository
             string[] nameParts = Escape(searchString).Trim().Split(separator, StringSplitOptions.RemoveEmptyEntries);
             string searchTerm = searchString;
 
-            var matchingDoctorIds = MockDoctorProvider.GetFakeDoctors()
+            var matchingDoctorIds = MockDoctorProvider.FakeDoctors
                 .Where(d => d.FirstName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
                     || d.LastName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 .Select(d => d.DoctorId)
@@ -423,10 +423,10 @@ public class PrescriptionRepository
         _context.EnsureConnectionOpen();
         var prescriptions = new List<Prescription>();
 
-        string query = $"SELECT * FROM Prescription";
+        const string Query = "SELECT * FROM Prescription";
 
         // First pass: retrieve prescription headers without items
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (SqlDataReader reader = _context.ExecuteQuery(Query))
         {
             while (reader.Read())
             {

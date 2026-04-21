@@ -2,7 +2,7 @@
 
 namespace HospitalManagement.Integration;
 
-public class PrescriptionFilter
+internal class PrescriptionFilter
 {
     public int? PrescriptionId { get; set; }
 

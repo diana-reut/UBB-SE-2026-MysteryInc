@@ -3,15 +3,10 @@ using System.Collections.Generic;
 
 namespace HospitalManagement.Service;
 
-public sealed class GhostService
+internal sealed class GhostService : IGhostService
 {
     private static readonly GhostService ServiceInstance = new();
 
-    public static GhostService Instance => ServiceInstance;
-
-    private GhostService()
-    {
-    }
 
     private readonly List<DateTime> _sightings = [];
 
