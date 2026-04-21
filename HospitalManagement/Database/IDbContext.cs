@@ -1,16 +1,14 @@
-﻿using System.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Database;
 
 public interface IDbContext
 {
-    public SqlDataReader ExecuteQuery(string sql);
-
-    public int ExecuteNonQuery(string sql);
-
-    public void BeginTransaction();
-
-    public void CommitTransaction();
-
-    public void RollbackTransaction();
+    void BeginTransaction();
+    void CommitTransaction();
+    void Dispose();
+    void EnsureConnectionOpen();
+    int ExecuteNonQuery(string sql);
+    SqlDataReader ExecuteQuery(string sql);
+    void RollbackTransaction();
 }

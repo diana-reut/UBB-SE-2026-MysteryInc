@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -16,7 +16,7 @@ namespace HospitalManagement.View
     public sealed partial class AdminView : Window, IDisposable
     {
         private AdminViewModel _viewModel;
-        private HospitalDbContext _dbContext;
+        private IDbContext _dbContext;
 
         public AdminView()
         {

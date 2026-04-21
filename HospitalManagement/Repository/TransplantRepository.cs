@@ -2,15 +2,15 @@
 using HospitalManagement.Database;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
 public class TransplantRepository
 {
-    private readonly HospitalDbContext _context;
+    private readonly IDbContext _context;
 
-    public TransplantRepository(HospitalDbContext context)
+    public TransplantRepository(IDbContext context)
     {
         _context = context;
     }

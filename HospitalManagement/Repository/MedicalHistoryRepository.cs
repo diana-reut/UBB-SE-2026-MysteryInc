@@ -3,16 +3,16 @@ using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Globalization;
 
 namespace HospitalManagement.Repository;
 
 internal class MedicalHistoryRepository
 {
-    private readonly HospitalDbContext _context; // RP 12
+    private readonly IDbContext _context; // RP 12
 
-    public MedicalHistoryRepository(HospitalDbContext context)
+    public MedicalHistoryRepository(IDbContext context)
     {
         _context = context;
     }

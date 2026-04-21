@@ -5,15 +5,15 @@ using System.Collections.Generic;
 using HospitalManagement.Integration;
 using System.Linq;
 using HospitalManagement.Entity.DTOs;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace HospitalManagement.Repository;
 
 public class PrescriptionRepository
 {
-    private readonly HospitalDbContext _context;
+    private readonly IDbContext _context;
 
-    public PrescriptionRepository(HospitalDbContext context)
+    public PrescriptionRepository(IDbContext context)
     {
         _context = context;
     }
