@@ -3,7 +3,7 @@ using System.Data;
 
 namespace HospitalManagement.Database;
 
-public interface IDbContext : IDisposable
+internal interface IDbContext : IDisposable
 {
     // added this
     public void EnsureConnectionOpen();
