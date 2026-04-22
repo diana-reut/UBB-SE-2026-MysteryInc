@@ -289,8 +289,4 @@ public class AddictDetectionServiceTest
 
         StringAssert.Contains(result, "Dispensed Drugs: Unknown");
     }
-
-  
-
-
 }
