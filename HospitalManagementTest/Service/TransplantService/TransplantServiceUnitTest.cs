@@ -319,6 +319,116 @@ public class TransplantServiceTests
     }
 
     [TestMethod]
+    public void ShouldSkipWhenMedicalHistoryIsNull()
+    {
+        var donor = new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow };
+        var receiver = new Patient { Id = 2 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(donor);
+        _patientRepo.Setup(r => r.GetById(2)).Returns(receiver);
+
+        _historyRepo.Setup(r => r.GetByPatientId(2))
+            .Returns((MedicalHistory)null);
+
+        _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
+            .Returns(new List<Transplant>
+            {
+            new Transplant { ReceiverId = 2 }
+            });
+
+        var result = _service.GetTopMatchesForDonor(1, "Kidney");
+
+        Assert.IsEmpty(result);
+    }
+
+    [TestMethod]
+    public void ShouldSkipWhenBloodTypeIsNullOnly()
+    {
+        var donor = new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow };
+        var receiver = new Patient { Id = 2 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(donor);
+        _patientRepo.Setup(r => r.GetById(2)).Returns(receiver);
+
+        _historyRepo.Setup(r => r.GetByPatientId(2))
+            .Returns(new MedicalHistory
+            {
+                BloodType = null,
+                Rh = RhEnum.Positive
+            });
+
+        _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
+            .Returns(new List<Transplant>
+            {
+            new Transplant { ReceiverId = 2 }
+            });
+
+        var result = _service.GetTopMatchesForDonor(1, "Kidney");
+
+        Assert.IsEmpty(result);
+    }
+
+    [TestMethod]
+    public void ShouldSkipWhenRhIsNullOnly()
+    {
+        var donor = new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow };
+        var receiver = new Patient { Id = 2 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(donor);
+        _patientRepo.Setup(r => r.GetById(2)).Returns(receiver);
+
+        _historyRepo.Setup(r => r.GetByPatientId(2))
+            .Returns(new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = null
+            });
+
+        _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
+            .Returns(new List<Transplant>
+            {
+            new Transplant { ReceiverId = 2 }
+            });
+
+        var result = _service.GetTopMatchesForDonor(1, "Kidney");
+
+        Assert.IsEmpty(result);
+    }
+
+    [TestMethod]
+    public void GetChronicWarningShouldReturnNullWhenConditionsNull()
+    {
+        var patient = new Patient { Id = 1 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(patient);
+
+        _historyRepo.Setup(r => r.GetByPatientId(1))
+            .Returns(new MedicalHistory
+            {
+                ChronicConditions = null
+            });
+
+        var result = _service.GetChronicWarning(1);
+
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public void GetChronicWarningShouldReturnNullWhenHistoryNull()
+    {
+        var patient = new Patient { Id = 1 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(patient);
+
+        _historyRepo.Setup(r => r.GetByPatientId(1))
+            .Returns((MedicalHistory)null);
+
+        var result = _service.GetChronicWarning(1);
+
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
     public void ShouldReturnScoredMatchWhenAllConditionsPass()
     {
         var donor = new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow };
@@ -360,5 +470,136 @@ public class TransplantServiceTests
 
         Assert.HasCount(1, result);
         Assert.IsGreaterThan(50, result[0].CompatibilityScore);
+    }
+
+    [TestMethod]
+    public void GetTopMatchesShouldThrowWhenDonorIsNull()
+    {
+        _patientRepo.Setup(r => r.GetById(1))
+            .Returns((Patient)null);
+
+        try
+        {
+            _service.GetTopMatchesForDonor(1, "Kidney");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Assert.AreEqual("Donor must be deceased and registered.", ex.Message);
+        }
+    }
+
+    [TestMethod]
+    public void ShouldApplyHighScoreBonusWhenERVisitsAreHigh()
+    {
+        var donor = new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow };
+        var receiver = new Patient { Id = 2 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(donor);
+        _patientRepo.Setup(r => r.GetById(2)).Returns(receiver);
+
+        _historyRepo.Setup(r => r.GetByPatientId(It.IsAny<int>()))
+            .Returns(new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive
+            });
+
+        _compatibilityService.Setup(c => c.IsBloodMatch(It.IsAny<BloodType?>(), It.IsAny<BloodType>()))
+            .Returns(true);
+
+        _compatibilityService.Setup(c => c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>()))
+            .Returns(true);
+
+        _compatibilityService.Setup(c => c.CalculateScore(It.IsAny<Patient>(), It.IsAny<Patient>()))
+            .Returns((int)50f);
+
+        _recordRepo.Setup(r => r.GetERVisitCount(It.IsAny<int>(), It.IsAny<DateTime>()))
+            .Returns(15); // >= 10
+
+        _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
+            .Returns(new List<Transplant>
+            {
+            new Transplant { ReceiverId = 2, RequestDate = DateTime.UtcNow }
+            });
+
+        var result = _service.GetTopMatchesForDonor(1, "Kidney");
+
+        Assert.HasCount(1, result);
+        Assert.IsGreaterThanOrEqualTo(70, result[0].CompatibilityScore);
+    }
+
+    [TestMethod]
+    public void GetChronicWarningShouldReturnNullWhenPatientIsNull()
+    {
+        _patientRepo.Setup(r => r.GetById(1))
+            .Returns((Patient)null);
+
+        var result = _service.GetChronicWarning(1);
+
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public void ShouldProcessMatchWhenDonorMedicalHistoryIsNull()
+    {
+        var donor = new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow };
+        var receiver = new Patient { Id = 2 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(donor);
+        _patientRepo.Setup(r => r.GetById(2)).Returns(receiver);
+
+        _historyRepo.Setup(r => r.GetByPatientId(1)).Returns((MedicalHistory)null);
+
+        _historyRepo.Setup(r => r.GetByPatientId(2))
+            .Returns(new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive
+            });
+
+        _compatibilityService.Setup(c => c.IsBloodMatch(null, It.IsAny<BloodType>())).Returns(true);
+        _compatibilityService.Setup(c => c.IsRhMatch(null, It.IsAny<RhEnum>())).Returns(true);
+        _compatibilityService.Setup(c => c.CalculateScore(It.IsAny<Patient>(), It.IsAny<Patient>())).Returns((int)50f);
+
+        _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
+            .Returns(new List<Transplant>
+            {
+                new Transplant { ReceiverId = 2, RequestDate = DateTime.UtcNow }
+            });
+
+        var result = _service.GetTopMatchesForDonor(1, "Kidney");
+
+        Assert.HasCount(1, result);
+    }
+
+    [TestMethod]
+    public void ShouldIncludeWhenReceiverChronicConditionsIsEmptyList()
+    {
+        var donor = new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow };
+        var receiver = new Patient { Id = 2 };
+
+        _patientRepo.Setup(r => r.GetById(1)).Returns(donor);
+        _patientRepo.Setup(r => r.GetById(2)).Returns(receiver);
+
+        _historyRepo.Setup(r => r.GetByPatientId(2))
+            .Returns(new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive,
+                ChronicConditions = new List<string>() 
+            });
+
+        _compatibilityService.Setup(c => c.IsBloodMatch(It.IsAny<BloodType?>(), It.IsAny<BloodType>())).Returns(true);
+        _compatibilityService.Setup(c => c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>())).Returns(true);
+
+        _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
+            .Returns(new List<Transplant>
+            {
+                new Transplant { ReceiverId = 2, RequestDate = DateTime.UtcNow }
+            });
+
+        var result = _service.GetTopMatchesForDonor(1, "Kidney");
+
+        Assert.HasCount(1, result);
     }
 }
