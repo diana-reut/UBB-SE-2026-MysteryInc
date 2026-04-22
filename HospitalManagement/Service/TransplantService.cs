@@ -14,22 +14,22 @@ internal class TransplantService : ITransplantService
     private readonly IMedicalRecordRepository _recordRepo;
     private readonly IBloodCompatibilityService _compatibilityService;
 
-        // 1. ADDED THE MISSING REPOSITORY TO FIX THE BUG
-        private readonly IMedicalHistoryRepository _historyRepo;
+    // 1. ADDED THE MISSING REPOSITORY TO FIX THE BUG
+    private readonly IMedicalHistoryRepository _historyRepo;
 
-        public TransplantService(
-            ITransplantRepository transplantRepo,
-            IPatientRepository patientRepo,
-            IMedicalRecordRepository recordRepo,
-            IBloodCompatibilityService compatibilityService,
-            IMedicalHistoryRepository historyRepo)
-        {
-            _transplantRepo = transplantRepo;
-            _patientRepo = patientRepo;
-            _recordRepo = recordRepo;
-            _compatibilityService = compatibilityService;
-            _historyRepo = historyRepo;
-        }
+    public TransplantService(
+        ITransplantRepository transplantRepo,
+        IPatientRepository patientRepo,
+        IMedicalRecordRepository recordRepo,
+        IBloodCompatibilityService compatibilityService,
+        IMedicalHistoryRepository historyRepo)
+    {
+        _transplantRepo = transplantRepo;
+        _patientRepo = patientRepo;
+        _recordRepo = recordRepo;
+        _compatibilityService = compatibilityService;
+        _historyRepo = historyRepo;
+    }
 
     public void CreateWaitlistRequest(int receiverId, string organType)
     {
