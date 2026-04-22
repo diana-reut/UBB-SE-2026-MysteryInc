@@ -5,8 +5,8 @@ namespace HospitalManagement.Service;
 
 internal sealed class GhostService : IGhostService
 {
-    private static readonly GhostService ServiceInstance = new();
-
+    // private static readonly GhostService ServiceInstance = new();
+    // TODO: Is this needed? Already registered as singleton in DI container
 
     private readonly List<DateTime> _sightings = [];
 
