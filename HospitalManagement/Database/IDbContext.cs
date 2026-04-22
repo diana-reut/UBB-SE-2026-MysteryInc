@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Data;
+using System.Data.Common;
+
 namespace HospitalManagement.Database;
 
 internal interface IDbContext : IDisposable
 {
-    // added this
-    public void EnsureConnectionOpen();
-
-    public IDataReader ExecuteQuery(string sql);
-
-    public int ExecuteNonQuery(string sql);
-
-    public void BeginTransaction();
-
-    public void CommitTransaction();
-
-    public void RollbackTransaction();
+    void BeginTransaction();
+    void CommitTransaction();
+    void Dispose();
+    void EnsureConnectionOpen();
+    int ExecuteNonQuery(string sql);
+    DbDataReader ExecuteQuery(string sql);
+    void RollbackTransaction();
 }

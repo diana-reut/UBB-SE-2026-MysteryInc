@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Data.SqlClient;
 using HospitalManagement.Configuration;
-using System.Data;
+using System.Data.Common;
 
 namespace HospitalManagement.Database;
 
@@ -24,7 +24,7 @@ internal sealed partial class HospitalDbContext : IDbContext, IDisposable
         _connection.Open();
     }
 
-    public IDataReader ExecuteQuery(string sql)
+    public DbDataReader ExecuteQuery(string sql)
     {
         EnsureConnectionOpen();
         SqlCommand command = new SqlCommand(sql, _connection);

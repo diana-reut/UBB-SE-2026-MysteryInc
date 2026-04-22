@@ -2,7 +2,7 @@
 using HospitalManagement.Entity;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
-using System.Data;
+using System.Data.Common;
 
 namespace HospitalManagement.Repository;
 
@@ -18,7 +18,7 @@ internal class AllergyRepository : IAllergyRepository
     public IEnumerable<Allergy> GetAllergies()
     {
         const string Query = "SELECT AllergyId, AllergyName, AllergyType, AllergyCategory FROM Allergy";
-        using IDataReader reader = _context.ExecuteQuery(Query);
+        using var reader = _context.ExecuteQuery(Query);
         var allergies = new List<Allergy>();
         while (reader.Read())
         {
@@ -29,7 +29,7 @@ internal class AllergyRepository : IAllergyRepository
     }
 
 
-    private static Allergy MapToAllergy(IDataReader reader)
+    private static Allergy MapToAllergy(DbDataReader reader)
     {
         return new Allergy
         {

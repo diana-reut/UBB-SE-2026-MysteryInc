@@ -96,7 +96,7 @@ internal class TransplantRepository : ITransplantRepository
     private List<Transplant> GetListByQuery(string sql)
     {
         var list = new List<Transplant>();
-        using (IDataReader reader = _context.ExecuteQuery(sql))
+        using (var reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -123,7 +123,7 @@ internal class TransplantRepository : ITransplantRepository
     {
         string sql = $"SELECT * FROM Transplants WHERE TransplantID = {id}";
 
-        using IDataReader reader = _context.ExecuteQuery(sql);
+        using var reader = _context.ExecuteQuery(sql);
         if (reader.Read())
         {
             return new Transplant
