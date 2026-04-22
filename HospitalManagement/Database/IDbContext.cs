@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System;
+using System.Data.Common;
 
 namespace HospitalManagement.Database;
 
@@ -10,6 +11,6 @@ internal interface IDbContext : IDisposable
     void Dispose();
     void EnsureConnectionOpen();
     int ExecuteNonQuery(string sql);
-    SqlDataReader ExecuteQuery(string sql);
+    DbDataReader ExecuteQuery(string sql);
     void RollbackTransaction();
 }

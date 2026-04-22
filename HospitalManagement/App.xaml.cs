@@ -15,6 +15,7 @@ using System;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("HospitalManagementTest")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace HospitalManagement;
 

@@ -3,9 +3,9 @@ using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Globalization;
 using Microsoft.Data.SqlClient;
+using System.Data.Common;
 
 namespace HospitalManagement.Repository;
 
@@ -21,7 +21,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
     public MedicalHistory? GetByPatientId(int patientId) // RP 13
     {
         string query = $"SELECT * FROM MedicalHistory WHERE PatientID={patientId}";
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return MapToMedicalHistory(reader);
@@ -33,7 +33,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
     public MedicalHistory? GetById(int historyId) // RP 13
     {
         string query = $"SELECT * FROM MedicalHistory WHERE HistoryID={historyId}";
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return MapToMedicalHistory(reader);
@@ -59,7 +59,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
             + $"{(string.IsNullOrEmpty(chronicConditionsStr) ? "NULL" : $"'{chronicConditionsStr.Replace("'", "''", StringComparison.Ordinal)}'")});"
             + "SELECT SCOPE_IDENTITY();";
 
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read() && int.TryParse(reader[0].ToString(), out int historyId))
         {
             return historyId;
@@ -89,7 +89,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
 
         // Verify patientId matches what's in DB for this history record
         string checkQuery = $"SELECT PatientID FROM MedicalHistory WHERE HistoryID={history.Id}";
-        using (SqlDataReader reader = _context.ExecuteQuery(checkQuery))
+        using (var reader = _context.ExecuteQuery(checkQuery))
         {
             if (!reader.Read())
             {
@@ -110,7 +110,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
         _ = _context.ExecuteNonQuery(query);
     }
 
-    private static MedicalHistory MapToMedicalHistory(SqlDataReader reader) // RP 15
+    private static MedicalHistory MapToMedicalHistory(DbDataReader reader) // RP 15
     {
         return new MedicalHistory
         {
@@ -136,7 +136,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
         // ChronicConditions is stored as a single VARCHAR(2000) in DB5
         // so we parse it back into a list here
         string query = $"SELECT ChronicConditions FROM MedicalHistory WHERE HistoryID={historyId}";
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (var reader = _context.ExecuteQuery(query))
         {
             if (reader.Read() && reader["ChronicConditions"] != DBNull.Value)
             {
@@ -155,7 +155,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
             + "FROM PatientAllergies pa "
             + "JOIN Allergy a ON pa.AllergyID = a.AllergyID "
             + $"WHERE pa.HistoryID={historyId}";
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (var reader = _context.ExecuteQuery(query))
         {
             while (reader.Read())
             {

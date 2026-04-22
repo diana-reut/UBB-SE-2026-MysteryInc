@@ -1,13 +1,6 @@
 ﻿using HospitalManagement.Database;
 using HospitalManagement.Repository;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Text.Json;
-using System.IO;
 using HospitalManagement.Configuration;
 
 namespace HospitalManagement.Tests.IntegrationTests;
@@ -19,10 +12,13 @@ public class PatientRepositoryIntegrationTests
     private IDbContext _context;
     private IPatientRepository _repo;
 
+    public TestContext TestContext { get; set; }
+
     [TestInitialize]
     public void Setup()
     {
         string filePath = Path.Combine(AppContext.BaseDirectory, "configuration", "testconfig.local.json");
+        TestContext.WriteLine(filePath);
         string json = File.ReadAllText(filePath);
         string connStr = JsonSerializer.Deserialize<JsonElement>(json)
                             .GetProperty("ConnectionStrings")

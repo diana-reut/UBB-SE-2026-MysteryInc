@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using HospitalManagement.Database;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
+using System.Data.Common;
 
 namespace HospitalManagement.Repository;
 
@@ -20,7 +21,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
     {
         var records = new List<MedicalRecord>();
         string query = $"SELECT * FROM MedicalRecord WHERE HistoryID={historyId}";
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (var reader = _context.ExecuteQuery(query))
         {
             while (reader.Read())
             {
@@ -34,7 +35,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
     public MedicalRecord? GetById(int id) // RP15
     {
         string query = $"SELECT * FROM MedicalRecord WHERE RecordID={id}";
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return MapToMedicalRecord(reader);
@@ -80,7 +81,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
          {(record.TransplantId.HasValue ? record.TransplantId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "NULL")}
         )";
 
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (var reader = _context.ExecuteQuery(query))
         {
             if (reader.Read())
             {
@@ -106,7 +107,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
 
         // Verify historyId exists to prevent orphaned records
         string checkQuery = $"SELECT COUNT(*) FROM MedicalHistory WHERE HistoryID={record.HistoryId}";
-        using (SqlDataReader reader = _context.ExecuteQuery(checkQuery))
+        using (var reader = _context.ExecuteQuery(checkQuery))
         {
             if (reader.Read() && reader.GetInt32(0) == 0)
             {
@@ -144,7 +145,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
             + $"WHERE mh.PatientID = {patientId} "
             + "AND mr.SourceType = 'ER Visit' "
             + $"AND mr.ConsultationDate >= '{fromDate:yyyy-MM-dd}'";
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return reader.GetInt32(0);
@@ -153,7 +154,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
         return 0;
     }
 
-    private static MedicalRecord MapToMedicalRecord(SqlDataReader reader)
+    private static MedicalRecord MapToMedicalRecord(DbDataReader reader)
     {
         // Convert database string values to enum
         // Database stores: 'ER Visit' → ER, 'Appointment' → App
@@ -204,7 +205,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
         // PrescriptionRepository will own the full mapping,
         // but MedicalRecord needs basic navigation — we do a lightweight fetch here
         string query = $"SELECT * FROM Prescription WHERE RecordID={recordId}";
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return new Prescription
@@ -224,7 +225,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
         // Staff details live in an external module (StaffProxy handles the full object).
         // The repo's job is just to return the StaffID so the service/proxy can fetch the rest.
         string query = $"SELECT StaffID FROM MedicalRecord WHERE RecordID={recordId}";
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return reader.GetInt32(reader.GetOrdinal("StaffID"));
@@ -239,7 +240,7 @@ internal class MedicalRecordRepository : IMedicalRecordRepository
         _context.EnsureConnectionOpen();
         var records = new List<MedicalRecord>();
         const string Query = "SELECT * FROM MedicalRecord";
-        using (SqlDataReader reader = _context.ExecuteQuery(Query))
+        using (var reader = _context.ExecuteQuery(Query))
         {
             while (reader.Read())
             {
