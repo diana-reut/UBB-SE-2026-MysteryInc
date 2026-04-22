@@ -6,6 +6,7 @@ using HospitalManagement.Database;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
+using System.Data.Common;
 
 namespace HospitalManagement.Repository;
 
@@ -22,7 +23,7 @@ internal class PatientRepository : IPatientRepository
     public Patient? GetById(int id)
     {
         string query = $"SELECT * FROM Patient WHERE PatientID={id}";
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return MapToPatient(reader);
@@ -31,7 +32,7 @@ internal class PatientRepository : IPatientRepository
         return null;
     }
 
-    private static Patient MapToPatient(SqlDataReader reader)
+    private static Patient MapToPatient(DbDataReader reader)
     {
         return new Patient
         {
@@ -72,7 +73,7 @@ internal class PatientRepository : IPatientRepository
 
         _context.EnsureConnectionOpen();
 
-        using (SqlDataReader reader = _context.ExecuteQuery(query))
+        using (var reader = _context.ExecuteQuery(query))
         {
             while (reader.Read())
             {
@@ -89,7 +90,7 @@ internal class PatientRepository : IPatientRepository
 
         const string Query = "SELECT * FROM Patient WHERE Archived=1";
 
-        using (SqlDataReader reader = _context.ExecuteQuery(Query))
+        using (var reader = _context.ExecuteQuery(Query))
         {
             while (reader.Read())
             {
@@ -275,7 +276,7 @@ internal class PatientRepository : IPatientRepository
     {
         string query = $"SELECT * FROM Patient WHERE CNP={cnp}";
 
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         return reader.Read();
     }
 
@@ -312,7 +313,7 @@ internal class PatientRepository : IPatientRepository
             + $"{(p.IsDonor ? 1 : 0)}); "
             + "SELECT SCOPE_IDENTITY();";
 
-        using SqlDataReader reader = _context.ExecuteQuery(query);
+        using var reader = _context.ExecuteQuery(query);
         if (reader.Read() && int.TryParse(reader[0].ToString(), out int newId))
         {
             p.Id = newId;

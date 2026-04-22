@@ -39,7 +39,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
         string sql = $"SELECT * FROM Prescription WHERE RecordID = {recordId}";
 
         Prescription? prescription = null;
-        using (SqlDataReader reader = _context.ExecuteQuery(sql))
+        using (var reader = _context.ExecuteQuery(sql))
         {
             if (!reader.Read())
             {
@@ -88,7 +88,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
             int newId = -1;
 
-            using (SqlDataReader reader = _context.ExecuteQuery(sqlPrescription))
+            using (var reader = _context.ExecuteQuery(sqlPrescription))
             {
                 if (reader.Read() && int.TryParse(reader[0].ToString(), out int id))
                 {
@@ -238,7 +238,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
         var list = new List<Prescription>();
 
-        using (SqlDataReader reader = _context.ExecuteQuery(sql))
+        using (var reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -277,7 +277,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
         string sql = $"SELECT * FROM PrescriptionItems WHERE PrescriptionID = {prescriptionId}";
 
-        using (SqlDataReader reader = _context.ExecuteQuery(sql))
+        using (var reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -393,7 +393,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
         sql += " ORDER BY p.[Date] DESC";
 
-        using (SqlDataReader reader = _context.ExecuteQuery(sql))
+        using (var reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -426,7 +426,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
         const string Query = "SELECT * FROM Prescription";
 
         // First pass: retrieve prescription headers without items
-        using (SqlDataReader reader = _context.ExecuteQuery(Query))
+        using (var reader = _context.ExecuteQuery(Query))
         {
             while (reader.Read())
             {
@@ -483,7 +483,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
                     pat.EmergencyContact, pat.Archived, pat.IsDonor, pi.MedName
                 HAVING COUNT(DISTINCT mr.StaffID) >= 3";
 
-        using (SqlDataReader reader = _context.ExecuteQuery(Sql))
+        using (var reader = _context.ExecuteQuery(Sql))
         {
             while (reader.Read())
             {
