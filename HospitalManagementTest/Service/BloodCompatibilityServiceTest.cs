@@ -3,10 +3,456 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HospitalManagement.Entity;
+using HospitalManagement.Entity.Enums;
+using HospitalManagement.Repository;
+using HospitalManagement.Service;
+using Moq;
 
-namespace HospitalManagementTest.Service
+namespace HospitalManagementTest.Tests.UnitTests;
+
+
+[TestClass]
+public class BloodCompatibilityServiceTest
 {
-    class BloodCompatibilityServiceTest
+    private Mock<IPatientRepository> _patientRepo = null!;
+    private Mock<IMedicalHistoryRepository> _historyRepo = null!;
+
+    private BloodCompatibilityService CreateService()
     {
+        return new BloodCompatibilityService(_patientRepo.Object, _historyRepo.Object);
     }
+
+    [TestInitialize]
+    public void Setup()
+    {
+        _patientRepo = new Mock<IPatientRepository>();
+        _historyRepo = new Mock<IMedicalHistoryRepository>();
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldReturnEmpty_WhenRecipientIsNull()
+    {
+        _patientRepo.Setup(x => x.GetById(1)).Returns((Patient?)null);
+        var service = CreateService();
+        var result = service.GetTopCompatibleDonors(1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldReturnEmpty_WhenRecipientHistoryIsNull()
+    {
+        var recipient = new Patient { Id = 1 };
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns((MedicalHistory?)null);
+        var service = CreateService();
+        var result = service.GetTopCompatibleDonors(1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldReturnEmpty_WhenRecipientBloodTypeIsNull()
+    {
+        var recipient = new Patient { Id = 1 };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = null,
+            Rh = RhEnum.Positive
+        });
+
+        var service = CreateService();
+
+        var result = service.GetTopCompatibleDonors(1);
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldReturnEmpty_WhenRecipientRhIsNull()
+    {
+        var recipient = new Patient { Id = 1 };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = null
+        });
+
+        var service = CreateService();
+
+        var result = service.GetTopCompatibleDonors(1);
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldSkipRecipient_isHimself()
+    {
+        var recipient = new Patient
+        {
+            Id = 1,
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M
+        };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = RhEnum.Positive
+        });
+
+        _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient>
+            {
+                new Patient
+                {
+                    Id = 1,
+                    IsDonor = true,
+                    Dob = new DateTime(1990, 1, 1),
+                    Sex = Sex.M
+                }
+            });
+
+        var service = CreateService();
+
+        var result = service.GetTopCompatibleDonors(1);
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldSkip_WhenPatient_isNotDonor()
+    {
+        var recipient = new Patient
+        {
+            Id = 1,
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M
+        };
+
+        var nonDonor = new Patient
+        {
+            Id = 2,
+            IsDonor = false,
+            Dob = new DateTime(1991, 1, 1),
+            Sex = Sex.F
+        };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = RhEnum.Positive
+        });
+
+        _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { nonDonor });
+        var service = CreateService();
+        var result = service.GetTopCompatibleDonors(1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldSkip_Whendonor_history_isNull()
+    {
+        var recipient = new Patient
+        {
+            Id = 1,
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M
+        };
+
+        var donor = new Patient
+        {
+            Id = 2,
+            IsDonor = true,
+            Dob = new DateTime(1991, 1, 1),
+            Sex = Sex.F
+        };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = RhEnum.Positive
+        });
+
+        _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
+        _historyRepo.Setup(x => x.GetByPatientId(2)).Returns((MedicalHistory?)null);
+
+        var service = CreateService();
+        var result = service.GetTopCompatibleDonors(1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldSkip_WhendonorbloodType_isNull()
+    {
+        var recipient = new Patient
+        {
+            Id = 1,
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M
+        };
+
+        var donor = new Patient
+        {
+            Id = 2,
+            IsDonor = true,
+            Dob = new DateTime(1991, 1, 1),
+            Sex = Sex.F
+        };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = RhEnum.Positive
+        });
+        _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
+        _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
+        {
+            BloodType = null,
+            Rh = RhEnum.Positive
+        });
+
+        var service = CreateService();
+        var result = service.GetTopCompatibleDonors(1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+
+
+    [TestMethod]
+    public void CalculateScore_ShouldReturnZero_WhenDonorIsNull()
+    {
+        var recipient = new Patient();
+        var service = CreateService();
+        var result = service.CalculateScore(null!, recipient);
+        Assert.AreEqual(0, result);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_Should_Skip_Whendonor_Rh_IsNull()
+    {
+        var recipient = new Patient
+        {
+            Id = 1,
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M
+        };
+
+        var donor = new Patient
+        {
+            Id = 2,
+            IsDonor = true,
+            Dob = new DateTime(1991, 1, 1),
+            Sex = Sex.F
+        };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = RhEnum.Positive
+        });
+
+        _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
+
+        _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = null
+        });
+
+        var service = CreateService();
+        var result = service.GetTopCompatibleDonors(1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void GetTopCompatibleDonors_ShouldSkip_when_Blood_TypeDoesNotMatch()
+    {
+        var recipient = new Patient
+        {
+            Id = 1,
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M
+        };
+
+        var donor = new Patient
+        {
+            Id = 2,
+            IsDonor = true,
+            Dob = new DateTime(1991, 1, 1),
+            Sex = Sex.F
+        };
+
+        _patientRepo.Setup(x => x.GetById(1)).Returns(recipient);
+
+        _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.A,
+            Rh = RhEnum.Positive
+        });
+
+        _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
+
+        _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
+        {
+            BloodType = BloodType.B,
+            Rh = RhEnum.Positive
+        });
+
+        var service = CreateService();
+        var result = service.GetTopCompatibleDonors(1);
+        Assert.AreEqual(0, result.Count);
+    }
+
+
+    [TestMethod]
+    public void CalculateScore_ShouldReturnZero_WhenRecipientIsNull()
+    {
+        var donor = new Patient();
+        var service = CreateService();
+        var result = service.CalculateScore(donor, null!);
+        Assert.AreEqual(0, result);
+    }
+
+    [TestMethod]
+    public void CalculateScore_ShouldReturnZero_Whensonor_historyisNull()
+    {
+        var donor = new Patient { MedicalHistory = null };
+        var recipient = new Patient { MedicalHistory = new MedicalHistory() };
+        var service = CreateService();
+        var result = service.CalculateScore(donor, recipient);
+        Assert.AreEqual(0, result);
+    }
+
+
+
+    [TestMethod]
+    public void CalculateScore_ShouldNotAddNegativeAgePoints()
+    {
+        var donor = new Patient
+        {
+            Dob = new DateTime(1940, 1, 1),
+            Sex = Sex.F,
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive
+            }
+        };
+
+        var recipient = new Patient
+        {
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M,
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.O,
+                Rh = RhEnum.Negative
+            }
+        };
+
+        var service = CreateService();
+
+        var result = service.CalculateScore(donor, recipient);
+
+        
+        Assert.AreEqual(35, result);
+    }
+
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnFalse_WhenDonorIsNull()
+    {
+        var service = CreateService();
+        var result = service.IsBloodMatch(null, BloodType.A);
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnTrue_WhenDonorIsO()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsBloodMatch(BloodType.O, BloodType.A));
+    }
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnTrue_WhenDonorIsA_AndReceiverIsA()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsBloodMatch(BloodType.A, BloodType.A));
+    }
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnTrue_WhenDonorIsA_AndReceiverIsAB()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsBloodMatch(BloodType.A, BloodType.AB));
+    }
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnTrue_WhenDonorIsB_AndreceiverisB()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsBloodMatch(BloodType.B, BloodType.B));
+    }
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnTrue_WhenDonorIsB_AndreceiverisAB()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsBloodMatch(BloodType.B, BloodType.AB));
+    }
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnTrue_WhenDonorIsAB_AndReceiverIsAB()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsBloodMatch(BloodType.AB, BloodType.AB));
+    }
+
+    [TestMethod]
+    public void IsBloodMatch_ShouldReturnFalse_When_typesAreIncompatible()
+    {
+        var service = CreateService();
+        Assert.IsFalse(service.IsBloodMatch(BloodType.AB, BloodType.A));
+    }
+
+    [TestMethod]
+    public void IsRhMatch_ShouldReturnFalse_WhenDonorIsNull()
+    {
+        var service = CreateService();
+        Assert.IsFalse(service.IsRhMatch(null, RhEnum.Positive));
+    }
+
+    [TestMethod]
+    public void IsRhMatch_ShouldReturnTrue_WhenReceiverNegative_AnddonordsNegative()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsRhMatch(RhEnum.Negative, RhEnum.Negative));
+    }
+
+    [TestMethod]
+    public void IsRhMatch_ShouldReturnFalse_WhenReceiverNegative_AnddonordsPositive()
+    {
+        var service = CreateService();
+        Assert.IsFalse(service.IsRhMatch(RhEnum.Positive, RhEnum.Negative));
+    }
+
+    [TestMethod]
+    public void IsRhMatch_ShouldReturnTrue_WhenReceiverIsPositive()
+    {
+        var service = CreateService();
+        Assert.IsTrue(service.IsRhMatch(RhEnum.Negative, RhEnum.Positive));
+        Assert.IsTrue(service.IsRhMatch(RhEnum.Positive, RhEnum.Positive));
+    }
+
 }
