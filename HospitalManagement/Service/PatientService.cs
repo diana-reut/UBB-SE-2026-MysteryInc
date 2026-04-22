@@ -386,8 +386,8 @@ internal class PatientService : IPatientService
         return _prescriptionRepo.GetByRecordId(recordId);
     }
 
-    public Patient? GetById(int id)
+    public Patient GetById(int patientId)
     {
-        return _patientRepo.GetById(id);
+        return _patientRepo.GetById(patientId) ?? throw new KeyNotFoundException($"Patient with ID {patientId} not found.");
     }
 }
