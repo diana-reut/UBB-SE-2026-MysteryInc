@@ -286,37 +286,29 @@ public class PrescriptionRepositoryIntegrationTests
     [TestMethod]
     public void Update_ShouldPersistChanges_WhenValidPrescriptionProvided()
     {
-        var existing = _repo?.GetAll();
-        if (existing is null || existing.Count == 0)
-        {
-            Assert.Inconclusive("No existing prescriptions in DB; cannot test Update.");
-            return;
-        }
+        var original = _repo!.GetByRecordId(12);
+        Assert.IsNotNull(original, "Seeded prescription with RecordID 12 not found.");
 
-        var target = existing[0];
-        string originalNotes = target.DoctorNotes;
-        var originalMeds = target.MedicationList;
+        string? originalNotes = original!.DoctorNotes;
+        var originalMeds = original.MedicationList;
 
-        // Update
-        target.DoctorNotes = "After update";
-        target.MedicationList =
+        original.DoctorNotes = "After update";
+        original.MedicationList =
         [
             new PrescriptionItem { MedName = "UpdatedMed", Quantity = "50mg" },
     ];
 
-        _repo!.Update(target);
+        _repo.Update(original);
 
-        var allAfterUpdate = _repo.GetAll();
-        var updated = allAfterUpdate.FirstOrDefault(p => p.Id == target.Id);
-
+        var updated = _repo.GetByRecordId(12);
         Assert.IsNotNull(updated, "Prescription not found after Update.");
-        Assert.AreEqual("After update", updated.DoctorNotes);
+        Assert.AreEqual("After update", updated!.DoctorNotes);
         Assert.HasCount(1, updated.MedicationList);
         Assert.AreEqual("UpdatedMed", updated.MedicationList[0].MedName);
 
-        target.DoctorNotes = originalNotes;
-        target.MedicationList = originalMeds;
-        _repo.Update(target);
+        original.DoctorNotes = originalNotes;
+        original.MedicationList = originalMeds;
+        _repo.Update(original);
     }
 
     [TestMethod]

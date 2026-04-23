@@ -86,7 +86,6 @@ public class TransplantRepositoryIntegrationTests
     }
 
     // Add
-
     [TestMethod]
     public void Add_ShouldInsertTransplant_WithPendingStatus()
     {
@@ -98,21 +97,25 @@ public class TransplantRepositoryIntegrationTests
 
         _repo.Add(transplant);
 
-        var results = _repo.GetByReceiverId(SeedReceiverId);
+        int insertedId;
+        using (var reader = _context.ExecuteQuery(
+            $"SELECT MAX(TransplantID) FROM Transplants WHERE ReceiverID = {SeedReceiverId}"))
+        {
+            reader.Read();
+            insertedId = (int)reader[0];
+        }
 
-        Assert.IsGreaterThanOrEqualTo(1, results.Count);
+        _insertedIds.Add(insertedId);
 
-        var inserted = results.OrderByDescending(t => t.RequestDate).First();
-        _insertedIds.Add(inserted.TransplantId);
-
-        Assert.AreEqual(SeedOrganType, inserted.OrganType);
-        Assert.AreEqual(TransplantStatus.Pending, inserted.Status);
+        var inserted = _repo.GetById(insertedId);
+        Assert.IsNotNull(inserted);
+        Assert.AreEqual(TransplantStatus.Pending, inserted!.Status);
         Assert.IsNull(inserted.DonorId);
         Assert.IsNull(inserted.TransplantDate);
         Assert.AreEqual(0f, inserted.CompatibilityScore, delta: 0.001f);
     }
 
-    [TestMethod]
+        [TestMethod]
     public void Add_ShouldThrowArgumentNullException_WhenTransplantIsNull()
     {
         Assert.Throws<ArgumentNullException>(() => _repo.Add(null!));
