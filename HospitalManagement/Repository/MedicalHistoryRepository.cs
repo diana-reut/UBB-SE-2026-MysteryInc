@@ -159,14 +159,44 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
         {
             while (reader.Read())
             {
+                object nameObj = reader["AllergyName"];
+                object typeObj = reader["AllergyType"];
+                object categoryObj = reader["AllergyCategory"];
+
+                string allergyName =
+                    nameObj == DBNull.Value || nameObj == null
+                        ? ""
+                        : nameObj.ToString()!;
+
+                string? allergyType =
+                    typeObj == DBNull.Value || typeObj == null
+                        ? null
+                        : typeObj.ToString();
+
+                string? allergyCategory =
+                    categoryObj == DBNull.Value || categoryObj == null
+                        ? null
+                        : categoryObj.ToString();
                 var allergy = new Allergy
                 {
                     AllergyId = Convert.ToInt32(reader["AllergyID"], CultureInfo.InvariantCulture),
-                    AllergyName = reader["AllergyName"].ToString() ?? "",
-                    AllergyType = reader["AllergyType"]?.ToString(),
-                    AllergyCategory = reader["AllergyCategory"]?.ToString(),
+                    AllergyName = allergyName,
+                    AllergyType = allergyType,
+                    AllergyCategory = allergyCategory,
                 };
-                string severity = reader["SeverityLevel"].ToString() ?? "";
+                //var allergy = new Allergy
+                //{
+                //    AllergyId = Convert.ToInt32(reader["AllergyID"], CultureInfo.InvariantCulture),
+                //    AllergyName = reader["AllergyName"].ToString() ?? "",
+                //    AllergyType = reader["AllergyType"]?.ToString(),
+                //    AllergyCategory = reader["AllergyCategory"]?.ToString(),
+                //};
+                object severityObj = reader["SeverityLevel"];
+
+                string severity =
+                    severityObj == DBNull.Value || severityObj == null
+                        ? ""
+                        : severityObj.ToString()!;
                 result.Add((allergy, severity));
             }
         }
