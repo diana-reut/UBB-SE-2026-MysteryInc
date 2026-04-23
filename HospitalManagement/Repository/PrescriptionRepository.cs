@@ -6,6 +6,7 @@ using HospitalManagement.Integration;
 using System.Linq;
 using HospitalManagement.Entity.DTOs;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace HospitalManagement.Repository;
 

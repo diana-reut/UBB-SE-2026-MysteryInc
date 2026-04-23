@@ -1,5 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
-using System;
+﻿using System;
 using System.Data.Common;
 
 namespace HospitalManagement.Database;
