@@ -1,5 +1,5 @@
 ﻿{
     "ConnectionStrings": {
-        "DefaultConnection": "Server=localhost;Database=HospitalManagementDBTest;User Id=sa;Password=Denisa123;TrustServerCertificate=True;"
+        "DefaultConnection": "Server=DESKTOP-M1AISO6\\SQLEXPRESS;Database=HospitalManagementDb;User Id=sa;Password=YourStrongPassword123;TrustServerCertificate=True;"
     }
 }
