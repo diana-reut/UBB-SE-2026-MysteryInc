@@ -48,7 +48,7 @@ internal class PatientRepository : IPatientRepository
           ? null
           : reader.GetDateTime(reader.GetOrdinal("DateOfDeath")),
 
-            Sex = Enum.Parse<Sex>(reader["Sex"]?.ToString() ?? "Unknown"),
+            Sex = Enum.TryParse<Sex>(reader["Sex"]?.ToString(), out var sex) ? sex : Sex.M,
 
             PhoneNo = reader["Phone"] as string ?? "",
             EmergencyContact = reader["EmergencyContact"] as string ?? "",
@@ -116,7 +116,7 @@ internal class PatientRepository : IPatientRepository
 
         if (!string.IsNullOrWhiteSpace(patientFilter.CNP))
         {
-            patients = patients.Where(p => p.Cnp?.StartsWith(patientFilter.CNP, StringComparison.Ordinal) == true);
+            patients = patients.Where(p => p.Cnp.StartsWith(patientFilter.CNP, StringComparison.Ordinal) == true);
         }
 
         int currentYear = DateTime.Now.Year;
@@ -130,6 +130,8 @@ internal class PatientRepository : IPatientRepository
             patients = patients.Where(p => currentYear - p.Dob.Year <= patientFilter.MaxAge);
         }
 
+        // MedicalHistory is not loaded by the repository queries, so this branch
+        // (p.MedicalHistory is not null) is never true at runtime.
         if (patientFilter.BloodType.HasValue)
         {
             patients = patients.Where(p => p.MedicalHistory is not null && p.MedicalHistory.BloodType == patientFilter.BloodType);
@@ -147,10 +149,15 @@ internal class PatientRepository : IPatientRepository
 
         return [.. patients];
     }
+    protected virtual IEnumerable<Patient> GetPotentialDonors()
+    {
+        return GetAll(false);
+    }
 
     private List<Patient> GetCompatibleDonors(BloodType bloodType, RhEnum rh, Sex sex, DateTime dob, int minAge, int maxAge)
     {
-        IEnumerable<Patient> potentialDonors = GetAll(false);
+        //IEnumerable<Patient> potentialDonors = GetAll(false);
+        IEnumerable<Patient> potentialDonors = GetPotentialDonors();
 
         potentialDonors = potentialDonors.Where(p => p.MedicalHistory is not null);
 
@@ -174,11 +181,6 @@ internal class PatientRepository : IPatientRepository
         foreach (Patient pd in potentialDonors)
         {
             int score = 0;
-
-            if (pd.MedicalHistory is null)
-            {
-                continue;
-            }
 
             if (pd.MedicalHistory.BloodType == bloodType && pd.MedicalHistory.Rh == rh)
             {
