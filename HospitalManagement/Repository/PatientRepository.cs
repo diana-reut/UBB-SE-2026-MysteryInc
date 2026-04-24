@@ -147,10 +147,15 @@ internal class PatientRepository : IPatientRepository
 
         return [.. patients];
     }
+    protected virtual IEnumerable<Patient> GetPotentialDonors()
+    {
+        return GetAll(false);
+    }
 
     private List<Patient> GetCompatibleDonors(BloodType bloodType, RhEnum rh, Sex sex, DateTime dob, int minAge, int maxAge)
     {
-        IEnumerable<Patient> potentialDonors = GetAll(false);
+        //IEnumerable<Patient> potentialDonors = GetAll(false);
+        IEnumerable<Patient> potentialDonors = GetPotentialDonors();
 
         potentialDonors = potentialDonors.Where(p => p.MedicalHistory is not null);
 
@@ -174,11 +179,6 @@ internal class PatientRepository : IPatientRepository
         foreach (Patient pd in potentialDonors)
         {
             int score = 0;
-
-            if (pd.MedicalHistory is null)
-            {
-                continue;
-            }
 
             if (pd.MedicalHistory.BloodType == bloodType && pd.MedicalHistory.Rh == rh)
             {

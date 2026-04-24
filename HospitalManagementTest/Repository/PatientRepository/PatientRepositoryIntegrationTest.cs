@@ -2,6 +2,7 @@
 using HospitalManagement.Repository;
 using System.Text.Json;
 using HospitalManagement.Configuration;
+using HospitalManagement.Integration;
 
 namespace HospitalManagement.Tests.IntegrationTests;
 
@@ -68,10 +69,34 @@ public class PatientRepositoryIntegrationTests
     [TestMethod]
     public void Exists_WhenMissing_ShouldReturnFalse()
     {
-        bool exists = _repo.Exists("not-existing-cnp");
+        bool exists = _repo.Exists("9999999999999");
 
         Assert.IsFalse(exists);
     }
+
+    [TestMethod]
+    public void Delete_WhenMissing_ShouldNotThrow()
+    {
+        _repo.Delete(-999999);
+    }
+
+
+    [TestMethod]
+    public void Search_WithEmptyFilter_ShouldReturnList()
+    {
+        var result = _repo.Search(new PatientFilter());
+
+        Assert.IsNotNull(result);
+    }
+
+    [TestMethod]
+    public void Search_WhenNull_ShouldThrow()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            _repo.Search(null!));
+    }
+
+
 
 
 
