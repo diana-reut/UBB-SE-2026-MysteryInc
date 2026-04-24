@@ -248,7 +248,7 @@ public class PatientRepositoryUnitTests
     }
 
     [TestMethod]
-    public void Search_FiltersByChronicCond_NoMedicalHistory()
+    public void Search_FiltersByChronicCond_NoMedicalHistory__CurrentlyIncluded()
     {
         var reader = SetupReader(1);
         _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>())).Returns(reader.Object);
@@ -659,6 +659,228 @@ public class PatientRepositoryUnitTests
         Assert.AreEqual(2, result.Count);
         Assert.AreEqual(1, result[0].Id);
         Assert.AreEqual(2, result[1].Id);
+    }
+
+    [TestMethod]
+    public void GetCompatibleDonors_FiltersOutInvalidDonors()
+    {
+        var donors = new List<Patient>
+    {
+        new Patient
+        {
+            Id = 1,
+            Sex = Sex.M,
+            Dob = DateTime.Now.AddYears(-30),
+            MedicalHistory = null
+        },
+        new Patient
+        {
+            Id = 2,
+            Sex = Sex.M,
+            Dob = DateTime.Now.AddYears(-10),
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive,
+                ChronicConditions = new List<string>(),
+                Allergies = new List<(Allergy, string)>()
+            }
+        },
+        new Patient
+        {
+            Id = 3,
+            Sex = Sex.M,
+            Dob = DateTime.Now.AddYears(-30),
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive,
+                ChronicConditions = new List<string> { "Asthma" },
+                Allergies = new List<(Allergy, string)>()
+            }
+        },
+        new Patient
+        {
+            Id = 4,
+            Sex = Sex.M,
+            Dob = DateTime.Now.AddYears(-30),
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive,
+                ChronicConditions = new List<string>(),
+                Allergies = new List<(Allergy, string)> { (new Allergy(), "anaphylactic") }
+            }
+        }
+    };
+
+        var repo = new TestPatientRepository(_mockContext.Object, donors);
+
+        var method = typeof(PatientRepository)
+            .GetMethod("GetCompatibleDonors", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        var result = (List<Patient>)method!.Invoke(repo, new object[]
+        {
+        BloodType.A,
+        RhEnum.Positive,
+        Sex.M,
+        DateTime.Now.AddYears(-30),
+        18,
+        80
+        })!;
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void IsARhMatch_NegativeDonor_NegativeReceiver_ReturnsTrue()
+    {
+        var method = typeof(PatientRepository)
+            .GetMethod("IsARhMatch", BindingFlags.NonPublic | BindingFlags.Static);
+
+        var result = (bool)method!.Invoke(null, new object[]
+        {
+        RhEnum.Negative,
+        RhEnum.Negative
+        })!;
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void Search_FiltersByLastName()
+    {
+        var reader = SetupReader(1);
+
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
+            .Returns(reader.Object);
+
+        var result = _repo.Search(new PatientFilter
+        {
+            NamePart = "Doe"
+        });
+
+        Assert.AreEqual(1, result.Count);
+    }
+
+    [TestMethod]
+    public void Search_NamePart_NoMatch_FirstNameAndLastName()
+    {
+        var reader = SetupReader(1);
+
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
+            .Returns(reader.Object);
+
+        var result = _repo.Search(new PatientFilter
+        {
+            NamePart = "Alice"
+        });
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void Search_CnpWhitespace_ReturnsAll()
+    {
+        var reader = SetupReader(1);
+
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
+            .Returns(reader.Object);
+
+        var result = _repo.Search(new PatientFilter
+        {
+            CNP = "   "
+        });
+
+        Assert.AreEqual(1, result.Count);
+    }
+
+    [TestMethod]
+    public void IsABloodMatch_ABDonor_ANonABReceiver_ReturnsFalse()
+    {
+        var method = typeof(PatientRepository)
+            .GetMethod("IsABloodMatch", BindingFlags.NonPublic | BindingFlags.Static);
+
+        var result = (bool)method!.Invoke(null, new object[]
+        {
+        BloodType.AB,
+        BloodType.A
+        })!;
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    
+    public void Add_WhenReaderHasRowButBadValue_DoesNotSetId()
+    {
+        var reader = new Mock<DbDataReader>();
+        reader.Setup(r => r.Read()).Returns(true);
+        reader.Setup(r => r[0]).Returns("bad");
+
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
+            .Returns(reader.Object);
+
+        var patient = new Patient();
+
+        _repo.Add(patient);
+
+        Assert.AreEqual(0, patient.Id);
+    }
+
+    [TestMethod]
+    public void Search_MinAge_NoMatch()
+    {
+        var reader = SetupReader(1);
+
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
+            .Returns(reader.Object);
+
+        var result = _repo.Search(new PatientFilter { MinAge = 100 });
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
+    public void Search_MaxAge_NoMatch()
+    {
+        var reader = SetupReader(1);
+
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
+            .Returns(reader.Object);
+
+        var result = _repo.Search(new PatientFilter { MaxAge = 10 });
+
+        Assert.AreEqual(0, result.Count);
+    }
+
+
+    [TestMethod]
+    public void Update_WhenMaleArchivedFalseDonorFalse_UsesZeroValues()
+    {
+        var patient = new Patient
+        {
+            Id = 9,
+            FirstName = "John",
+            LastName = "Doe",
+            Cnp = "123",
+            Dob = new DateTime(1990, 1, 1),
+            Sex = Sex.M,
+            PhoneNo = "123",
+            EmergencyContact = "Mom",
+            IsArchived = false,
+            IsDonor = false,
+            Dod = null
+        };
+
+        _repo.Update(patient);
+
+        _mockContext.Verify(c => c.ExecuteNonQuery(
+            It.Is<string>(q =>
+                q.Contains("Sex = 'M'") &&
+                q.Contains("Archived = 0") &&
+                q.Contains("IsDonor = 0") &&
+                q.Contains("DateOfDeath = NULL"))), Times.Once);
     }
 
 
