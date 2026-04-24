@@ -211,6 +211,16 @@ public class PatientServiceUnitTests
     }
 
     [TestMethod]
+    public void UpdatePatient_EmptyPhoneNo_ThrowsArgumentException()
+    {
+        var existing = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob };
+        _patientRepoMock.Setup(r => r.GetById(1)).Returns(existing);
+        var updated = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob, Sex = Sex.M, PhoneNo = "" };
+
+        Assert.Throws<ArgumentException>(() => _sut.UpdatePatient(updated));
+    }
+
+    [TestMethod]
     public void UpdatePatient_PhoneNoWrongLength_ThrowsArgumentException()
     {
         var existing = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob };
@@ -226,6 +236,46 @@ public class PatientServiceUnitTests
         var existing = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob };
         _patientRepoMock.Setup(r => r.GetById(1)).Returns(existing);
         var updated = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob, Sex = Sex.M, PhoneNo = "123456789A" };
+
+        Assert.Throws<ArgumentException>(() => _sut.UpdatePatient(updated));
+    }
+
+    [TestMethod]
+    public void UpdatePatient_WhiteSpacesPhoneNumber_ThrowsArgumentException()
+    {
+        var existing = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob };
+        _patientRepoMock.Setup(r => r.GetById(1)).Returns(existing);
+        var updated = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob, Sex = Sex.M, PhoneNo = "   " };
+
+        Assert.Throws<ArgumentException>(() => _sut.UpdatePatient(updated));
+    }
+
+    [TestMethod]
+    public void UpdatePatient_ValidPhoneNo_DoesNotThrow()
+    {
+        var existing = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob };
+        _patientRepoMock.Setup(r => r.GetById(1)).Returns(existing);
+        var updated = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob, Sex = Sex.M, PhoneNo = "0712345678" };
+
+        _sut.UpdatePatient(updated);
+
+        _patientRepoMock.Verify(r => r.Update(It.IsAny<Patient>()), Times.Once);
+    }
+
+    [TestMethod]
+    public void UpdatePatient_PhoneNoWithSpecialChar_ThrowsArgumentException()
+    {
+        var existing = new Patient { Id = 1, Cnp = ValidMaleCnp, Dob = ValidDob };
+        _patientRepoMock.Setup(r => r.GetById(1)).Returns(existing);
+
+        var updated = new Patient
+        {
+            Id = 1,
+            Cnp = ValidMaleCnp,
+            Dob = ValidDob,
+            Sex = Sex.M,
+            PhoneNo = "07123.4567"
+        };
 
         Assert.Throws<ArgumentException>(() => _sut.UpdatePatient(updated));
     }

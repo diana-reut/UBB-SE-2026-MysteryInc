@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace HospitalManagement.Service;
 
@@ -103,7 +104,17 @@ internal class PatientService : IPatientService
             throw new ArgumentException("Identity Mismatch: CNP does not align with Sex or DOB.");
         }
 
-        if (string.IsNullOrWhiteSpace(data.PhoneNo) || data.PhoneNo.Length != 10 || !data.PhoneNo.All(char.IsDigit))
+        if (string.IsNullOrWhiteSpace(data.PhoneNo))
+        {
+            throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
+        }
+
+        if (data.PhoneNo.Length != 10)
+        {
+            throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
+        }
+
+        if (!Regex.IsMatch(data.PhoneNo, @"^\d{10}$"))
         {
             throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
         }

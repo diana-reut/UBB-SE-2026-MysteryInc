@@ -384,10 +384,6 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
                 patientLikeClause += ")";
             }
-            else
-            {
-                patientLikeClause = "1=0";
-            }
 
             sql += $" AND ({patientLikeClause} OR {doctorInClause})";
         }
