@@ -14,7 +14,7 @@ public class PatientRepositoryIntegrationTests
 
     public TestContext TestContext { get; set; }
 
-    
+    [TestInitialize]
     public void Setup()
     {
         string filePath = Path.Combine(AppContext.BaseDirectory, "configuration", "testconfig.local.json");
@@ -35,13 +35,13 @@ public class PatientRepositoryIntegrationTests
 
     }
 
-    
+    [TestCleanup]
     public void Cleanup()
     {
         (_context as IDisposable)?.Dispose();
     }
 
-   
+    [TestMethod]
     public void Setup_ShouldConnectToDatabase()
     {
         var patients = _repo.GetAll(true);
