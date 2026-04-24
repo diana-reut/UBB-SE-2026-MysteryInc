@@ -75,7 +75,7 @@ internal partial class AddictViewModel
         }
     }
 
-    private void PlayPoliceAlert()
+    private static void PlayPoliceAlert()
     {
         _ = Task.Run(() =>
         {

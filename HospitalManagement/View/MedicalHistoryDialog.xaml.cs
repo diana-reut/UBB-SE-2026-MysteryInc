@@ -35,7 +35,7 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
     {
         try
         {
-            _availableAllergies = _allergyService.GetAllergies().ToList();
+            _availableAllergies = [.. _allergyService.GetAllergies()];
 
             AllergyNameEntry.ItemsSource = _availableAllergies;
             AllergyNameEntry.DisplayMemberPath = "AllergyName";

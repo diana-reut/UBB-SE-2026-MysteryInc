@@ -105,7 +105,7 @@ internal static class PatientValidator
             result.AddError("CNP must be exactly 13 digits.");
             return false;
         }
-        else if (!"1256".Contains(cnp[0])) 
+        else if (!"1256".Contains(cnp[0], StringComparison.Ordinal))
         {
             result.AddError("CNP must start with 1, 2, 5, or 6.");
             return false;

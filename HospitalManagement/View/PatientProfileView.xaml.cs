@@ -12,6 +12,7 @@ namespace HospitalManagement.View;
 internal sealed partial class PatientProfileView : Page
 {
     public PatientProfileViewModel ViewModel { get; }
+
     private readonly IServiceProvider _services;
 
     public PatientProfileView()
@@ -77,17 +78,19 @@ internal sealed partial class PatientProfileView : Page
 
     private void OnOpenFile(string path)
     {
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        using (System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {
             FileName = path,
-            UseShellExecute = true
-        });
+            UseShellExecute = true,
+        }))
+        {
+        }
     }
 
     private async Task OnShowPrescriptionAsync(int prescriptionId)
     {
         var prescriptionWindow = new Window { Title = "Prescription Details" };
-        var prescriptionPage = _services.GetRequiredService<PrescriptionView>();
+        PrescriptionView prescriptionPage = _services.GetRequiredService<PrescriptionView>();
 
         prescriptionPage.ViewModel.ApplyFilterCommand(prescriptionId, null, null, null, null, null);
 
@@ -102,8 +105,8 @@ internal sealed partial class PatientProfileView : Page
             Title = title,
             Content = content,
             CloseButtonText = "OK",
-            XamlRoot = this.XamlRoot,
+            XamlRoot = XamlRoot,
         };
-        await dialog.ShowAsync();
+        _ = await dialog.ShowAsync();
     }
 }

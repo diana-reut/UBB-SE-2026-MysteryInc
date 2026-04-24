@@ -171,7 +171,13 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
 
         if (prescription is not null)
         {
-            await ShowPrescriptionAction?.Invoke(prescription.Id);
+            if (ShowPrescriptionAction is null)
+            {
+                ShowAlertAction?.Invoke("Not Implemented", "The action to show prescriptions is not implemented.");
+                return;
+            }
+
+            await ShowPrescriptionAction.Invoke(prescription.Id);
         }
         else
         {

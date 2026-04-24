@@ -1,4 +1,3 @@
-using HospitalManagement.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -6,40 +5,39 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace HospitalManagement.View
+namespace HospitalManagement.View;
+
+internal sealed partial class AddictView : UserControl
 {
-    internal sealed partial class AddictView : UserControl
+    public ViewModel.AddictViewModel ViewModel { get; }
+
+    [DllImport("user32.dll")]
+    public static extern bool MessageBeep(uint uType);
+
+    public AddictView()
     {
-        public ViewModel.AddictViewModel ViewModel { get; }
+        ViewModel = (App.Current as App).Services.GetService<ViewModel.AddictViewModel>();
+        InitializeComponent();
+    }
 
-        [DllImport("user32.dll")]
-        public static extern bool MessageBeep(uint uType);
-
-        public AddictView()
+    private async void OnNotifyPoliceClicked(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null && sender is Button btn && btn.CommandParameter is int patientId)
         {
-            ViewModel = (App.Current as App).Services.GetService<ViewModel.AddictViewModel>();
-            this.InitializeComponent();
-        }
+            string reportText = ViewModel.GetPoliceReportMessage(patientId);
 
-        private async void OnNotifyPoliceClicked(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel != null && sender is Button btn && btn.CommandParameter is int patientId)
+
+            var dialog = new PoliceAlertDialog(reportText)
             {
-                string reportText = ViewModel.GetPoliceReportMessage(patientId);
+                XamlRoot = this.XamlRoot 
+            };
 
-               
-                var dialog = new PoliceAlertDialog(reportText)
-                {
-                    XamlRoot = this.XamlRoot 
-                };
+            ContentDialogResult result = await dialog.ShowAsync();
 
-                var result = await dialog.ShowAsync();
 
-               
-                if (result == ContentDialogResult.Primary)
-                {
-                    ViewModel.ConfirmPoliceAlert(patientId);
-                }
+            if (result == ContentDialogResult.Primary)
+            {
+                ViewModel.ConfirmPoliceAlert(patientId);
             }
         }
     }

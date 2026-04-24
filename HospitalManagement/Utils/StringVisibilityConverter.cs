@@ -18,10 +18,13 @@ internal class StringVisibilityConverter : IValueConverter
         }
 
         // IF THE UI WANTS VISIBILITY (for Charts)
-        if (string.IsNullOrEmpty(selected)) return Visibility.Collapsed;
+        if (string.IsNullOrEmpty(selected))
+        {
+            return Visibility.Collapsed;
+        }
 
         // Default logic for chart visibility
-        bool isMatch = string.IsNullOrEmpty(target) || target.Contains(selected);
+        bool isMatch = string.IsNullOrEmpty(target) || target.Contains(selected, StringComparison.OrdinalIgnoreCase);
         return isMatch ? Visibility.Visible : Visibility.Collapsed;
     }
 

@@ -10,7 +10,6 @@ namespace HospitalManagement.ViewModel;
 
 internal class BloodDonorsViewModel : INotifyPropertyChanged
 {
-
     private readonly IBloodCompatibilityService _bloodService;
     private readonly IPatientService _patientService;
     private ObservableCollection<DonorMatchModel>? _donors;

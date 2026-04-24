@@ -1,4 +1,3 @@
-using HospitalManagement.Entity;
 using HospitalManagement.Service;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +6,6 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
 
 namespace HospitalManagement.View;
 
