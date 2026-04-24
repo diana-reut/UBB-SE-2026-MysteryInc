@@ -37,8 +37,6 @@ public class PrescriptionRepositoryIntegrationTests
         (_context as IDisposable)?.Dispose();
     }
 
-    // Connectivity
-
     [TestMethod]
     public void Setup_ShouldConnectToDatabase()
     {
@@ -47,7 +45,6 @@ public class PrescriptionRepositoryIntegrationTests
         Assert.IsNotNull(prescriptions);
     }
 
-    // GetAll
 
     [TestMethod]
     public void GetAll_ShouldReturnNonNullList()
@@ -64,14 +61,11 @@ public class PrescriptionRepositoryIntegrationTests
 
         Assert.IsNotNull(result);
 
-        // Every prescription's MedicationList must be initialised, may be empty, but never null
         foreach (var prescription in result)
         {
             Assert.IsNotNull(prescription.MedicationList);
         }
     }
-
-    // GetTopN
 
     [TestMethod]
     public void GetTopN_ShouldReturnNonNullList()
@@ -108,8 +102,6 @@ public class PrescriptionRepositoryIntegrationTests
         Assert.IsNotNull(result);
     }
 
-    // GetByRecordId
-
     [TestMethod]
     public void GetByRecordId_ShouldReturnNull_WhenIdIsNegative()
     {
@@ -129,17 +121,14 @@ public class PrescriptionRepositoryIntegrationTests
     [TestMethod]
     public void GetByRecordId_ShouldReturnNullOrPrescription_WhenIdIsPositive()
     {
-        // ID 999999 almost certainly does not exist
         var result = _repo?.GetByRecordId(999999);
 
-        // Either null (not found) or a valid Prescription
         if (result is not null)
             Assert.IsGreaterThan(0, result.Id);
         else
             Assert.IsNull(result);
     }
 
-    // GetItems
 
     [TestMethod]
     public void GetItems_ShouldReturnEmptyList_WhenIdIsZero()
@@ -162,13 +151,10 @@ public class PrescriptionRepositoryIntegrationTests
     [TestMethod]
     public void GetItems_ShouldReturnNonNullList_WhenIdIsValid()
     {
-        // ID 999999 almost certainly has no items
         var result = _repo?.GetItems(999999);
 
         Assert.IsNotNull(result);
     }
-
-    // GetFiltered
 
     [TestMethod]
     public void GetFiltered_ShouldReturnNonNullList_WhenFilterIsEmpty()
@@ -191,7 +177,7 @@ public class PrescriptionRepositoryIntegrationTests
     {
         var filter = new PrescriptionFilter
         {
-            PrescriptionId = int.MaxValue  // extremely unlikely to exist
+            PrescriptionId = int.MaxValue  
         };
 
         var result = _repo?.GetFiltered(filter);
@@ -206,17 +192,13 @@ public class PrescriptionRepositoryIntegrationTests
         var filter = new PrescriptionFilter
         {
             DateFrom = new DateTime(2000, 1, 1),
-            DateTo = new DateTime(2000, 1, 2),  // narrow range → likely empty
+            DateTo = new DateTime(2000, 1, 2),  
         };
 
         var result = _repo?.GetFiltered(filter);
 
         Assert.IsNotNull(result);
     }
-
-
-    // GetAddictCandidatePatients
-
 
     [TestMethod]
     public void GetAddictCandidatePatients_ShouldReturnNonNullList()
@@ -236,10 +218,6 @@ public class PrescriptionRepositoryIntegrationTests
         var uniqueIds = result.Select(p => p.Id).Distinct().Count();
         Assert.AreEqual(result.Count, uniqueIds, "Duplicate patients found - deduplication failed.");
     }
-
-
-    // Add / Update / Delete round-trip
-
 
     [TestMethod]
     public void Add_ThenDelete_ShouldSucceed_WhenValidRecordIdExists()
@@ -277,7 +255,6 @@ public class PrescriptionRepositoryIntegrationTests
         Assert.HasCount(1, added.MedicationList);
         Assert.AreEqual("TestMed", added.MedicationList[0].MedName);
 
-        // Restore original, then delete the test one
         _repo.Delete(added.Id);
         _repo.Add(target);
     }

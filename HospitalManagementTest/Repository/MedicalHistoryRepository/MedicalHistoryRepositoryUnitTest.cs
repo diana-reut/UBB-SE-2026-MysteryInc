@@ -64,7 +64,6 @@ public class MedicalHistoryRepositoryUnitTests
         reader.Setup(r => r["HistoryID"]).Returns(1);
         reader.Setup(r => r["PatientID"]).Returns(10);
 
-        // REQUIRED fields used by MapToMedicalHistory
         reader.Setup(r => r["BloodType"]).Returns(DBNull.Value);
         reader.Setup(r => r["Rh"]).Returns(DBNull.Value);
 

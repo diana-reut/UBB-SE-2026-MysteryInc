@@ -85,7 +85,6 @@ public class TransplantRepositoryIntegrationTests
         return id;
     }
 
-    // Add
     [TestMethod]
     public void Add_ShouldInsertTransplant_WithPendingStatus()
     {
@@ -120,8 +119,6 @@ public class TransplantRepositoryIntegrationTests
     {
         Assert.Throws<ArgumentNullException>(() => _repo.Add(null!));
     }
-
-    // GetById
 
     [TestMethod]
     public void GetById_ShouldReturnTransplant_WhenExists()
@@ -195,8 +192,6 @@ public class TransplantRepositoryIntegrationTests
         Assert.AreEqual(expected, result!.Status);
     }
 
-    // GetByReceiverId
-
     [TestMethod]
     public void GetByReceiverId_ShouldReturnAllTransplants_ForReceiver()
     {
@@ -217,8 +212,6 @@ public class TransplantRepositoryIntegrationTests
         Assert.IsEmpty(results);
     }
 
-    // GetByDonorId
-
     [TestMethod]
     public void GetByDonorId_ShouldReturnTransplants_ForDonor()
     {
@@ -237,8 +230,6 @@ public class TransplantRepositoryIntegrationTests
 
         Assert.IsEmpty(results);
     }
-
-    // GetWaitingByOrgan
 
     [TestMethod]
     public void GetWaitingByOrgan_ShouldReturnOnlyPendingTransplants_ForOrgan()
@@ -261,8 +252,6 @@ public class TransplantRepositoryIntegrationTests
         Assert.IsEmpty(results);
     }
 
-    // GetTopMatches
-
     [TestMethod]
     public void GetTopMatches_ShouldReturnAtMostFiveRows()
     {
@@ -283,8 +272,6 @@ public class TransplantRepositoryIntegrationTests
 
         Assert.IsEmpty(results);
     }
-
-    // Update
 
     [TestMethod]
     public void Update_ShouldSetDonorAndScheduledStatus_AndScore()

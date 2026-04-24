@@ -34,8 +34,6 @@ public class ImportServiceUnitTests
             _externalAppointmentMock.Object);
     }
 
-    // ImportFromER
-
     [TestMethod]
     public void ImportFromER_ShouldFetchFromExternalER_AndProcessImport()
     {
@@ -77,11 +75,7 @@ public class ImportServiceUnitTests
         _sut.ImportFromER(patientId: 1, externalId: 99);
 
         _externalAppointmentMock.Verify(p => p.FetchRecordByPatientId(It.IsAny<int>()), Times.Never);
-    }
-
-    
-    // ImportFromAppointment
-    
+    }    
 
     [TestMethod]
     public void ImportFromAppointment_ShouldFetchFromAppointmentProvider_AndProcessImport()
@@ -124,11 +118,7 @@ public class ImportServiceUnitTests
         _sut.ImportFromAppointment(patientId: 1, externalId: 42);
 
         _externalERMock.Verify(p => p.FetchRecordByPatientId(It.IsAny<int>()), Times.Never);
-    }
-
-    
-    // ProcessImport — MedicalHistory null branch
-    
+    }    
 
     [TestMethod]
     public void ProcessImport_WhenMedicalHistoryIsNull_ShouldThrowInvalidOperationException()
@@ -164,11 +154,7 @@ public class ImportServiceUnitTests
             () => _sut.ImportFromER(patientId: 1, externalId: 99));
 
         _recordRepoMock.Verify(r => r.Add(It.IsAny<MedicalRecord>()), Times.Never);
-    }
-
-    
-    // ProcessImport — PrescribedMeds branch: null / whitespace / empty
-    
+    }    
 
     [TestMethod]
     public void ProcessImport_WhenPrescribedMedsIsEmpty_ShouldNotCreatePrescription()
@@ -286,11 +272,7 @@ public class ImportServiceUnitTests
 
         Assert.IsNotNull(captured);
         Assert.AreEqual(55, captured.RecordId);
-    }
-
-    
-    // Helpers
-    
+    }    
 
     private static RecordDTO BuildDto(string prescribedMeds) => new()
     {

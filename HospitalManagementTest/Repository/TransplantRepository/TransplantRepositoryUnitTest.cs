@@ -49,8 +49,6 @@ public class TransplantRepositoryUnitTests
         return reader;
     }
 
-    // Add
-
     [TestMethod]
     public void Add_ShouldExecuteNonQuery_WithCorrectSql()
     {
@@ -113,8 +111,6 @@ public class TransplantRepositoryUnitTests
             Times.Once);
     }
 
-    // GetWaitingByOrgan
-
     [TestMethod]
     public void GetWaitingByOrgan_ShouldReturnPendingTransplants_ForGivenOrgan()
     {
@@ -161,8 +157,6 @@ public class TransplantRepositoryUnitTests
             Times.Once);
     }
 
-    // Update
-
     [TestMethod]
     public void Update_ShouldExecuteNonQuery_WithCorrectParameters()
     {
@@ -180,8 +174,6 @@ public class TransplantRepositoryUnitTests
                 sql.Contains("WHERE TransplantID = 3"))),
             Times.Once);
     }
-
-    // GetTopMatches
 
     [TestMethod]
     public void GetTopMatches_ShouldReturnTransplants_OrderedByScore()
@@ -229,8 +221,6 @@ public class TransplantRepositoryUnitTests
             c => c.ExecuteQuery(It.Is<string>(sql => sql.Contains("O''Brien"))),
             Times.Once);
     }
-
-    // GetByReceiverId
 
     [TestMethod]
     public void GetByReceiverId_ShouldReturnTransplants_ForGivenReceiver()
@@ -311,8 +301,6 @@ public class TransplantRepositoryUnitTests
         Assert.IsNull(result[0].TransplantDate);
     }
 
-    // GetByDonorId
-
     [TestMethod]
     public void GetByDonorId_ShouldReturnTransplants_ForGivenDonor()
     {
@@ -342,8 +330,6 @@ public class TransplantRepositoryUnitTests
 
         Assert.IsEmpty(result);
     }
-
-    // GetById
 
     [TestMethod]
     public void GetById_ShouldReturnTransplant_WhenExists()

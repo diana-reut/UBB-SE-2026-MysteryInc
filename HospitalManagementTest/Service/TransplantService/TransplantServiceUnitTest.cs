@@ -514,7 +514,7 @@ public class TransplantServiceTests
             .Returns((int)50f);
 
         _recordRepo.Setup(r => r.GetERVisitCount(It.IsAny<int>(), It.IsAny<DateTime>()))
-            .Returns(15); // >= 10
+            .Returns(15); 
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
             .Returns(new List<Transplant>

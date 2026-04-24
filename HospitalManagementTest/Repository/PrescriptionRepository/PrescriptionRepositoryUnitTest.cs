@@ -25,10 +25,6 @@ public class PrescriptionRepositoryUnitTests
         _repo = new PrescriptionRepository(_mockContext.Object);
     }
 
-
-    // GetByRecordId
-
-
     [TestMethod]
     [DataRow(0)]
     [DataRow(-5)]
@@ -105,10 +101,6 @@ public class PrescriptionRepositoryUnitTests
         Assert.AreEqual("Aspirin", result.MedicationList[0].MedName);
         Assert.AreEqual("Take after meals", result.DoctorNotes);
     }
-
-
-    // Add
-
 
     [TestMethod]
     public void Add_ShouldThrowArgumentNullException_WhenPrescriptionIsNull()
@@ -232,10 +224,6 @@ public class PrescriptionRepositoryUnitTests
         StringAssert.Contains(capturedSql, "2025-06-15");
     }
 
-
-    // Delete
-
-
     [TestMethod]
     [DataRow(0)]
     [DataRow(-10)]
@@ -270,10 +258,6 @@ public class PrescriptionRepositoryUnitTests
         _mockContext.Verify(c => c.RollbackTransaction(), Times.Once);
         _mockContext.Verify(c => c.CommitTransaction(), Times.Never);
     }
-
-
-    // Update
-
 
     [TestMethod]
     public void Update_ShouldThrowArgumentException_WhenPrescriptionIsNullOrIdInvalid()
@@ -373,7 +357,6 @@ public class PrescriptionRepositoryUnitTests
 
         _repo.Update(prescription);
 
-        // UPDATE header + DELETE old items + INSERT item 1 + INSERT item 2
         _mockContext.Verify(c => c.ExecuteNonQuery(It.IsAny<string>()), Times.Exactly(4));
         _mockContext.Verify(c => c.CommitTransaction(), Times.Once);
     }
@@ -385,7 +368,6 @@ public class PrescriptionRepositoryUnitTests
 
         _repo.Update(new Prescription { Id = 1, RecordId = 2, Date = DateTime.Today, MedicationList = null! });
 
-        // Only UPDATE header + DELETE old items — no INSERT calls
         _mockContext.Verify(c => c.ExecuteNonQuery(It.IsAny<string>()), Times.Exactly(2));
     }
 
@@ -401,10 +383,6 @@ public class PrescriptionRepositoryUnitTests
         _mockContext.Verify(c => c.RollbackTransaction(), Times.Once);
         _mockContext.Verify(c => c.CommitTransaction(), Times.Never);
     }
-
-
-    // GetTopN
-
 
     [TestMethod]
     public void GetTopN_ShouldReturnEmptyList_WhenNoRowsExist()
@@ -428,7 +406,7 @@ public class PrescriptionRepositoryUnitTests
         prescReader.Setup(r => r["RecordID"]).Returns(1);
         prescReader.Setup(r => r["DoctorNotes"]).Returns(DBNull.Value);
         prescReader.Setup(r => r["Date"]).Returns(new DateTime(2025, 1, 1));
-        prescReader.Setup(r => r["PatientName"]).Returns((object)null!); // forces ?? "" branch
+        prescReader.Setup(r => r["PatientName"]).Returns((object)null!);
 
         _mockContext.SetupSequence(c => c.ExecuteQuery(It.IsAny<string>()))
             .Returns(prescReader.Object)
@@ -516,10 +494,6 @@ public class PrescriptionRepositoryUnitTests
         Assert.HasCount(1, result[0].MedicationList);
         Assert.AreEqual("Ibuprofen", result[0].MedicationList[0].MedName);
     }
-
-
-    // GetItems
-
 
     [TestMethod]
     [DataRow(0)]
@@ -628,10 +602,6 @@ public class PrescriptionRepositoryUnitTests
 
         Assert.HasCount(3, result);
     }
-
-
-    // GetFiltered
-
 
     [TestMethod]
     public void GetFiltered_ShouldDelegateToGetTopN_WhenFilterIsNull()
@@ -805,10 +775,6 @@ public class PrescriptionRepositoryUnitTests
         Assert.AreEqual("Jane Smith", result[0].PatientName);
     }
 
-
-    // GetAll
-
-
     [TestMethod]
     public void GetAll_ShouldReturnEmptyList_WhenNoRowsExist()
     {
@@ -842,10 +808,6 @@ public class PrescriptionRepositoryUnitTests
         Assert.HasCount(1, result);
         Assert.AreEqual(1, result[0].Id);
     }
-
-
-    // GetAddictCandidatePatients
-
 
     [TestMethod]
     public void GetAddictCandidatePatients_ShouldReturnEmptyList_WhenNoRowsExist()
