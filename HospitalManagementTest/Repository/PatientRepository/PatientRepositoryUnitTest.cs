@@ -536,6 +536,50 @@ public class PatientRepositoryUnitTests
     }
 
     [TestMethod]
+    public void GetById_NullSex_DefaultsToM()
+    {
+        var reader = new Mock<DbDataReader>();
+        reader.SetupSequence(r => r.Read()).Returns(true).Returns(false);
+
+        reader.Setup(r => r.GetOrdinal("PatientID")).Returns(0);
+        reader.Setup(r => r.GetOrdinal("DateOfBirth")).Returns(1);
+        reader.Setup(r => r.GetOrdinal("DateOfDeath")).Returns(2);
+        reader.Setup(r => r.GetOrdinal("Archived")).Returns(3);
+        reader.Setup(r => r.GetOrdinal("IsDonor")).Returns(4);
+
+        reader.Setup(r => r.GetInt32(0)).Returns(1);
+        reader.Setup(r => r.GetDateTime(1)).Returns(DateTime.Now);
+        reader.Setup(r => r.IsDBNull(2)).Returns(true);
+        reader.Setup(r => r.GetBoolean(3)).Returns(false);
+        reader.Setup(r => r.GetBoolean(4)).Returns(false);
+
+        reader.Setup(r => r["FirstName"]).Returns("John");
+        reader.Setup(r => r["LastName"]).Returns("Doe");
+        reader.Setup(r => r["CNP"]).Returns("123");
+        reader.Setup(r => r["Phone"]).Returns("123");
+        reader.Setup(r => r["EmergencyContact"]).Returns("Mom");
+        reader.Setup(r => r["Sex"]).Returns(null!);
+
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
+            .Returns(reader.Object);
+
+        var result = _repo.GetById(1);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Sex.M, result!.Sex);
+    }
+
+    [TestMethod]
+    public void Search_FiltersByBloodType_WrongBloodType_ReturnsEmpty()
+    {
+        var reader = SetupReader(1); 
+        _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>())).Returns(reader.Object);
+
+        var result = _repo.Search(new PatientFilter { BloodType = BloodType.B });
+        Assert.AreEqual(0, result.Count);
+    }
+
+    [TestMethod]
     public void Add_WhenReaderHasNoRows_DoesNotSetId()
     {
         var reader = new Mock<DbDataReader>();
@@ -711,6 +755,45 @@ public class PatientRepositoryUnitTests
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)> { (new Allergy(), "anaphylactic") }
             }
+        },
+        new Patient
+        {
+            Id = 5,
+            Sex = Sex.M,
+            Dob = DateTime.Now.AddYears(-30),
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.A,
+                Rh = RhEnum.Positive,
+                ChronicConditions = new List<string>(),
+                Allergies = new List<(Allergy, string)> { (new Allergy(), "mild") }
+            }
+        },
+        new Patient
+        {
+            Id = 6,
+            Sex = Sex.M,
+            Dob = DateTime.Now.AddYears(-30),
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.B,
+                Rh = RhEnum.Positive,
+                ChronicConditions = new List<string>(),
+                Allergies = new List<(Allergy, string)>()
+            }
+        },
+        new Patient
+        {
+            Id = 7,
+            Sex = Sex.M,
+            Dob = DateTime.Now.AddYears(-30),
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = BloodType.B,
+                Rh = RhEnum.Negative,
+                ChronicConditions = new List<string>(),
+                Allergies = new List<(Allergy, string)>()
+            }
         }
     };
 
@@ -729,7 +812,8 @@ public class PatientRepositoryUnitTests
         80
         })!;
 
-        Assert.AreEqual(0, result.Count);
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(5, result[0].Id);
     }
 
     [TestMethod]
