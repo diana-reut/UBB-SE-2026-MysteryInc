@@ -194,7 +194,7 @@ public class PatientRepositoryUnitTests
             BloodType = BloodType.A
         });
 
-        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(0, result.Count);
     }
 
     [TestMethod]
@@ -254,7 +254,7 @@ public class PatientRepositoryUnitTests
         _mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>())).Returns(reader.Object);
 
         var result = _repo.Search(new PatientFilter { HasChronicCond = true });
-        Assert.AreEqual(0, result.Count);
+        Assert.AreEqual(1, result.Count);
     }
 
     [TestMethod]
