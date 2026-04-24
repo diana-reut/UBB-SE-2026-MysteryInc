@@ -87,7 +87,7 @@ public class MedicalHistoryRepositoryUnitTests
         {
             PatientId = 1,
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive,
+            Rh = Rh.Positive,
             ChronicConditions = new List<string> { "diabetes" }
         };
 
@@ -186,7 +186,7 @@ public class MedicalHistoryRepositoryUnitTests
             Id = 1,
             PatientId = 1,
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         };
 
         repo.Update(history);

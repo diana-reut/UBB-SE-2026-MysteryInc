@@ -52,9 +52,9 @@ public class StatisticsServiceTests
     {
         var patients = new List<Patient>
         {
-            new Patient { MedicalHistory = new MedicalHistory { Rh = RhEnum.Positive } },
-            new Patient { MedicalHistory = new MedicalHistory { Rh = RhEnum.Positive } },
-            new Patient { MedicalHistory = new MedicalHistory { Rh = RhEnum.Negative } }
+            new Patient { MedicalHistory = new MedicalHistory { Rh = Rh.Positive } },
+            new Patient { MedicalHistory = new MedicalHistory { Rh = Rh.Positive } },
+            new Patient { MedicalHistory = new MedicalHistory { Rh = Rh.Negative } }
         };
 
         _patientRepo.Setup(r => r.GetAll(true)).Returns(patients);

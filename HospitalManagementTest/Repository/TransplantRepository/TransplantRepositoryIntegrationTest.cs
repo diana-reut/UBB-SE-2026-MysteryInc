@@ -182,14 +182,14 @@ public class TransplantRepositoryIntegrationTests
     [DataRow("Scheduled", TransplantStatus.Scheduled)]
     [DataRow("Completed", TransplantStatus.Completed)]
     [DataRow("Cancelled", TransplantStatus.Cancelled)]
-    public void GetBy_IdShouldParseAllTransplantStatuses(string statusString, TransplantStatus expected)
+    public void GetBy_IdShouldParseAllTransplantStatuses(string statusString, Object expected)
     {
         int id = InsertAndTrack(status: statusString);
 
         var result = _repo.GetById(id);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(expected, result!.Status);
+        Assert.AreEqual((TransplantStatus)expected, result!.Status);
     }
 
     [TestMethod]
