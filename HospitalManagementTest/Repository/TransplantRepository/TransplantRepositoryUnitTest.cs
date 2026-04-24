@@ -465,10 +465,10 @@ public class TransplantRepositoryUnitTests
     [DataRow(TransplantStatus.Scheduled)]
     [DataRow(TransplantStatus.Completed)]
     [DataRow(TransplantStatus.Cancelled)]
-    public void GetById_ShouldParseAllTransplantStatusValues(TransplantStatus status)
+    public void GetById_ShouldParseAllTransplantStatusValues(Object status)
     {
         var mockContext = new Mock<IDbContext>();
-        var readerMock = BuildSingleRowReader(status: status);
+        var readerMock = BuildSingleRowReader(status: (TransplantStatus)status);
 
         mockContext.Setup(c => c.ExecuteQuery(It.IsAny<string>()))
             .Returns(readerMock.Object);

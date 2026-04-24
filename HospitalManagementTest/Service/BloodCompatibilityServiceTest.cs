@@ -59,7 +59,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = null,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         var service = CreateService();
@@ -102,7 +102,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient>
@@ -145,7 +145,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { nonDonor });
@@ -177,7 +177,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
@@ -210,13 +210,13 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
         _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
         {
             BloodType = null,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         var service = CreateService();
@@ -258,7 +258,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
@@ -297,7 +297,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
@@ -305,7 +305,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
         {
             BloodType = BloodType.B,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         var service = CreateService();
@@ -345,7 +345,7 @@ public class BloodCompatibilityServiceTest
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive
+                Rh = Rh.Positive
             }
         };
 
@@ -356,7 +356,7 @@ public class BloodCompatibilityServiceTest
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.O,
-                Rh = RhEnum.Negative
+                Rh = Rh.Negative
             }
         };
 
@@ -388,14 +388,14 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Negative
+            Rh = Rh.Negative
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
         _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
         {
             BloodType = BloodType.O,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         var service = CreateService();
@@ -425,7 +425,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
@@ -433,7 +433,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
         {
             BloodType = BloodType.O,
-            Rh = RhEnum.Positive,
+            Rh = Rh.Positive,
             ChronicConditions = new List<string> { "Diabetes" }
         });
         var service = CreateService();
@@ -465,7 +465,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
@@ -473,7 +473,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
         {
             BloodType = BloodType.O,
-            Rh = RhEnum.Positive,
+            Rh = Rh.Positive,
             ChronicConditions = new List<string>(),
             Allergies = new List<(Allergy Allergy, string SeverityLevel)>
                 {
@@ -518,13 +518,13 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor1, donor2 });
         _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive,
+            Rh = Rh.Positive,
             ChronicConditions = new List<string>(),
             Allergies = new List<(Allergy Allergy, string SeverityLevel)>()
         });
@@ -532,7 +532,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(3)).Returns(new MedicalHistory
         {
             BloodType = BloodType.O,
-            Rh = RhEnum.Positive,
+            Rh = Rh.Positive,
             ChronicConditions = new List<string>(),
             Allergies = new List<(Allergy Allergy, string SeverityLevel)>()
         });
@@ -568,7 +568,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
         _patientRepo.Setup(x => x.GetAll(false)).Returns(donors);
 
@@ -577,7 +577,7 @@ public class BloodCompatibilityServiceTest
             _historyRepo.Setup(x => x.GetByPatientId(donor.Id)).Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy Allergy, string SeverityLevel)>()
             });
@@ -657,29 +657,29 @@ public class BloodCompatibilityServiceTest
     public void IsRhMatch_ShouldReturnFalse_WhenDonorIsNull()
     {
         var service = CreateService();
-        Assert.IsFalse(service.IsRhMatch(null, RhEnum.Positive));
+        Assert.IsFalse(service.IsRhMatch(null, Rh.Positive));
     }
 
     [TestMethod]
     public void IsRhMatch_ShouldReturnTrue_WhenReceiverNegative_AnddonordsNegative()
     {
         var service = CreateService();
-        Assert.IsTrue(service.IsRhMatch(RhEnum.Negative, RhEnum.Negative));
+        Assert.IsTrue(service.IsRhMatch(Rh.Negative, Rh.Negative));
     }
 
     [TestMethod]
     public void IsRhMatch_ShouldReturnFalse_WhenReceiverNegative_AnddonordsPositive()
     {
         var service = CreateService();
-        Assert.IsFalse(service.IsRhMatch(RhEnum.Positive, RhEnum.Negative));
+        Assert.IsFalse(service.IsRhMatch(Rh.Positive, Rh.Negative));
     }
 
     [TestMethod]
     public void IsRhMatch_ShouldReturnTrue_WhenReceiverIsPositive()
     {
         var service = CreateService();
-        Assert.IsTrue(service.IsRhMatch(RhEnum.Negative, RhEnum.Positive));
-        Assert.IsTrue(service.IsRhMatch(RhEnum.Positive, RhEnum.Positive));
+        Assert.IsTrue(service.IsRhMatch(Rh.Negative, Rh.Positive));
+        Assert.IsTrue(service.IsRhMatch(Rh.Positive, Rh.Positive));
     }
 
     [TestMethod]
@@ -704,7 +704,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(1)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive
+            Rh = Rh.Positive
         });
 
         _patientRepo.Setup(x => x.GetAll(false)).Returns(new List<Patient> { donor });
@@ -712,7 +712,7 @@ public class BloodCompatibilityServiceTest
         _historyRepo.Setup(x => x.GetByPatientId(2)).Returns(new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive,
+            Rh = Rh.Positive,
             ChronicConditions = null,
             Allergies = null
         });

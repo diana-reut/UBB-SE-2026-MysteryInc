@@ -320,7 +320,7 @@ public class PatientValidatorTests
         {
             PatientId = 1,
             BloodType = (BloodType)999,
-            Rh = (RhEnum)999
+            Rh = (Rh)999
         };
 
         var result = PatientValidator.ValidateMedicalHistory(history);

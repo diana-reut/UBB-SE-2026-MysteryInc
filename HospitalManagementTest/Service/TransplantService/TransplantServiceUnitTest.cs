@@ -91,7 +91,7 @@ public class TransplantServiceTests
 
         _patientRepo.Setup(r => r.GetById(1)).Returns(donor);
         _historyRepo.Setup(r => r.GetByPatientId(It.IsAny<int>()))
-            .Returns(new MedicalHistory { BloodType = BloodType.A, Rh = RhEnum.Positive });
+            .Returns(new MedicalHistory { BloodType = BloodType.A, Rh = Rh.Positive });
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
             .Returns(new List<Transplant>());
@@ -173,7 +173,7 @@ public class TransplantServiceTests
             .Returns(new Patient { Id = 1, IsDonor = true, Dod = DateTime.UtcNow });
 
         _historyRepo.Setup(r => r.GetByPatientId(It.IsAny<int>()))
-            .Returns(new MedicalHistory { BloodType = BloodType.A, Rh = RhEnum.Positive });
+            .Returns(new MedicalHistory { BloodType = BloodType.A, Rh = Rh.Positive });
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
             .Returns(new List<Transplant>
@@ -225,7 +225,7 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive
+                Rh = Rh.Positive
             });
 
         _compatibilityService.Setup(c =>
@@ -233,7 +233,7 @@ public class TransplantServiceTests
             .Returns(false);
 
         _compatibilityService.Setup(c =>
-            c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>()))
+            c.IsRhMatch(It.IsAny<Rh?>(), It.IsAny<Rh>()))
             .Returns(true);
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
@@ -260,7 +260,7 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive
+                Rh = Rh.Positive
             });
 
         _compatibilityService.Setup(c =>
@@ -268,7 +268,7 @@ public class TransplantServiceTests
             .Returns(true);
 
         _compatibilityService.Setup(c =>
-            c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>()))
+            c.IsRhMatch(It.IsAny<Rh?>(), It.IsAny<Rh>()))
             .Returns(false);
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
@@ -295,7 +295,7 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string> { "Diabetes" }
             });
 
@@ -304,7 +304,7 @@ public class TransplantServiceTests
             .Returns(true);
 
         _compatibilityService.Setup(c =>
-            c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>()))
+            c.IsRhMatch(It.IsAny<Rh?>(), It.IsAny<Rh>()))
             .Returns(true);
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
@@ -354,7 +354,7 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = null,
-                Rh = RhEnum.Positive
+                Rh = Rh.Positive
             });
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
@@ -441,7 +441,7 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive
+                Rh = Rh.Positive
             });
 
         _compatibilityService.Setup(c =>
@@ -449,7 +449,7 @@ public class TransplantServiceTests
             .Returns(true);
 
         _compatibilityService.Setup(c =>
-            c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>()))
+            c.IsRhMatch(It.IsAny<Rh?>(), It.IsAny<Rh>()))
             .Returns(true);
 
         _compatibilityService.Setup(c =>
@@ -501,13 +501,13 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive
+                Rh = Rh.Positive
             });
 
         _compatibilityService.Setup(c => c.IsBloodMatch(It.IsAny<BloodType?>(), It.IsAny<BloodType>()))
             .Returns(true);
 
-        _compatibilityService.Setup(c => c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>()))
+        _compatibilityService.Setup(c => c.IsRhMatch(It.IsAny<Rh?>(), It.IsAny<Rh>()))
             .Returns(true);
 
         _compatibilityService.Setup(c => c.CalculateScore(It.IsAny<Patient>(), It.IsAny<Patient>()))
@@ -554,11 +554,11 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive
+                Rh = Rh.Positive
             });
 
         _compatibilityService.Setup(c => c.IsBloodMatch(null, It.IsAny<BloodType>())).Returns(true);
-        _compatibilityService.Setup(c => c.IsRhMatch(null, It.IsAny<RhEnum>())).Returns(true);
+        _compatibilityService.Setup(c => c.IsRhMatch(null, It.IsAny<Rh>())).Returns(true);
         _compatibilityService.Setup(c => c.CalculateScore(It.IsAny<Patient>(), It.IsAny<Patient>())).Returns((int)50f);
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
@@ -585,12 +585,12 @@ public class TransplantServiceTests
             .Returns(new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string>() 
             });
 
         _compatibilityService.Setup(c => c.IsBloodMatch(It.IsAny<BloodType?>(), It.IsAny<BloodType>())).Returns(true);
-        _compatibilityService.Setup(c => c.IsRhMatch(It.IsAny<RhEnum?>(), It.IsAny<RhEnum>())).Returns(true);
+        _compatibilityService.Setup(c => c.IsRhMatch(It.IsAny<Rh?>(), It.IsAny<Rh>())).Returns(true);
 
         _transplantRepo.Setup(r => r.GetWaitingByOrgan("Kidney"))
             .Returns(new List<Transplant>

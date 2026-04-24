@@ -363,12 +363,12 @@ public class PatientRepositoryUnitTests
         var repoType = typeof(PatientRepository);
         var rh = repoType.GetMethod("IsARhMatch", BindingFlags.NonPublic | BindingFlags.Static);
 
-        Assert.IsFalse((bool)rh.Invoke(null, new object[] { null, RhEnum.Positive })!);
+        Assert.IsFalse((bool)rh.Invoke(null, new object[] { null, Rh.Positive })!);
 
-        Assert.IsTrue((bool)rh.Invoke(null, new object[] { RhEnum.Negative, RhEnum.Positive }));
-        Assert.IsFalse((bool)rh.Invoke(null, new object[] { RhEnum.Positive, RhEnum.Negative }));
+        Assert.IsTrue((bool)rh.Invoke(null, new object[] { Rh.Negative, Rh.Positive }));
+        Assert.IsFalse((bool)rh.Invoke(null, new object[] { Rh.Positive, Rh.Negative }));
 
-        Assert.IsTrue((bool)rh.Invoke(null, new object[] { RhEnum.Positive, RhEnum.Positive }));
+        Assert.IsTrue((bool)rh.Invoke(null, new object[] { Rh.Positive, Rh.Positive }));
     }
 
     [TestMethod]
@@ -397,7 +397,7 @@ public class PatientRepositoryUnitTests
 
         var result = donors.Invoke(_repo, new object[]
         {
-            BloodType.A, RhEnum.Positive, Sex.M, DateTime.Now, 0, 100
+            BloodType.A, Rh.Positive, Sex.M, DateTime.Now, 0, 100
         });
 
         Assert.IsNotNull(result);
@@ -433,7 +433,7 @@ public class PatientRepositoryUnitTests
         var history = new MedicalHistory
         {
             BloodType = BloodType.A,
-            Rh = RhEnum.Positive,
+            Rh = Rh.Positive,
             ChronicConditions = new List<string>(),
             Allergies = new List<(Allergy, string)>()
         };
@@ -665,7 +665,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.O,
-                Rh = RhEnum.Negative,
+                Rh = Rh.Negative,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)>()
             }
@@ -678,7 +678,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)>()
             }
@@ -693,7 +693,7 @@ public class PatientRepositoryUnitTests
         var result = (List<Patient>)method!.Invoke(repo, new object[]
         {
         BloodType.A,
-        RhEnum.Positive,
+        Rh.Positive,
         Sex.M,
         DateTime.Now.AddYears(-30),
         18,
@@ -725,7 +725,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)>()
             }
@@ -738,7 +738,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string> { "Asthma" },
                 Allergies = new List<(Allergy, string)>()
             }
@@ -751,7 +751,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)> { (new Allergy(), "anaphylactic") }
             }
@@ -764,7 +764,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.A,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)> { (new Allergy(), "mild") }
             }
@@ -777,7 +777,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.B,
-                Rh = RhEnum.Positive,
+                Rh = Rh.Positive,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)>()
             }
@@ -790,7 +790,7 @@ public class PatientRepositoryUnitTests
             MedicalHistory = new MedicalHistory
             {
                 BloodType = BloodType.B,
-                Rh = RhEnum.Negative,
+                Rh = Rh.Negative,
                 ChronicConditions = new List<string>(),
                 Allergies = new List<(Allergy, string)>()
             }
@@ -805,7 +805,7 @@ public class PatientRepositoryUnitTests
         var result = (List<Patient>)method!.Invoke(repo, new object[]
         {
         BloodType.A,
-        RhEnum.Positive,
+        Rh.Positive,
         Sex.M,
         DateTime.Now.AddYears(-30),
         18,
@@ -824,8 +824,8 @@ public class PatientRepositoryUnitTests
 
         var result = (bool)method!.Invoke(null, new object[]
         {
-        RhEnum.Negative,
-        RhEnum.Negative
+        Rh.Negative,
+        Rh.Negative
         })!;
 
         Assert.IsTrue(result);
