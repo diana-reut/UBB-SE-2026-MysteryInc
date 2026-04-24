@@ -1,6 +1,6 @@
 ﻿namespace HospitalManagement.Entity.Enums;
 
-internal enum TransplantStatus
+public enum TransplantStatus
 {
     Pending = 0,
     Matched = 1,
