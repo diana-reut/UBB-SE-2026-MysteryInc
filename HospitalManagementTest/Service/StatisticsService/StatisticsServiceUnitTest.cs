@@ -124,9 +124,9 @@ public class StatisticsServiceTests
     {
         var patients = new List<Patient>
         {
-            new Patient { Dob = DateTime.Today.AddYears(-10) }, // child
-            new Patient { Dob = DateTime.Today.AddYears(-30) }, // adult
-            new Patient { Dob = DateTime.Today.AddYears(-70) }  // geriatric
+            new Patient { Dob = DateTime.Today.AddYears(-10) }, 
+            new Patient { Dob = DateTime.Today.AddYears(-30) }, 
+            new Patient { Dob = DateTime.Today.AddYears(-70) }  
         };
 
         _patientRepo.Setup(r => r.GetAll(true)).Returns(patients);

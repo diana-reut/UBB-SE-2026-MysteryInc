@@ -95,7 +95,6 @@ public class MedicalRecordRepositoryUnitTests
     [TestMethod]
     public void Add_ShouldReturnId_WhenValid()
     {
-        // Arrange
         var reader = new Mock<DbDataReader>();
 
         reader.Setup(r => r.Read()).Returns(true);
@@ -120,10 +119,8 @@ public class MedicalRecordRepositoryUnitTests
             PoliceNotified = false
         };
 
-        // Act
         var id = repo.Add(record);
 
-        // Assert
         Assert.AreEqual(10, id);
     }
 
@@ -172,7 +169,6 @@ public class MedicalRecordRepositoryUnitTests
     [TestMethod]
     public void GetERVisitCount_ShouldReturnCount()
     {
-        // Arrange
         var reader = new Mock<DbDataReader>();
 
         reader.Setup(r => r.Read()).Returns(true);
@@ -184,10 +180,8 @@ public class MedicalRecordRepositoryUnitTests
 
         var repo = new MedicalRecordRepository(context.Object);
 
-        // Act
         var count = repo.GetERVisitCount(1, DateTime.Now.AddDays(-1));
 
-        // Assert
         Assert.AreEqual(3, count);
     }
     [TestMethod]

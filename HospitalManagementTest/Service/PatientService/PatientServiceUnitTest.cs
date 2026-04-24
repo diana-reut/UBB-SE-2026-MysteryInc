@@ -37,10 +37,6 @@ public class PatientServiceUnitTests
             _prescriptionRepoMock.Object);
     }
 
-
-    // ValidateCNP
-
-
     [TestMethod]
     public void ValidateCNP_NullCnp_ReturnsFalse()
     {
@@ -72,7 +68,6 @@ public class PatientServiceUnitTests
     [TestMethod]
     public void ValidateCNP_MaleWithEvenFirstDigit_ReturnsFalse()
     {
-        // Even first digit (2) clashes with male sex
         bool result = _sut.ValidateCNP(ValidFemaleCnp, Sex.M, ValidDob);
         Assert.IsFalse(result);
     }
@@ -80,7 +75,6 @@ public class PatientServiceUnitTests
     [TestMethod]
     public void ValidateCNP_FemaleWithOddFirstDigit_ReturnsFalse()
     {
-        // Odd first digit (1) clashes with female sex
         bool result = _sut.ValidateCNP(ValidMaleCnp, Sex.F, ValidDob);
         Assert.IsFalse(result);
     }
@@ -88,7 +82,6 @@ public class PatientServiceUnitTests
     [TestMethod]
     public void ValidateCNP_DobMismatch_ReturnsFalse()
     {
-        // CNP encodes 1990-05-15 but dob passed is different
         bool result = _sut.ValidateCNP(ValidMaleCnp, Sex.M, new DateTime(1990, 6, 15));
         Assert.IsFalse(result);
     }
@@ -107,10 +100,6 @@ public class PatientServiceUnitTests
         Assert.IsTrue(result);
     }
 
-
-    // CreatePatient
-
-
     [TestMethod]
     public void CreatePatient_NullData_ThrowsArgumentNullException()
     {
@@ -127,7 +116,6 @@ public class PatientServiceUnitTests
     [TestMethod]
     public void CreatePatient_TodayAsDob_ThrowsArgumentException()
     {
-        // Dob >= Today is invalid (must be in the past)
         var patient = new Patient { Dob = DateTime.Today, Cnp = ValidMaleCnp, Sex = Sex.M };
         Assert.Throws<ArgumentException>(() => _sut.CreatePatient(patient));
     }
@@ -135,7 +123,6 @@ public class PatientServiceUnitTests
     [TestMethod]
     public void CreatePatient_InvalidCnp_ThrowsArgumentException()
     {
-        // Even first digit with male sex → CNP fails validation
         var patient = new Patient { Dob = ValidDob, Cnp = ValidFemaleCnp, Sex = Sex.M };
         Assert.Throws<ArgumentException>(() => _sut.CreatePatient(patient));
     }
@@ -150,10 +137,6 @@ public class PatientServiceUnitTests
         _patientRepoMock.Verify(r => r.Add(patient), Times.Once);
         Assert.AreEqual(patient, result);
     }
-
-
-    // UpdatePatient
-
 
     [TestMethod]
     public void UpdatePatient_NullData_ThrowsArgumentNullException()
@@ -292,10 +275,6 @@ public class PatientServiceUnitTests
         _patientRepoMock.Verify(r => r.Update(updated), Times.Once);
     }
 
-
-    // ArchivePatient
-
-
     [TestMethod]
     public void ArchivePatient_PatientNotFound_ThrowsKeyNotFoundException()
     {
@@ -316,10 +295,6 @@ public class PatientServiceUnitTests
         _patientRepoMock.Verify(r => r.Update(patient), Times.Once);
     }
 
-
-    // DearchivePatient
-
-
     [TestMethod]
     public void DearchivePatient_PatientNotFound_ThrowsKeyNotFoundException()
     {
@@ -339,10 +314,6 @@ public class PatientServiceUnitTests
         Assert.IsFalse(patient.IsArchived);
         _patientRepoMock.Verify(r => r.Update(patient), Times.Once);
     }
-
-
-    // ArchiveAsDeceased
-
 
     [TestMethod]
     public void ArchiveAsDeceased_FutureDeathDate_ThrowsArgumentException()
@@ -373,10 +344,6 @@ public class PatientServiceUnitTests
         Assert.AreEqual(deathDate, patient.Dod);
         _patientRepoMock.Verify(r => r.Update(patient), Times.Once);
     }
-
-
-    // SearchPatients
-
 
     [TestMethod]
     public void SearchPatients_NullFilter_SkipsValidationAndCallsSearch()
@@ -444,7 +411,7 @@ public class PatientServiceUnitTests
     {
         var patients = new List<Patient> { new() { Id = 1 } };
         _patientRepoMock.Setup(r => r.Search(It.IsAny<PatientFilter>())).Returns(patients);
-        var filter = new PatientFilter { CNP = "1234567890123" };  // exactly 13 digits
+        var filter = new PatientFilter { CNP = "1234567890123" };   
 
         List<Patient> result = _sut.SearchPatients(filter);
 
@@ -465,10 +432,6 @@ public class PatientServiceUnitTests
 
         _patientRepoMock.Verify(r => r.Search(filter), Times.Once);
     }
-
-
-    // CreateMedicalHistory
-
 
     [TestMethod]
     public void CreateMedicalHistory_PatientNotFound_ThrowsArgumentException()
@@ -564,10 +527,6 @@ public class PatientServiceUnitTests
             Times.Never);
     }
 
-
-    // GetPatientDetails
-
-
     [TestMethod]
     public void GetPatientDetails_PatientNotFound_ThrowsKeyNotFoundException()
     {
@@ -586,7 +545,7 @@ public class PatientServiceUnitTests
 
         Assert.IsNotNull(result.MedicalHistory);
         Assert.AreEqual(1, result.MedicalHistory.PatientId);
-        Assert.AreEqual(0, result.MedicalHistory.Id);   // empty/default
+        Assert.AreEqual(0, result.MedicalHistory.Id);   
     }
 
     [TestMethod]
@@ -621,14 +580,9 @@ public class PatientServiceUnitTests
 
         _recordRepoMock.Verify(r => r.GetByHistoryId(5), Times.Once);
         Assert.HasCount(2, result.MedicalHistory!.MedicalRecords);
-        // Records must be sorted descending by ConsultationDate
         Assert.AreEqual(newer.Id, result.MedicalHistory.MedicalRecords[0].Id);
         Assert.AreEqual(older.Id, result.MedicalHistory.MedicalRecords[1].Id);
     }
-
-
-    // IsHighRiskPatient
-
 
     [TestMethod]
     public void IsHighRiskPatient_MoreThanTenVisits_ReturnsTrue()
@@ -654,10 +608,6 @@ public class PatientServiceUnitTests
         Assert.IsFalse(_sut.IsHighRiskPatient(1));
     }
 
-
-    // DeletePatient
-
-
     [TestMethod]
     public void DeletePatient_PatientNotFound_ThrowsKeyNotFoundException()
     {
@@ -676,10 +626,6 @@ public class PatientServiceUnitTests
         _patientRepoMock.Verify(r => r.Delete(1), Times.Once);
     }
 
-
-    // Exists
-
-
     [TestMethod]
     public void Exists_RepoReturnsTrue_ReturnsTrue()
     {
@@ -695,10 +641,6 @@ public class PatientServiceUnitTests
 
         Assert.IsFalse(_sut.Exists("1234567890123"));
     }
-
-
-    // GetMedicalHistory
-
 
     [TestMethod]
     public void GetMedicalHistory_ZeroId_ThrowsKeyNotFoundException()
@@ -733,10 +675,6 @@ public class PatientServiceUnitTests
         Assert.IsNull(result);
     }
 
-
-    // GetMedicalRecords
-
-
     [TestMethod]
     public void GetMedicalRecords_ValidHistoryId_ReturnsRecordList()
     {
@@ -757,10 +695,6 @@ public class PatientServiceUnitTests
 
         Assert.IsEmpty(result);
     }
-
-
-    // GetPatientAllergies
-
 
     [TestMethod]
     public void GetPatientAllergies_NoHistory_ReturnsEmptyList()
@@ -797,14 +731,9 @@ public class PatientServiceUnitTests
         Assert.IsEmpty(result);
     }
 
-
-    // GetPrescriptionByRecordId
-
-
     [TestMethod]
     public void GetPrescriptionByRecordId_NoPrescriptionRepo_ThrowsInvalidOperationException()
     {
-        // Construct a service instance without the optional prescription repo
         var sut = new PatientService(
             _patientRepoMock.Object,
             _historyRepoMock.Object,
@@ -825,10 +754,6 @@ public class PatientServiceUnitTests
 
         Assert.AreEqual(prescription, result);
     }
-
-
-    // GetById
-
 
     [TestMethod]
     public void GetById_PatientNotFound_ThrowsKeyNotFoundException()
