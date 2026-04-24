@@ -5,5 +5,5 @@ namespace HospitalManagement.Service;
 
 internal interface IAllergyService
 {
-    IEnumerable<Allergy> GetAllergies();
+    public IEnumerable<Allergy> GetAllergies();
 }

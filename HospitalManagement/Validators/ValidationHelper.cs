@@ -1,12 +1,8 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace HospitalManagement.Validators;
-internal class ValidationHelper
+
+internal static class ValidationHelper
 {
     public static bool IsValidName(string name)
     {
@@ -22,6 +18,4 @@ internal class ValidationHelper
     {
         return !string.IsNullOrWhiteSpace(phone) && phone.Length == 10 && phone.All(char.IsDigit);
     }
-
-
 }

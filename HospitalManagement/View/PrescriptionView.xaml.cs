@@ -8,12 +8,12 @@ namespace HospitalManagement.View;
 
 internal sealed partial class PrescriptionView : UserControl
 {
-    public ViewModel.PrescriptionViewModel ViewModel { get; }
+    public PrescriptionViewModel ViewModel { get; }
 
     public PrescriptionView(PrescriptionViewModel viewModel)
     {
         ViewModel = (App.Current as App).Services.GetService<PrescriptionViewModel>();
-        this.DataContext = ViewModel;
+        DataContext = ViewModel;
         InitializeComponent();
         ViewModel = viewModel;
         DataContext = ViewModel;

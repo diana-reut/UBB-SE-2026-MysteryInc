@@ -154,7 +154,7 @@ internal class PatientRepository : IPatientRepository
         return GetAll(false);
     }
 
-    private List<Patient> GetCompatibleDonors(BloodType bloodType, RhEnum rh, Sex sex, DateTime dob, int minAge, int maxAge)
+    private List<Patient> GetCompatibleDonors(BloodType bloodType, Rh rh, Sex sex, DateTime dob, int minAge, int maxAge)
     {
         //IEnumerable<Patient> potentialDonors = GetAll(false);
         IEnumerable<Patient> potentialDonors = GetPotentialDonors();
@@ -241,19 +241,19 @@ internal class PatientRepository : IPatientRepository
         return false;
     }
 
-    private static bool IsARhMatch(RhEnum? donor, RhEnum receiver)
+    private static bool IsARhMatch(Rh? donor, Rh receiver)
     {
         if (donor is null)
         {
             return false;
         }
 
-        if (donor == RhEnum.Positive && receiver == RhEnum.Positive)
+        if (donor == Rh.Positive && receiver == Rh.Positive)
         {
             return true;
         }
 
-        if (donor == RhEnum.Negative)
+        if (donor == Rh.Negative)
         {
             return true;
         }

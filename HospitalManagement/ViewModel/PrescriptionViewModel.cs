@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using HospitalManagement.Entity;
+﻿using HospitalManagement.Entity;
 using HospitalManagement.Entity.DTOs;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Security.Cryptography;
 
 namespace HospitalManagement.ViewModel;
 
@@ -48,7 +49,7 @@ internal class PrescriptionViewModel
         InfoMessage = "";
 
         List<DoctorDTO> fakeDoctors = MockDoctorProvider.FakeDoctors;
-        var random = new Random();
+        // var random = new Random();
 
         bool hasActiveFilter =
             ActiveFilter.PrescriptionId.HasValue
@@ -74,9 +75,10 @@ internal class PrescriptionViewModel
 
         foreach (Prescription item in targetList)
         {
-            if (!(!string.IsNullOrEmpty(item.DoctorName) && !item.DoctorName.Contains("Unknown")))
+            if (!(!string.IsNullOrEmpty(item.DoctorName) && !item.DoctorName.Contains("Unknown", StringComparison.OrdinalIgnoreCase)))
             {
-                DoctorDTO randomDoc = fakeDoctors[random.Next(fakeDoctors.Count)];
+                int index = RandomNumberGenerator.GetInt32(fakeDoctors.Count);
+                DoctorDTO randomDoc = fakeDoctors[index];
                 item.DoctorName = $"Dr. {randomDoc.FirstName} {randomDoc.LastName}";
             }
 

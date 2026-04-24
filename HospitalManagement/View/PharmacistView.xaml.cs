@@ -26,11 +26,21 @@ internal sealed partial class PharmacistView : Window
             presenter.Maximize();
         }
 
+        if (ViewModel is null)
+        {
+            throw new InvalidOperationException("PharmacistViewModel not found in service provider.");
+        }
+
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
         if (Content is FrameworkElement rootElement)
         {
             rootElement.DataContext = ViewModel;
+        }
+
+        if (ViewModel.CurrentView is null)
+        {
+            throw new InvalidOperationException("PharmacistViewModel not found in service provider.");
         }
 
         UpdateView(ViewModel.CurrentView);
@@ -40,6 +50,11 @@ internal sealed partial class PharmacistView : Window
     {
         if (e.PropertyName == nameof(PharmacistViewModel.CurrentView))
         {
+            if (ViewModel.CurrentView is null)
+            {
+                throw new InvalidOperationException("PharmacistViewModel not found in service provider.");
+            }
+
             UpdateView(ViewModel.CurrentView);
         }
     }
@@ -49,15 +64,17 @@ internal sealed partial class PharmacistView : Window
         switch (viewName)
         {
             case "Prescriptions":
-                var prescriptionView = _services.GetRequiredService<PrescriptionView>();
+            {
+                PrescriptionView prescriptionView = _services.GetRequiredService<PrescriptionView>();
                 MainContentArea.Content = prescriptionView;
                 break;
-
+            }
             case "Addicts":
-                var addictView = _services.GetRequiredService<AddictView>();
+            {
+                AddictView addictView = _services.GetRequiredService<AddictView>();
                 MainContentArea.Content = addictView;
                 break;
-
+            }
             default:
                 break;
         }

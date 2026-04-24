@@ -8,7 +8,7 @@ namespace HospitalManagement.View;
 
 internal sealed partial class TransplantRequestView : Page
 {
-    public ViewModel.TransplantRequestViewModel ViewModel { get; }
+    public TransplantRequestViewModel ViewModel { get; }
 
     private readonly Window _parentWindow;
 

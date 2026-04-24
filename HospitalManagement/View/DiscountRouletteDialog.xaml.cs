@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
@@ -104,7 +105,7 @@ internal sealed partial class DiscountRouletteDialog : ContentDialog, INotifyPro
 
         // Select random discount
         var rand = new Random();
-        int randomIndex = rand.Next(_discountOptions.Length);
+        int randomIndex = RandomNumberGenerator.GetInt32(_discountOptions.Length);
         SelectedDiscountPercentage = _discountOptions[randomIndex];
 
         // Calculate final price

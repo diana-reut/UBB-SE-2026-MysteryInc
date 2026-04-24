@@ -35,7 +35,7 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
     {
         try
         {
-            _availableAllergies = _allergyService.GetAllergies().ToList();
+            _availableAllergies = [.. _allergyService.GetAllergies()];
 
             AllergyNameEntry.ItemsSource = _availableAllergies;
             AllergyNameEntry.DisplayMemberPath = "AllergyName";
@@ -119,7 +119,7 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
 
             // Parse RH Factor
             string rhStr = (RhFactorEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Positive";
-            RhEnum rhFactor = rhStr == "Positive" ? RhEnum.Positive : RhEnum.Negative;
+            Rh rhFactor = rhStr == "Positive" ? Rh.Positive : Rh.Negative;
 
             // Parse Chronic Conditions (comma-separated)
             List<string> chronicConditions = [];

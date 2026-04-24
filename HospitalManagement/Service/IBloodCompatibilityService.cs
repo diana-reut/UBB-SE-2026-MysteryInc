@@ -12,5 +12,5 @@ internal interface IBloodCompatibilityService
 
     public bool IsBloodMatch(BloodType? donor, BloodType receiver);
 
-    public bool IsRhMatch(RhEnum? donor, RhEnum receiver);
+    public bool IsRhMatch(Rh? donor, Rh receiver);
 }
