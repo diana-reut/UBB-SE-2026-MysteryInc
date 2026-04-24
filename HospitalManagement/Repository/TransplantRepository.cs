@@ -96,7 +96,7 @@ internal class TransplantRepository : ITransplantRepository
     private List<Transplant> GetListByQuery(string sql)
     {
         var list = new List<Transplant>();
-        using (var reader = _context.ExecuteQuery(sql))
+        using (System.Data.Common.DbDataReader reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -109,7 +109,7 @@ internal class TransplantRepository : ITransplantRepository
                     RequestDate = (DateTime)reader["RequestDate"],
                     TransplantDate = reader["TransplantDate"] == DBNull.Value ? null : (DateTime)reader["TransplantDate"],
                     Status = Enum.Parse<Entity.Enums.TransplantStatus>(reader.GetString(reader.GetOrdinal("Status"))),
-                    CompatibilityScore = Convert.ToSingle(reader.GetOrdinal("CompatibilityScore")),
+                    CompatibilityScore = Convert.ToSingle(reader["CompatibilityScore"], System.Globalization.CultureInfo.InvariantCulture),
                 });
             }
         }
@@ -123,7 +123,7 @@ internal class TransplantRepository : ITransplantRepository
     {
         string sql = $"SELECT * FROM Transplants WHERE TransplantID = {id}";
 
-        using var reader = _context.ExecuteQuery(sql);
+        using System.Data.Common.DbDataReader reader = _context.ExecuteQuery(sql);
         if (reader.Read())
         {
             return new Transplant
@@ -135,7 +135,7 @@ internal class TransplantRepository : ITransplantRepository
                 RequestDate = (DateTime)reader["RequestDate"],
                 TransplantDate = reader["TransplantDate"] == DBNull.Value ? null : (DateTime)reader["TransplantDate"],
                 Status = Enum.Parse<Entity.Enums.TransplantStatus>(reader.GetString(reader.GetOrdinal("Status"))),
-                CompatibilityScore = Convert.ToSingle(reader.GetOrdinal("CompatibilityScore")),
+                CompatibilityScore = Convert.ToSingle(reader["CompatibilityScore"], System.Globalization.CultureInfo.InvariantCulture),
             };
         }
 
