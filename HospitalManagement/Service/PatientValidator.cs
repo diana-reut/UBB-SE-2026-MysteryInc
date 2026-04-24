@@ -57,12 +57,12 @@ internal static class PatientValidator
 
         if (patient.Dod.HasValue)
         {
-            if (patient.Dod > DateTime.Now)
+            if (patient.Dod.Value > DateTime.Now)
             {
                 result.AddError("Date of Death cannot be in the future.");
             }
 
-            if (patient.Dod < patient.Dob)
+            if (patient.Dod.Value < patient.Dob)
             {
                 result.AddError("Date of Death cannot be earlier than Date of Birth.");
             }
@@ -105,7 +105,7 @@ internal static class PatientValidator
             result.AddError("CNP must be exactly 13 digits.");
             return false;
         }
-        else if (!"1256".Contains(cnp, StringComparison.Ordinal))
+        else if (!"1256".Contains(cnp[0])) 
         {
             result.AddError("CNP must start with 1, 2, 5, or 6.");
             return false;
