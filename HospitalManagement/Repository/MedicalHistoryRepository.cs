@@ -4,7 +4,6 @@ using HospitalManagement.Entity.Enums;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Data.SqlClient;
 using System.Data.Common;
 
 namespace HospitalManagement.Repository;
@@ -21,7 +20,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
     public MedicalHistory? GetByPatientId(int patientId) // RP 13
     {
         string query = $"SELECT * FROM MedicalHistory WHERE PatientID={patientId}";
-        using var reader = _context.ExecuteQuery(query);
+        using DbDataReader reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return MapToMedicalHistory(reader);
@@ -33,7 +32,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
     public MedicalHistory? GetById(int historyId) // RP 13
     {
         string query = $"SELECT * FROM MedicalHistory WHERE HistoryID={historyId}";
-        using var reader = _context.ExecuteQuery(query);
+        using DbDataReader reader = _context.ExecuteQuery(query);
         if (reader.Read())
         {
             return MapToMedicalHistory(reader);
@@ -59,7 +58,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
             + $"{(string.IsNullOrEmpty(chronicConditionsStr) ? "NULL" : $"'{chronicConditionsStr.Replace("'", "''", StringComparison.Ordinal)}'")});"
             + "SELECT SCOPE_IDENTITY();";
 
-        using var reader = _context.ExecuteQuery(query);
+        using DbDataReader reader = _context.ExecuteQuery(query);
         if (reader.Read() && int.TryParse(reader[0].ToString(), out int historyId))
         {
             return historyId;
@@ -89,7 +88,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
 
         // Verify patientId matches what's in DB for this history record
         string checkQuery = $"SELECT PatientID FROM MedicalHistory WHERE HistoryID={history.Id}";
-        using (var reader = _context.ExecuteQuery(checkQuery))
+        using (DbDataReader reader = _context.ExecuteQuery(checkQuery))
         {
             if (!reader.Read())
             {
@@ -121,7 +120,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
                         : Enum.Parse<BloodType>(reader["BloodType"].ToString()!),
             Rh = reader["Rh"] == DBNull.Value
                  ? null
-                 : Enum.Parse<RhEnum>(reader["Rh"].ToString()!),
+                 : Enum.Parse<Rh>(reader["Rh"].ToString()!),
             // ChronicConditions, MedicalRecords, Allergies are loaded separately
             // via their own repositories/queries
         };
@@ -136,7 +135,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
         // ChronicConditions is stored as a single VARCHAR(2000) in DB5
         // so we parse it back into a list here
         string query = $"SELECT ChronicConditions FROM MedicalHistory WHERE HistoryID={historyId}";
-        using (var reader = _context.ExecuteQuery(query))
+        using (DbDataReader reader = _context.ExecuteQuery(query))
         {
             if (reader.Read() && reader["ChronicConditions"] != DBNull.Value)
             {
@@ -155,7 +154,7 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
             + "FROM PatientAllergies pa "
             + "JOIN Allergy a ON pa.AllergyID = a.AllergyID "
             + $"WHERE pa.HistoryID={historyId}";
-        using (var reader = _context.ExecuteQuery(query))
+        using (DbDataReader reader = _context.ExecuteQuery(query))
         {
             while (reader.Read())
             {
@@ -164,17 +163,17 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
                 object categoryObj = reader["AllergyCategory"];
 
                 string allergyName =
-                    nameObj == DBNull.Value || nameObj == null
+                    nameObj == DBNull.Value || nameObj is null
                         ? ""
                         : nameObj.ToString()!;
 
                 string? allergyType =
-                    typeObj == DBNull.Value || typeObj == null
+                    typeObj == DBNull.Value || typeObj is null
                         ? null
                         : typeObj.ToString();
 
                 string? allergyCategory =
-                    categoryObj == DBNull.Value || categoryObj == null
+                    categoryObj == DBNull.Value || categoryObj is null
                         ? null
                         : categoryObj.ToString();
                 var allergy = new Allergy
@@ -184,17 +183,17 @@ internal class MedicalHistoryRepository : IMedicalHistoryRepository
                     AllergyType = allergyType,
                     AllergyCategory = allergyCategory,
                 };
-                //var allergy = new Allergy
-                //{
+                // var allergy = new Allergy
+                // {
                 //    AllergyId = Convert.ToInt32(reader["AllergyID"], CultureInfo.InvariantCulture),
                 //    AllergyName = reader["AllergyName"].ToString() ?? "",
                 //    AllergyType = reader["AllergyType"]?.ToString(),
                 //    AllergyCategory = reader["AllergyCategory"]?.ToString(),
-                //};
+                // };
                 object severityObj = reader["SeverityLevel"];
 
                 string severity =
-                    severityObj == DBNull.Value || severityObj == null
+                    severityObj == DBNull.Value || severityObj is null
                         ? ""
                         : severityObj.ToString()!;
                 result.Add((allergy, severity));

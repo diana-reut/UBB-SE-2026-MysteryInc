@@ -5,11 +5,17 @@ namespace HospitalManagement.Database;
 
 internal interface IDbContext : IDisposable
 {
-    void BeginTransaction();
-    void CommitTransaction();
-    void Dispose();
-    void EnsureConnectionOpen();
-    int ExecuteNonQuery(string sql);
-    DbDataReader ExecuteQuery(string sql);
-    void RollbackTransaction();
+    public void BeginTransaction();
+
+    public void CommitTransaction();
+
+    public new void Dispose();
+
+    public void EnsureConnectionOpen();
+
+    public int ExecuteNonQuery(string sql);
+
+    public DbDataReader ExecuteQuery(string sql);
+
+    public void RollbackTransaction();
 }

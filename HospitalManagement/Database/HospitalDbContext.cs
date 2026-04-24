@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using HospitalManagement.Configuration;
 using System.Data.Common;
 
 namespace HospitalManagement.Database;
 
-internal sealed partial class HospitalDbContext : IDbContext, IDisposable
+internal sealed partial class HospitalDbContext : IDbContext
 {
     private readonly SqlConnection _connection;
     private SqlTransaction? _transaction;

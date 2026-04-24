@@ -23,5 +23,5 @@ internal class PatientFilter
 
     public BloodType? BloodType { get; set; }
 
-    public RhEnum? Rh { get; set; }
+    public Rh? Rh { get; set; }
 }

@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using HospitalManagement.Integration;
 using System.Linq;
 using HospitalManagement.Entity.DTOs;
-using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Data.Common;
 
 namespace HospitalManagement.Repository;
 
@@ -40,7 +40,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
         string sql = $"SELECT * FROM Prescription WHERE RecordID = {recordId}";
 
         Prescription? prescription = null;
-        using (var reader = _context.ExecuteQuery(sql))
+        using (DbDataReader reader = _context.ExecuteQuery(sql))
         {
             if (!reader.Read())
             {
@@ -89,7 +89,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
             int newId = -1;
 
-            using (var reader = _context.ExecuteQuery(sqlPrescription))
+            using (DbDataReader reader = _context.ExecuteQuery(sqlPrescription))
             {
                 if (reader.Read() && int.TryParse(reader[0].ToString(), out int id))
                 {
@@ -239,7 +239,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
         var list = new List<Prescription>();
 
-        using (var reader = _context.ExecuteQuery(sql))
+        using (DbDataReader reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -278,7 +278,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
         string sql = $"SELECT * FROM PrescriptionItems WHERE PrescriptionID = {prescriptionId}";
 
-        using (var reader = _context.ExecuteQuery(sql))
+        using (DbDataReader reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -390,7 +390,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
 
         sql += " ORDER BY p.[Date] DESC";
 
-        using (var reader = _context.ExecuteQuery(sql))
+        using (DbDataReader reader = _context.ExecuteQuery(sql))
         {
             while (reader.Read())
             {
@@ -423,7 +423,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
         const string Query = "SELECT * FROM Prescription";
 
         // First pass: retrieve prescription headers without items
-        using (var reader = _context.ExecuteQuery(Query))
+        using (DbDataReader reader = _context.ExecuteQuery(Query))
         {
             while (reader.Read())
             {
@@ -480,7 +480,7 @@ internal class PrescriptionRepository : IPrescriptionRepository
                     pat.EmergencyContact, pat.Archived, pat.IsDonor, pi.MedName
                 HAVING COUNT(DISTINCT mr.StaffID) >= 3";
 
-        using (var reader = _context.ExecuteQuery(Sql))
+        using (DbDataReader reader = _context.ExecuteQuery(Sql))
         {
             while (reader.Read())
             {

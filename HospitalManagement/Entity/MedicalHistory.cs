@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using HospitalManagement.Entity.Enums;
 
 namespace HospitalManagement.Entity;
@@ -12,7 +11,7 @@ internal class MedicalHistory
 
     public BloodType? BloodType { get; set; }
 
-    public RhEnum? Rh { get; set; }
+    public Rh? Rh { get; set; }
 
     public List<string> ChronicConditions { get; set; } = null!;
 

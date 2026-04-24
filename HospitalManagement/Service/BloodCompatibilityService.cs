@@ -159,16 +159,16 @@ internal class BloodCompatibilityService : IBloodCompatibilityService
         return false;
     }
 
-    public bool IsRhMatch(RhEnum? donor, RhEnum receiver)
+    public bool IsRhMatch(Rh? donor, Rh receiver)
     {
         if (donor is null)
         {
             return false;
         }
 
-        if (receiver == RhEnum.Negative)
+        if (receiver == Rh.Negative)
         {
-            return donor == RhEnum.Negative;
+            return donor == Rh.Negative;
         }
 
         return true;
