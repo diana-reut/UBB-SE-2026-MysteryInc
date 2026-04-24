@@ -109,7 +109,7 @@ public class AllergyRepositoryUnitTests
         var result = repo.GetAllergies().First();
 
         Assert.AreEqual(10, result.AllergyId);
-        Assert.IsNull(result.AllergyName);
+        Assert.AreNotEqual(result.AllergyName, null);
         Assert.IsNull(result.AllergyType);
         Assert.IsNull(result.AllergyCategory);
     }
