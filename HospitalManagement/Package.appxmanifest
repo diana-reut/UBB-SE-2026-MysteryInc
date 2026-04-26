@@ -46,8 +46,9 @@
     </Application>
   </Applications>
 
-  <Capabilities>
-    <rescap:Capability Name="runFullTrust" />
-    <systemai:Capability Name="systemAIModels"/>
-  </Capabilities>
+	<Capabilities>
+		<rescap:Capability Name="runFullTrust" />
+		<Capability Name="privateNetworkClientServer" />
+		<systemai:Capability Name="systemAIModels"/>
+	</Capabilities>
 </Package>

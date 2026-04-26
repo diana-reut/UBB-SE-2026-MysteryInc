@@ -13,7 +13,7 @@
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
-	<WindowsPackageType>None</WindowsPackageType>
+	<WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 	  <CodeAnalysisRuleSet>SE.ruleset</CodeAnalysisRuleSet>
