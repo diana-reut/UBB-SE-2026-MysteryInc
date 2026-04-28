@@ -19,8 +19,29 @@ namespace HospitalManagement.ViewModel;
 
 internal class AdminViewModel : INotifyPropertyChanged
 {
-    private string _currentView = "";
+    private readonly IPatientService _patientService;
+    private readonly IGhostService _ghostService;
+    private readonly ITransplantService _transplantService;
+    private readonly IDialogService _dialogService;
 
+    private string _currentView = "";
+    private bool _isArchivedMode;
+    private bool _isExorcismAlertVisible;
+    private Patient? _selectedPatient;
+    private Patient? _editingPatient;
+    private string? _searchQuery;
+    private bool _noResultsFound;
+    private double? _minAge;
+    private double? _maxAge;
+    private object? _selectedSexFilter;
+    private string? _cnpError;
+    private string? _phoneError;
+    private string? _dobError;
+    private DateTime? _dateOfDeath;
+    private bool _isStatisticsVisible;
+
+
+    // navigation section
     public string CurrentView
     {
         get => _currentView;
@@ -32,11 +53,53 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool _isArchivedMode;
+    public bool IsStatisticsVisible
+    {
+        get => _isStatisticsVisible;
+
+        set
+        {
+            _isStatisticsVisible = value;
+            OnPropertyChanged(nameof(IsStatisticsVisible));
+        }
+    }
+
+    public Action? CloseAddPatientWindow { get; set; }
+
+    private void NavigateHome()
+    {
+        MainWindow mainWindow = (Application.Current as App)!.Services
+            .GetRequiredService<MainWindow>();
+
+        mainWindow.Activate();
+    }
+
+    private void ToggleStatistics()
+    {
+        IsStatisticsVisible = !IsStatisticsVisible;
+    }
+
+    private void ExecuteSwitchToActive()
+    {
+        IsArchivedMode = false;
+    }
+
+    private void NavigateToStatistics()
+    {
+        CurrentView = "Statistics";
+    }
+
+    // patients
+    public ObservableCollection<Patient> Patients { get; set; }
+
+    public ObservableCollection<Patient> ArchivedPatients { get; set; }
+
+    public Patient NewPatient { get; set; }
+
+    // state
 
     public bool IsActiveMode => !IsArchivedMode;
 
-    // Remember to update this whenever IsArchivedMode changes
     public bool IsArchivedMode
     {
         get => _isArchivedMode;
@@ -49,17 +112,9 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    public ICommand NavigateToHomeCommand { get; set; }
+    public bool IsNotDeceased => SelectedPatient?.IsDeceased == false;
 
-    public ICommand NavigateToStatisticsCommand { get; }
-
-    private readonly IPatientService _patientService;
-    private readonly IGhostService _ghostService;
-    private readonly ITransplantService _transplantService;
-    private readonly IDialogService _dialogService;
-
-    // --- Ghost logic ---
-    private bool _isExorcismAlertVisible;
+    public bool IsDeceased => SelectedPatient?.IsDeceased == true;
 
     public bool IsExorcismAlertVisible
     {
@@ -72,10 +127,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    public ICommand GhostSightingCommand { get; }
-
-    // --- The currently clicked patient in the UI ---
-    private Patient? _selectedPatient;
+    // selection and editing
 
     public Patient? SelectedPatient
     {
@@ -91,7 +143,6 @@ internal class AdminViewModel : INotifyPropertyChanged
 
             if (_selectedPatient is not null)
             {
-                // Create the shallow copy for editing
                 EditingPatient = new Patient
                 {
                     Id = _selectedPatient.Id,
@@ -108,8 +159,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    private Patient? _editingPatient;
-
     public Patient? EditingPatient
     {
         get => _editingPatient;
@@ -121,26 +170,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    public ICommand OpenPatientDetailsCommand { get; }
-
-    private void OpenPatientDetailsAsync()
-    {
-        if (SelectedPatient is null)
-            return;
-
-        int patientId = SelectedPatient.Id;
-
-        IServiceProvider scope = (Application.Current as App)!.Services;
-        PatientView patientWindow = scope.GetRequiredService<PatientView>();
-
-        patientWindow.Initialize(patientId, () => { });
-        patientWindow.Activate();
-    }
-
-    public ICommand UpdatePatientCommand { get; }
-
-    // --- VM12: Search Properties ---
-    private string? _searchQuery;
+    // search and filter
 
     public string? SearchQuery
     {
@@ -155,8 +185,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool _noResultsFound;
-
     public bool NoResultsFound
     {
         get => _noResultsFound;
@@ -167,11 +195,6 @@ internal class AdminViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
-    public ICommand SearchPatientCommand { get; }
-
-    // --- VM13: Filter Properties ---
-    private double? _minAge;
 
     public double? MinAge
     {
@@ -184,8 +207,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    private double? _maxAge;
-
     public double? MaxAge
     {
         get => _maxAge;
@@ -196,8 +217,6 @@ internal class AdminViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
-    private object? _selectedSexFilter;
 
     public object? SelectedSexFilter
     {
@@ -210,19 +229,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    public ICommand FilterPatientCommand { get; }
-
-    public ICommand ClearFilterCommand { get; }
-
-    // --- Properties bound to the View ---
-    public ObservableCollection<Patient> Patients { get; set; }
-
-    public ObservableCollection<Patient> ArchivedPatients { get; set; }
-
-    public Patient NewPatient { get; set; }
-
-    private string? _cnpError;
-
+    // validation properties
     public string? CnpError
     {
         get => _cnpError;
@@ -233,8 +240,6 @@ internal class AdminViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
-    private string? _phoneError;
 
     public string? PhoneError
     {
@@ -247,8 +252,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    private string? _dobError;
-
     public string? DobError
     {
         get => _dobError;
@@ -259,12 +262,6 @@ internal class AdminViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
-    // --- The Close Window Notification ---
-    public Action? CloseAddPatientWindow { get; set; }
-
-    // --- VM15: Deceased Logic ---
-    private DateTime? _dateOfDeath;
 
     public DateTime? DateOfDeath
     {
@@ -277,17 +274,34 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    // This property will be used in XAML to disable buttons: IsEnabled="{Binding IsNotDeceased}"
+    // property changed
 
-    public bool IsNotDeceased => SelectedPatient?.IsDeceased == false;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-    public bool IsDeceased => SelectedPatient?.IsDeceased == true;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    // commands
+    public ICommand NavigateToStatisticsCommand { get; }
+
+    public ICommand GhostSightingCommand { get; }
+
+    public ICommand OpenPatientDetailsCommand { get; }
+
+    public ICommand UpdatePatientCommand { get; }
+
+    public ICommand SearchPatientCommand { get; }
+
+    public ICommand FilterPatientCommand { get; }
+
+    public ICommand ClearFilterCommand { get; }
 
     public ICommand MarkAsDeceasedCommand { get; }
 
     public ICommand MarkAsOrganDonorCommand { get; }
 
-    // --- Commands bound to the View Buttons ---
     public ICommand LoadAllPatientsCommand { get; }
 
     public ICommand LoadArchivedPatientsCommand { get; }
@@ -308,15 +322,6 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     public ICommand NavigateHomeCommand { get; }
 
-    private void NavigateHome()
-    {
-        MainWindow mainWindow = (Application.Current as App)!.Services
-            .GetRequiredService<MainWindow>();
-
-        mainWindow.Activate();
-    }
-
-
     // --- Constructor ---
     public AdminViewModel()
     {
@@ -324,8 +329,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
         _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
         _dialogService = (Application.Current as App)!.Services.GetRequiredService<IDialogService>();
-
-        NavigateToStatisticsCommand = new RelayCommand(NavigateToStatistics);
 
         Patients = [];
         LoadAllPatientsCommand = new RelayCommand(LoadAllPatients);
@@ -335,26 +338,22 @@ internal class AdminViewModel : INotifyPropertyChanged
 
         NewPatient = new Patient { Dob = DateTime.Today, };
 
+        NavigateToStatisticsCommand = new RelayCommand(NavigateToStatistics);
         AddPatientCommand = new RelayCommand(AddPatientAsync);
         ArchivePatientCommand = new RelayCommand(ArchivePatientAsync);
         DearchivePatientCommand = new RelayCommand(DearchivePatientAsync);
-
         UpdatePatientCommand = new RelayCommand(UpdatePatientAsync);
-
         SearchPatientCommand = new RelayCommand(SearchPatient);
-
         FilterPatientCommand = new RelayCommand(ExecuteFilterAsync);
         ClearFilterCommand = new RelayCommand(ClearFilters);
         NavigateHomeCommand = new RelayCommand(NavigateHome);
-
         MarkAsDeceasedCommand = new RelayCommand(MarkAsDeceasedAsync);
         MarkAsOrganDonorCommand = new RelayCommand(MarkAsOrganDonorAsync);
         OpenOrganDonorCommand = new RelayCommand(OpenOrganDonorDialogAsync);
         ReportGhostCommand = new RelayCommand(ReportGhostAsync);
         ToggleStatisticsCommand = new RelayCommand(ToggleStatistics);
         SwitchToActiveCommand = new RelayCommand(ExecuteSwitchToActive);
-        OpenPatientDetailsCommand = new RelayCommand(OpenPatientDetailsAsync);
-        NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
+        OpenPatientDetailsCommand = new RelayCommand(OpenPatientDetails);
 
         // Ghost addition
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
@@ -362,32 +361,58 @@ internal class AdminViewModel : INotifyPropertyChanged
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
 
         LoadAllPatients();
-
-
         CurrentView = "AdminDashboard";
     }
 
-    private bool _isStatisticsVisible;
-
-    public bool IsStatisticsVisible
+    public void LoadAllPatients()
     {
-        get => _isStatisticsVisible;
+        var emptyFilter = new PatientFilter();
+        List<Patient> allPatients = _patientService.SearchPatients(emptyFilter);
 
-        set
+        Patients.Clear();
+
+        IEnumerable<Patient> activePatients = allPatients.Where(p => !p.IsArchived);
+
+        foreach (Patient patient in activePatients)
         {
-            _isStatisticsVisible = value;
-            OnPropertyChanged(nameof(IsStatisticsVisible));
+            patient.PhoneNo = FormatPhoneNumber(patient.PhoneNo);
+            patient.EmergencyContact = FormatPhoneNumber(patient.EmergencyContact);
+            Patients.Add(patient);
         }
     }
 
-    private void ToggleStatistics()
+    public void LoadArchivedPatients()
     {
-        IsStatisticsVisible = !IsStatisticsVisible;
+        IsArchivedMode = true;
+        var emptyFilter = new PatientFilter();
+        List<Patient> allPatients = _patientService.SearchPatients(emptyFilter);
+
+        ArchivedPatients.Clear();
+        IEnumerable<Patient> archivedList = allPatients.Where(p => p.IsArchived);
+
+        foreach (Patient patient in archivedList)
+        {
+            patient.PhoneNo = FormatPhoneNumber(patient.PhoneNo);
+            patient.EmergencyContact = FormatPhoneNumber(patient.EmergencyContact);
+
+            ArchivedPatients.Add(patient);
+        }
     }
 
-    private void ExecuteSwitchToActive()
+    private void OpenPatientDetails()
     {
-        IsArchivedMode = false;
+        if (SelectedPatient is null)
+        {
+            return;
+        }
+
+        int patientId = SelectedPatient.Id;
+
+        IServiceProvider scope = (Application.Current as App)!.Services;
+        PatientView patientWindow = scope.GetRequiredService<PatientView>();
+
+        patientWindow.Initialize(patientId, () => { });
+        patientWindow.Activate();
     }
 
     public async Task AssignOrganDonorAsync(int transplantId, int donorId, float score, string donorName)
@@ -430,24 +455,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    public void LoadAllPatients()
-    {
-        var emptyFilter = new PatientFilter();
-        List<Patient> allPatients = _patientService.SearchPatients(emptyFilter);
-
-        Patients.Clear();
-
-        IEnumerable<Patient> activePatients = allPatients.Where(p => !p.IsArchived);
-
-        foreach (Patient patient in activePatients)
-        {
-            patient.PhoneNo = FormatPhoneNumber(patient.PhoneNo);
-            patient.EmergencyContact = FormatPhoneNumber(patient.EmergencyContact);
-            Patients.Add(patient);
-        }
-    }
-
-    // --- Helper: Phone Number Formatter ---
     private static string FormatPhoneNumber(string phone)
     {
         if (string.IsNullOrWhiteSpace(phone))
@@ -466,36 +473,14 @@ internal class AdminViewModel : INotifyPropertyChanged
         return phone;
     }
 
-    // --- VM7: Load Archived Patients ---
-    public void LoadArchivedPatients()
-    {
-        IsArchivedMode = true;
-        // 1. Fetch ALL patients using an empty filter
-        var emptyFilter = new PatientFilter();
-        List<Patient> allPatients = _patientService.SearchPatients(emptyFilter);
-
-        // 2. Clear the UI list to prevent duplicates
-        ArchivedPatients.Clear();
-
-        // 3. Filter archived patients in-memory using LINQ
-        IEnumerable<Patient> archivedList = allPatients.Where(p => p.IsArchived);
-
-        // 4. Format phone numbers and add to the ObservableCollection
-        foreach (Patient patient in archivedList)
-        {
-            patient.PhoneNo = FormatPhoneNumber(patient.PhoneNo);
-            patient.EmergencyContact = FormatPhoneNumber(patient.EmergencyContact);
-
-            ArchivedPatients.Add(patient);
-        }
-    }
-
     private async void AddPatientAsync()
     {
-        var patient = await _dialogService.ShowAddPatientDialogAsync();
+        Patient? patient = await _dialogService.ShowAddPatientDialogAsync();
 
         if (patient is null)
+        {
             return;
+        }
 
         try
         {
@@ -503,7 +488,7 @@ internal class AdminViewModel : INotifyPropertyChanged
 
             LoadAllPatients();
 
-            var (history, skipped) = await _dialogService.ShowMedicalHistoryAsync();
+            (MedicalHistory? history, bool skipped) = await _dialogService.ShowMedicalHistoryAsync();
 
             await ProcessMedicalHistoryResultAsync(
                 createdPatient.Id,
@@ -522,7 +507,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     {
         if (SelectedPatient is null)
         {
-            return; // Nobody is selected!
+            return;
         }
 
         Task<bool>? confirmTask = _dialogService.ShowConfirmAsync(
@@ -549,7 +534,6 @@ internal class AdminViewModel : INotifyPropertyChanged
             return;
         }
 
-        // 1. Strict Validation: Cannot dearchive deceased patients
         if (SelectedPatient.IsDeceased)
         {
             await _dialogService.ShowAlertAsync("Cannot dearchive this patient. The record indicates the patient is deceased.");
@@ -563,7 +547,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         LoadArchivedPatients();
     }
 
-    // --- VM10: Update Patient ---
     private async void UpdatePatientAsync()
     {
         if (EditingPatient is null || SelectedPatient is null)
@@ -598,36 +581,29 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    // --- VM12: Search Patient (Fuzzy Logic) ---
-    // --- VM12: Search Patient (Fuzzy Logic Updated) ---
     public void SearchPatient()
     {
-        // 1. Initialize the filter from your colleague's class
         var filter = new PatientFilter();
 
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
-            // 2. Fuzzy Logic: Identify if Query is CNP or Name
             if (SearchQuery.All(char.IsDigit))
             {
                 if (SearchQuery.All(char.IsDigit) && SearchQuery.Length == 13)
                 {
-                    filter.CNP = SearchQuery; // Safe to send to Service
+                    filter.CNP = SearchQuery;
                 }
             }
             else
             {
-                // If it contains letters, map to the namePart field
                 filter.NamePart = SearchQuery;
             }
         }
 
-        // 3. Call the Service
         // Note: Since PatientFilter doesn't have IsArchived,
         // the service likely returns everyone. We filter for active only here.
         List<Patient> results = _patientService.SearchPatients(filter);
 
-        // 4. UI Collection Sync
         Patients.Clear();
         IEnumerable<Patient> activeResults = results.Where(p => !p.IsArchived);
 
@@ -638,38 +614,32 @@ internal class AdminViewModel : INotifyPropertyChanged
             Patients.Add(p);
         }
 
-        // 5. Update Visual State for "No Results"
         NoResultsFound = Patients.Count == 0 && !string.IsNullOrWhiteSpace(SearchQuery);
     }
 
-    // --- VM13: Execute High-Precision Filter ---
     private async void ExecuteFilterAsync()
     {
         try
         {
-            // 1. Extract and Convert the Sex value
-            Sex? finalSexEnum = null; // Start as null (no filter)
+            Sex? finalSexEnum = null;
 
             if (SelectedSexFilter is Microsoft.UI.Xaml.Controls.ComboBoxItem item)
             {
                 string? content = item.Content.ToString();
 
-                // Try to convert "M" or "F" string to the Sex Enum
                 if (Enum.TryParse(content, out Sex result))
                 {
                     finalSexEnum = result;
                 }
             }
 
-            // 2. Map values to the filter
             var filter = new PatientFilter
             {
                 MinAge = (int?)MinAge,
                 MaxAge = (int?)MaxAge,
-                Sex = finalSexEnum, // Now the types match perfectly!
+                Sex = finalSexEnum,
             };
 
-            // 3. Re-apply SearchQuery with the "13-digit shield"
             if (!string.IsNullOrWhiteSpace(SearchQuery))
             {
                 if (SearchQuery.All(char.IsDigit) && SearchQuery.Length == 13)
@@ -682,10 +652,8 @@ internal class AdminViewModel : INotifyPropertyChanged
                 }
             }
 
-            // 4. Fetch from Service
             List<Patient> results = _patientService.SearchPatients(filter);
 
-            // 5. Sync Collection (Active only)
             Patients.Clear();
             IEnumerable<Patient> activeResults = results.Where(x => !x.IsArchived);
 
@@ -696,33 +664,26 @@ internal class AdminViewModel : INotifyPropertyChanged
                 Patients.Add(p);
             }
 
-            // 6. Update Visual State
             NoResultsFound = Patients.Count == 0 && !string.IsNullOrWhiteSpace(SearchQuery);
         }
         catch (ArgumentException ex)
         {
-            // This catches "Min > Max" errors from your Service logic
             await _dialogService.ShowAlertAsync(ex.Message);
         }
     }
 
-    // --- VM13: Clear/Reset ---
     private void ClearFilters()
     {
-        // Reset the specific filter fields
         MinAge = null;
         MaxAge = null;
         SelectedSexFilter = null!;
 
-        // Optional: Also clear the search query to return to a 100% clean list
         SearchQuery = "";
 
-        LoadAllPatients(); // Returns to the full active list
+        LoadAllPatients();
         NoResultsFound = false;
     }
 
-
-    // --- VM15: Mark As Deceased ---
     private async void MarkAsDeceasedAsync()
     {
         if (SelectedPatient is null)
@@ -733,10 +694,9 @@ internal class AdminViewModel : INotifyPropertyChanged
         DateTime? chosenDate = await (_dialogService.ShowDatePickerAsync("Enter Date of Death:", "Mark as Deceased") ?? Task.FromResult<DateTime?>(null));
         if (chosenDate is null)
         {
-            return; // User cancelled
+            return;
         }
 
-        // 2. Validation: Cannot be in the future
         if (chosenDate > DateTime.Now)
         {
             await _dialogService.ShowAlertAsync("Date of death cannot be in the future.");
@@ -744,7 +704,6 @@ internal class AdminViewModel : INotifyPropertyChanged
             return;
         }
 
-        // 3. Validation: Cannot be before Date of Birth
         if (chosenDate < SelectedPatient.Dob)
         {
             await _dialogService.ShowAlertAsync("Date of death cannot be earlier than the Date of Birth.");
@@ -764,16 +723,13 @@ internal class AdminViewModel : INotifyPropertyChanged
         SelectedPatient.PhoneNo = cleanPhone;
         SelectedPatient.EmergencyContact = cleanEmergency;
 
-        // 4. Update the Record
-        SelectedPatient.Dod = chosenDate; // Setting the Date of Death
-        SelectedPatient.IsArchived = true; // Securely move to locked archive state
+        SelectedPatient.Dod = chosenDate;
+        SelectedPatient.IsArchived = true;
 
         try
         {
-            // 5. Call Service to Save
             _patientService.UpdatePatient(SelectedPatient);
 
-            // 6. Refresh and Notify
             LoadAllPatients();
             LoadArchivedPatients();
 
@@ -786,9 +742,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    /// Open the Organ Donor assignment dialog.
-    /// </summary>
     private async void OpenOrganDonorDialogAsync()
     {
         if (SelectedPatient?.IsDeceased != true || !SelectedPatient.IsDonor)
@@ -801,9 +754,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         await _dialogService.ShowOrganDonorDialogAsync(SelectedPatient);
     }
 
-    /// <summary>
-    /// Mark the selected patient as an organ donor and open the organ donor assignment dialog.
-    /// </summary>
     private async void MarkAsOrganDonorAsync()
     {
         if (SelectedPatient is null)
@@ -829,16 +779,10 @@ internal class AdminViewModel : INotifyPropertyChanged
             SelectedPatient.EmergencyContact = SelectedPatient.EmergencyContact
                 .Replace(" ", "", StringComparison.Ordinal)
                 .Replace("+40", "0", StringComparison.Ordinal);
-            // Mark as organ donor
             SelectedPatient.IsDonor = true;
 
-            // Update the database
             _patientService.UpdatePatient(SelectedPatient);
-
-            // Open the Organ Donor Dialog BEFORE refreshing lists (to avoid stale data)
             OpenOrganDonorDialogAsync();
-
-            // Refresh the lists after dialog completes
             LoadAllPatients();
             LoadArchivedPatients();
         }
@@ -848,7 +792,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    // Report ghost sighting (paranormal activity logging)
     private async void ReportGhostAsync()
     {
         // part of this was deleting during merge so idk what comes here
@@ -864,18 +807,5 @@ internal class AdminViewModel : INotifyPropertyChanged
         {
             await _dialogService.ShowAlertAsync($"Error: {ex.Message}");
         }
-    }
-
-    // --- INotifyPropertyChanged Implementation ---
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    private void NavigateToStatistics()
-    {
-        CurrentView = "Statistics";
     }
 }
