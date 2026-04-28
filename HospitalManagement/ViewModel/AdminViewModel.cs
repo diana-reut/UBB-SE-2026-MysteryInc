@@ -274,7 +274,7 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     public Func<string, Task>? ShowAlertAction { get; set; } // For the deceased warning
 
-    public Action<Patient>? OpenOrganDonorDialogAction { get; set; } // For opening organ donor dialog
+    public Func<Patient, Task>? OpenOrganDonorDialogAction { get; set; } // For opening organ donor dialog
 
     // For showing medical history - just pass the patient ID
     public Func<int, Task>? ShowMedicalHistoryAction { get; set; }

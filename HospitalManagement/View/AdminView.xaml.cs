@@ -1,3 +1,4 @@
+using HospitalManagement.Entity;
 using HospitalManagement.Service;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,13 +34,11 @@ internal sealed partial class AdminView : Window
         InitializeComponent();
         SetupWindow();
 
-        // 2. Dependency Injection
         _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
         _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
         _statisticsControl = (Application.Current as App)!.Services.GetRequiredService<StatisticsView>();
         StatisticsContainer.Child = _statisticsControl;
 
-        // 3. Initialize ViewModel & Bindings
         _viewModel = (Application.Current as App)!.Services.GetRequiredService<AdminViewModel>();
 
         // 4. Set DataContext
@@ -48,125 +47,11 @@ internal sealed partial class AdminView : Window
             rootElement.DataContext = _viewModel;
             rootElement.Loaded += (s, e) =>
             {
-                // Alert Logic
                 _viewModel.ShowAlertAction = ShowAlertDialogAsync;
-
-                // Medical History Dialog - Show directly on UI thread
-                _viewModel.ShowMedicalHistoryAction = async (newPatientId) =>
-                {
-                    try
-                    {
-                        var medicalHistoryDialog = new MedicalHistoryDialog
-                        {
-                            XamlRoot = rootElement.XamlRoot,
-                        };
-                        medicalHistoryDialog.Initialize();
-
-                        ContentDialogResult result = await medicalHistoryDialog.ShowAsync();
-
-                        if (result == ContentDialogResult.Primary && medicalHistoryDialog.MedicalHistory is not null)
-                        {
-                            try
-                            {
-                                medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
-                                _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
-
-                                await _viewModel.ShowAlertAction("Medical history saved successfully!");
-                            }
-                            catch (Exception ex)
-                            {
-                                await _viewModel.ShowAlertAction($"Error saving medical history: {ex.Message}");
-                            }
-                        }
-                        else if (medicalHistoryDialog.WasSkipped)
-                        {
-                            var skipAlert = new ContentDialog
-                            {
-                                Title = "Skipped",
-                                Content = "You can add medical history later from the patient profile.",
-                                CloseButtonText = "OK",
-                                XamlRoot = rootElement.XamlRoot,
-                            };
-                            ContentDialogResult contentDialogResult = await skipAlert.ShowAsync();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"ERROR SHOWING MEDICAL HISTORY DIALOG: {ex}");
-                    }
-                };
-
-                _viewModel.ConfirmAction = async (message, title) =>
-                {
-                    var confirmDialog = new ContentDialog
-                    {
-                        Title = title,
-                        Content = message,
-                        PrimaryButtonText = "Yes, Archive",
-                        CloseButtonText = "Cancel",
-                        DefaultButton = ContentDialogButton.Close,
-                        XamlRoot = rootElement.XamlRoot,
-                    };
-
-                    ContentDialogResult result = await confirmDialog.ShowAsync();
-                    return result == ContentDialogResult.Primary;
-                };
-
-                _viewModel.RequestDateAction = async (message, title) =>
-                {
-                    var datePicker = new DatePicker
-                    {
-                        Header = message,
-                        HorizontalAlignment = HorizontalAlignment.Stretch,
-                    };
-
-                    var dialog = new ContentDialog
-                    {
-                        Title = title,
-                        Content = datePicker,
-                        PrimaryButtonText = "Confirm",
-                        CloseButtonText = "Cancel",
-                        XamlRoot = rootElement.XamlRoot,
-                    };
-
-                    ContentDialogResult result = await dialog.ShowAsync();
-
-                    if (result == ContentDialogResult.Primary)
-                    {
-                        return datePicker.Date.DateTime;
-                    }
-
-                    return null;
-                };
-
-                // Organ Donor Dialog Logic
-                _viewModel.OpenOrganDonorDialogAction = async (deceasedPatient) =>
-                {
-                    if (deceasedPatient is null)
-                    {
-                        return;
-                    }
-
-                    OrganDonorDialog dialog = (Application.Current as App)!.Services.GetRequiredService<OrganDonorDialog>();
-                    dialog.XamlRoot = rootElement.XamlRoot;
-
-
-                    dialog.Initialize(
-                        deceasedPatient,
-                        (transplantId, donorId, score) =>
-                        {
-                            try
-                            {
-                                _transplantService.AssignDonor(transplantId, donorId, score);
-                                bool showedSuccessMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Successfully assigned organ from donor {deceasedPatient.FirstName} {deceasedPatient.LastName}."));
-                            }
-                            catch (Exception ex)
-                            {
-                                bool showedErrorMessage = rootElement.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Error assigning organ: {ex.Message}"));
-                            }
-                        });
-                    ContentDialogResult _ = await dialog.ShowAsync();
-                };
+                _viewModel.ShowMedicalHistoryAction = ShowMedicalHistoryDialogAsync;
+                _viewModel.ConfirmAction = ShowConfirmDialogAsync;
+                _viewModel.RequestDateAction = ShowRequestDateDialogAsync;
+                _viewModel.OpenOrganDonorDialogAction = ShowOpenOrganDonorDialogAsync;
             };
         }
     }
@@ -181,6 +66,126 @@ internal sealed partial class AdminView : Window
             XamlRoot = Content.XamlRoot,
         };
         ContentDialogResult _ = await alert.ShowAsync();
+    }
+
+    private async Task ShowMedicalHistoryDialogAsync(int newPatientId)
+    {
+        try
+        {
+            var medicalHistoryDialog = new MedicalHistoryDialog
+            {
+                XamlRoot = Content.XamlRoot,
+            };
+            medicalHistoryDialog.Initialize();
+
+            ContentDialogResult result = await medicalHistoryDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary && medicalHistoryDialog.MedicalHistory is not null)
+            {
+                try
+                {
+                    medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
+                    _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
+
+                    if (_viewModel.ShowAlertAction is not null)
+                    {
+                        await _viewModel.ShowAlertAction("Medical history saved successfully!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (_viewModel.ShowAlertAction is not null)
+                    {
+                        await _viewModel.ShowAlertAction($"Error saving medical history: {ex.Message}");
+                    }
+                }
+            }
+            else if (medicalHistoryDialog.WasSkipped)
+            {
+                var skipAlert = new ContentDialog
+                {
+                    Title = "Skipped",
+                    Content = "You can add medical history later from the patient profile.",
+                    CloseButtonText = "OK",
+                    XamlRoot = Content.XamlRoot,
+                };
+                ContentDialogResult contentDialogResult = await skipAlert.ShowAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ERROR SHOWING MEDICAL HISTORY DIALOG: {ex}");
+        }
+    }
+
+    private async Task<bool> ShowConfirmDialogAsync(string message, string title)
+    {
+        var confirmDialog = new ContentDialog
+        {
+            Title = title,
+            Content = message,
+            PrimaryButtonText = "Confirm",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = Content.XamlRoot,
+        };
+        ContentDialogResult result = await confirmDialog.ShowAsync();
+        return result == ContentDialogResult.Primary;
+    }
+
+    private async Task<DateTime?> ShowRequestDateDialogAsync(string message, string title)
+    {
+        var datePicker = new DatePicker
+        {
+            Header = message,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = title,
+            Content = datePicker,
+            PrimaryButtonText = "Confirm",
+            CloseButtonText = "Cancel",
+            XamlRoot = Content.XamlRoot,
+        };
+
+        ContentDialogResult result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.Primary)
+        {
+            return datePicker.Date.DateTime;
+        }
+
+        return null;
+    }
+
+    private async Task ShowOpenOrganDonorDialogAsync(Patient deceasedPatient)
+    {
+        if (deceasedPatient is null)
+        {
+            return;
+        }
+
+        OrganDonorDialog dialog = (Application.Current as App)!.Services.GetRequiredService<OrganDonorDialog>();
+        dialog.XamlRoot = Content.XamlRoot;
+
+
+        dialog.Initialize(
+            deceasedPatient,
+            (transplantId, donorId, score) =>
+            {
+                try
+                {
+                    _transplantService.AssignDonor(transplantId, donorId, score);
+                    bool showedSuccessMessage = Content.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Successfully assigned organ from donor {deceasedPatient.FirstName} {deceasedPatient.LastName}."));
+                }
+                catch (Exception ex)
+                {
+                    bool showedErrorMessage = Content.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Error assigning organ: {ex.Message}"));
+                }
+            });
+        ContentDialogResult _ = await dialog.ShowAsync();
     }
 
     private async void OpenAddPatientDialogAsync(object sender, RoutedEventArgs e)
