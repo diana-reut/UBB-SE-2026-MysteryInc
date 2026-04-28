@@ -6,12 +6,12 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class AdminView : Window
 {
-    // NOTE it is very wierd that the view model passes logic onto the view but we will keep it like that because I will go mad fixing it
     private readonly AdminViewModel _viewModel;
     private readonly IPatientService _patientService;
     private readonly ITransplantService _transplantService;
@@ -49,17 +49,7 @@ internal sealed partial class AdminView : Window
             rootElement.Loaded += (s, e) =>
             {
                 // Alert Logic
-                _viewModel.ShowAlertAction = async (message) =>
-                {
-                    var alert = new ContentDialog
-                    {
-                        Title = "System Message",
-                        Content = message,
-                        CloseButtonText = "OK",
-                        XamlRoot = rootElement.XamlRoot,
-                    };
-                    ContentDialogResult _ = await alert?.ShowAsync();
-                };
+                _viewModel.ShowAlertAction = ShowAlertDialogAsync;
 
                 // Medical History Dialog - Show directly on UI thread
                 _viewModel.ShowMedicalHistoryAction = async (newPatientId) =>
@@ -81,11 +71,11 @@ internal sealed partial class AdminView : Window
                                 medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
                                 _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
 
-                                _viewModel.ShowAlertAction?.Invoke("Medical history saved successfully!");
+                                await _viewModel.ShowAlertAction("Medical history saved successfully!");
                             }
                             catch (Exception ex)
                             {
-                                _viewModel.ShowAlertAction?.Invoke($"Error saving medical history: {ex.Message}");
+                                await _viewModel.ShowAlertAction($"Error saving medical history: {ex.Message}");
                             }
                         }
                         else if (medicalHistoryDialog.WasSkipped)
@@ -179,6 +169,18 @@ internal sealed partial class AdminView : Window
                 };
             };
         }
+    }
+
+    private async Task ShowAlertDialogAsync(string message)
+    {
+        var alert = new ContentDialog
+        {
+            Title = "System Message",
+            Content = message,
+            CloseButtonText = "OK",
+            XamlRoot = Content.XamlRoot,
+        };
+        ContentDialogResult _ = await alert.ShowAsync();
     }
 
     private async void OpenAddPatientDialogAsync(object sender, RoutedEventArgs e)
