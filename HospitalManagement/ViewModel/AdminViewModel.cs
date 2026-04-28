@@ -294,6 +294,9 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     public ICommand ReportGhostCommand { get; }
 
+    public ICommand ToggleStatisticsCommand { get; }
+
+
     // --- Constructor ---
     public AdminViewModel()
     {
@@ -326,6 +329,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         MarkAsOrganDonorCommand = new RelayCommand(MarkAsOrganDonorAsync);
         OpenOrganDonorCommand = new RelayCommand(OpenOrganDonorDialogAsync);
         ReportGhostCommand = new RelayCommand(ReportGhostAsync);
+        ToggleStatisticsCommand = new RelayCommand(ToggleStatistics);
         NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
 
         // Ghost addition
@@ -337,6 +341,24 @@ internal class AdminViewModel : INotifyPropertyChanged
 
 
         CurrentView = "AdminDashboard";
+    }
+
+    private bool _isStatisticsVisible;
+
+    public bool IsStatisticsVisible
+    {
+        get => _isStatisticsVisible;
+
+        set
+        {
+            _isStatisticsVisible = value;
+            OnPropertyChanged(nameof(IsStatisticsVisible));
+        }
+    }
+
+    private void ToggleStatistics()
+    {
+        IsStatisticsVisible = !IsStatisticsVisible;
     }
 
     public async Task AssignOrganDonorAsync(int transplantId, int donorId, float score, string donorName)
@@ -433,6 +455,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     // --- VM7: Load Archived Patients ---
     public void LoadArchivedPatients()
     {
+        IsArchivedMode = true;
         // 1. Fetch ALL patients using an empty filter
         var emptyFilter = new PatientFilter();
         List<Patient> allPatients = _patientService.SearchPatients(emptyFilter);

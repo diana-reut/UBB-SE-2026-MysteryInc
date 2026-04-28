@@ -163,35 +163,12 @@ internal sealed partial class AdminView : Window
     }
 
 
-    private void ToggleStatisticsWindow()
-    {
-        StatisticsContainer.Visibility = StatisticsContainer.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    private void OpenArchive_Click(object sender, RoutedEventArgs e)
-    {
-        if (Content is FrameworkElement fe && fe.DataContext is AdminViewModel vm)
-        {
-            vm.IsArchivedMode = true;
-        }
-        // Alternatively, if the Window itself holds the DataContext:
-        else if (Content is FrameworkElement feWindow && feWindow.DataContext is AdminViewModel vmWin)
-        {
-            vmWin.IsArchivedMode = true;
-        }
-    }
-
     private void BackToActive_Click(object sender, RoutedEventArgs e)
     {
         if (Content is FrameworkElement root && root.DataContext is AdminViewModel vm)
         {
             vm.IsArchivedMode = false;
         }
-    }
-
-    private void OpenPage_Click(object sender, RoutedEventArgs e)
-    {
-        ToggleStatisticsWindow();
     }
 
     private void PatientListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
