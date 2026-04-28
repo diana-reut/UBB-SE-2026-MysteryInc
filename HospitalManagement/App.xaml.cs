@@ -106,6 +106,7 @@ public partial class App : Application
                 vm.Initialize(id);
                 return vm;
             });
+        _ = services.AddSingleton<DiscountRouletteViewModel>();
 
         // MORE
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();
