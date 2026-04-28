@@ -1,5 +1,4 @@
 using HospitalManagement.Entity;
-using HospitalManagement.Service;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
@@ -14,8 +13,6 @@ namespace HospitalManagement.View;
 internal sealed partial class AdminView : Window
 {
     private readonly AdminViewModel _viewModel;
-    private readonly IPatientService _patientService;
-    private readonly ITransplantService _transplantService;
     private readonly StatisticsView _statisticsControl;
 
     private void SetupWindow()
@@ -34,8 +31,6 @@ internal sealed partial class AdminView : Window
         InitializeComponent();
         SetupWindow();
 
-        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
-        _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
         _statisticsControl = (Application.Current as App)!.Services.GetRequiredService<StatisticsView>();
         StatisticsContainer.Child = _statisticsControl;
 
@@ -79,38 +74,11 @@ internal sealed partial class AdminView : Window
             medicalHistoryDialog.Initialize();
 
             ContentDialogResult result = await medicalHistoryDialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary && medicalHistoryDialog.MedicalHistory is not null)
-            {
-                try
-                {
-                    medicalHistoryDialog.MedicalHistory.PatientId = newPatientId;
-                    _patientService.CreateMedicalHistory(newPatientId, medicalHistoryDialog.MedicalHistory);
-
-                    if (_viewModel.ShowAlertAction is not null)
-                    {
-                        await _viewModel.ShowAlertAction("Medical history saved successfully!");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (_viewModel.ShowAlertAction is not null)
-                    {
-                        await _viewModel.ShowAlertAction($"Error saving medical history: {ex.Message}");
-                    }
-                }
-            }
-            else if (medicalHistoryDialog.WasSkipped)
-            {
-                var skipAlert = new ContentDialog
-                {
-                    Title = "Skipped",
-                    Content = "You can add medical history later from the patient profile.",
-                    CloseButtonText = "OK",
-                    XamlRoot = Content.XamlRoot,
-                };
-                ContentDialogResult contentDialogResult = await skipAlert.ShowAsync();
-            }
+            await _viewModel.ProcessMedicalHistoryResultAsync(
+                newPatientId,
+                medicalHistoryDialog.MedicalHistory,
+                medicalHistoryDialog.WasSkipped
+        );
         }
         catch (Exception ex)
         {
@@ -170,21 +138,11 @@ internal sealed partial class AdminView : Window
         OrganDonorDialog dialog = (Application.Current as App)!.Services.GetRequiredService<OrganDonorDialog>();
         dialog.XamlRoot = Content.XamlRoot;
 
-
+        string donorFullName = $"{deceasedPatient.FirstName} {deceasedPatient.LastName}";
         dialog.Initialize(
             deceasedPatient,
-            (transplantId, donorId, score) =>
-            {
-                try
-                {
-                    _transplantService.AssignDonor(transplantId, donorId, score);
-                    bool showedSuccessMessage = Content.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Successfully assigned organ from donor {deceasedPatient.FirstName} {deceasedPatient.LastName}."));
-                }
-                catch (Exception ex)
-                {
-                    bool showedErrorMessage = Content.DispatcherQueue.TryEnqueue(() => _viewModel.ShowAlertAction?.Invoke($"Error assigning organ: {ex.Message}"));
-                }
-            });
+            async (transplantId, donorId, score) => await _viewModel.AssignOrganDonorAsync(transplantId, donorId, score, donorFullName)
+        );
         ContentDialogResult _ = await dialog.ShowAsync();
     }
 

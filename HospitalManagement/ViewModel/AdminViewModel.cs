@@ -339,6 +339,61 @@ internal class AdminViewModel : INotifyPropertyChanged
         CurrentView = "AdminDashboard";
     }
 
+    public async Task AssignOrganDonorAsync(int transplantId, int donorId, float score, string donorName)
+    {
+        try
+        {
+            _transplantService.AssignDonor(transplantId, donorId, score);
+
+            if (ShowAlertAction is not null)
+            {
+                await ShowAlertAction($"Successfully assigned organ from donor {donorName}.");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (ShowAlertAction is not null)
+            {
+                await ShowAlertAction($"Error assigning organ: {ex.Message}");
+            }
+        }
+    }
+
+    public async Task ProcessMedicalHistoryResultAsync(int patientId, MedicalHistory history, bool wasSkipped)
+    {
+        if (wasSkipped)
+        {
+            if (ShowAlertAction is not null)
+            {
+                await ShowAlertAction("You can add medical history later from the patient profile.");
+            }
+
+            return;
+        }
+
+        if (history is null)
+        {
+            return;
+        }
+
+        try
+        {
+            history.PatientId = patientId;
+            _patientService.CreateMedicalHistory(patientId, history);
+            if (ShowAlertAction is not null)
+            {
+                await ShowAlertAction("Medical history saved successfully!");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (ShowAlertAction is not null)
+            {
+                await ShowAlertAction($"Error saving medical history: {ex.Message}");
+            }
+        }
+    }
+
     public void LoadAllPatients()
     {
         var emptyFilter = new PatientFilter();
