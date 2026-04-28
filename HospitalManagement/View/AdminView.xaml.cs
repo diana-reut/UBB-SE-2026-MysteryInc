@@ -162,15 +162,6 @@ internal sealed partial class AdminView : Window
         }
     }
 
-
-    private void BackToActive_Click(object sender, RoutedEventArgs e)
-    {
-        if (Content is FrameworkElement root && root.DataContext is AdminViewModel vm)
-        {
-            vm.IsArchivedMode = false;
-        }
-    }
-
     private void PatientListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
         if (_viewModel?.SelectedPatient is not null)

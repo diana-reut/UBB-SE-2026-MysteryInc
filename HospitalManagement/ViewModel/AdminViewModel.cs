@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace HospitalManagement.ViewModel;
 
@@ -296,6 +297,8 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     public ICommand ToggleStatisticsCommand { get; }
 
+    public ICommand SwitchToActiveCommand { get; }
+
 
     // --- Constructor ---
     public AdminViewModel()
@@ -330,6 +333,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         OpenOrganDonorCommand = new RelayCommand(OpenOrganDonorDialogAsync);
         ReportGhostCommand = new RelayCommand(ReportGhostAsync);
         ToggleStatisticsCommand = new RelayCommand(ToggleStatistics);
+        SwitchToActiveCommand = new RelayCommand(ExecuteSwitchToActive);
         NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
 
         // Ghost addition
@@ -359,6 +363,11 @@ internal class AdminViewModel : INotifyPropertyChanged
     private void ToggleStatistics()
     {
         IsStatisticsVisible = !IsStatisticsVisible;
+    }
+
+    private void ExecuteSwitchToActive()
+    {
+        IsArchivedMode = false;
     }
 
     public async Task AssignOrganDonorAsync(int transplantId, int donorId, float score, string donorName)

@@ -155,7 +155,7 @@
             </StackPanel>
 
             <StackPanel Grid.RowSpan="2" Visibility="{Binding IsArchivedMode, Converter={StaticResource BoolToVis}}">
-                <Button Content="← Back to Active Dashboard" Click="BackToActive_Click" Style="{StaticResource AccentButtonStyle}" Margin="0,0,0,15"/>
+                <Button Content="← Back to Active Dashboard" Command="{Binding SwitchToActiveCommand}" Style="{StaticResource AccentButtonStyle}" Margin="0,0,0,15"/>
                 <Border Background="#374151" Padding="15" CornerRadius="10" Margin="0,0,0,15">
                     <TextBlock Text="ARCHIVED PATIENT RECORDS" Foreground="White" FontWeight="Bold" FontSize="18"/>
                 </Border>
