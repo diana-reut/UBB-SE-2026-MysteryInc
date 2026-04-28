@@ -40,14 +40,12 @@ internal sealed partial class AdminView : Window
         if (Content is FrameworkElement rootElement)
         {
             rootElement.DataContext = _viewModel;
-            rootElement.Loaded += (s, e) =>
-            {
-                _viewModel.ShowAlertAction = ShowAlertDialogAsync;
-                _viewModel.ShowMedicalHistoryAction = ShowMedicalHistoryDialogAsync;
-                _viewModel.ConfirmAction = ShowConfirmDialogAsync;
-                _viewModel.RequestDateAction = ShowRequestDateDialogAsync;
-                _viewModel.OpenOrganDonorDialogAction = ShowOpenOrganDonorDialogAsync;
-            };
+
+            _viewModel.ShowAlertAction = ShowAlertDialogAsync;
+            _viewModel.ShowMedicalHistoryAction = ShowMedicalHistoryDialogAsync;
+            _viewModel.ConfirmAction = ShowConfirmDialogAsync;
+            _viewModel.RequestDateAction = ShowRequestDateDialogAsync;
+            _viewModel.OpenOrganDonorDialogAction = ShowOpenOrganDonorDialogAsync;
         }
     }
 
@@ -155,10 +153,9 @@ internal sealed partial class AdminView : Window
 
         ContentDialogResult result = await dialog.ShowAsync();
 
-        if (result == ContentDialogResult.Primary && dialog.NewPatient is not null)
+        if (result == ContentDialogResult.Primary)
         {
-            _viewModel.NewPatient = dialog.NewPatient;
-            _viewModel.AddPatientCommand.Execute(null);
+            await _viewModel.AddPatientFlowAsync(dialog.NewPatient);
         }
     }
 

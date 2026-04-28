@@ -485,6 +485,17 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+    public async Task AddPatientFlowAsync(Patient? newPatient)
+    {
+        if (newPatient is null)
+        {
+            return;
+        }
+
+        NewPatient = newPatient;
+        AddPatientCommand.Execute(null);
+    }
+
     private async void AddPatientAsync()
     {
         if (NewPatient is null)
