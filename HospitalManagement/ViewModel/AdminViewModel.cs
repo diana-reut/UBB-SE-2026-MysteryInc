@@ -1,8 +1,9 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using HospitalManagement.Entity;
+﻿using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
+using HospitalManagement.View;
+using HospitalManagement.View.DialogServiceAdmin;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
@@ -55,6 +56,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     private readonly IPatientService _patientService;
     private readonly IGhostService _ghostService;
     private readonly ITransplantService _transplantService;
+    private readonly IDialogService _dialogService;
 
     // --- Ghost logic ---
     private bool _isExorcismAlertVisible;
@@ -117,6 +119,22 @@ internal class AdminViewModel : INotifyPropertyChanged
             _editingPatient = value;
             OnPropertyChanged();
         }
+    }
+
+    public ICommand OpenPatientDetailsCommand { get; }
+
+    private void OpenPatientDetailsAsync()
+    {
+        if (SelectedPatient is null)
+            return;
+
+        int patientId = SelectedPatient.Id;
+
+        IServiceProvider scope = (Application.Current as App)!.Services;
+        PatientView patientWindow = scope.GetRequiredService<PatientView>();
+
+        patientWindow.Initialize(patientId, () => { });
+        patientWindow.Activate();
     }
 
     public ICommand UpdatePatientCommand { get; }
@@ -260,7 +278,6 @@ internal class AdminViewModel : INotifyPropertyChanged
     }
 
     // This property will be used in XAML to disable buttons: IsEnabled="{Binding IsNotDeceased}"
-    public Func<string, string, Task<DateTime?>>? RequestDateAction { get; set; }
 
     public bool IsNotDeceased => SelectedPatient?.IsDeceased == false;
 
@@ -269,16 +286,6 @@ internal class AdminViewModel : INotifyPropertyChanged
     public ICommand MarkAsDeceasedCommand { get; }
 
     public ICommand MarkAsOrganDonorCommand { get; }
-
-    // --- UI Callbacks ---
-    public Func<string, string, Task<bool>>? ConfirmAction { get; set; }
-
-    public Func<string, Task>? ShowAlertAction { get; set; } // For the deceased warning
-
-    public Func<Patient, Task>? OpenOrganDonorDialogAction { get; set; } // For opening organ donor dialog
-
-    // For showing medical history - just pass the patient ID
-    public Func<int, Task>? ShowMedicalHistoryAction { get; set; }
 
     // --- Commands bound to the View Buttons ---
     public ICommand LoadAllPatientsCommand { get; }
@@ -299,6 +306,16 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     public ICommand SwitchToActiveCommand { get; }
 
+    public ICommand NavigateHomeCommand { get; }
+
+    private void NavigateHome()
+    {
+        MainWindow mainWindow = (Application.Current as App)!.Services
+            .GetRequiredService<MainWindow>();
+
+        mainWindow.Activate();
+    }
+
 
     // --- Constructor ---
     public AdminViewModel()
@@ -306,6 +323,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         _ghostService = (Application.Current as App)!.Services.GetRequiredService<IGhostService>();
         _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
         _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
+        _dialogService = (Application.Current as App)!.Services.GetRequiredService<IDialogService>();
 
         NavigateToStatisticsCommand = new RelayCommand(NavigateToStatistics);
 
@@ -327,6 +345,7 @@ internal class AdminViewModel : INotifyPropertyChanged
 
         FilterPatientCommand = new RelayCommand(ExecuteFilterAsync);
         ClearFilterCommand = new RelayCommand(ClearFilters);
+        NavigateHomeCommand = new RelayCommand(NavigateHome);
 
         MarkAsDeceasedCommand = new RelayCommand(MarkAsDeceasedAsync);
         MarkAsOrganDonorCommand = new RelayCommand(MarkAsOrganDonorAsync);
@@ -334,6 +353,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         ReportGhostCommand = new RelayCommand(ReportGhostAsync);
         ToggleStatisticsCommand = new RelayCommand(ToggleStatistics);
         SwitchToActiveCommand = new RelayCommand(ExecuteSwitchToActive);
+        OpenPatientDetailsCommand = new RelayCommand(OpenPatientDetailsAsync);
         NavigateToHomeCommand = new RelayCommand(() => { /* This gets overwritten by MainWindow */ });
 
         // Ghost addition
@@ -376,17 +396,11 @@ internal class AdminViewModel : INotifyPropertyChanged
         {
             _transplantService.AssignDonor(transplantId, donorId, score);
 
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Successfully assigned organ from donor {donorName}.");
-            }
+            await _dialogService.ShowAlertAsync($"Successfully assigned organ from donor {donorName}.");
         }
         catch (Exception ex)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Error assigning organ: {ex.Message}");
-            }
+            await _dialogService.ShowAlertAsync($"Error assigning organ: {ex.Message}");
         }
     }
 
@@ -394,10 +408,7 @@ internal class AdminViewModel : INotifyPropertyChanged
     {
         if (wasSkipped)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("You can add medical history later from the patient profile.");
-            }
+            await _dialogService.ShowAlertAsync("You can add medical history later from the patient profile.");
 
             return;
         }
@@ -411,17 +422,11 @@ internal class AdminViewModel : INotifyPropertyChanged
         {
             history.PatientId = patientId;
             _patientService.CreateMedicalHistory(patientId, history);
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Medical history saved successfully!");
-            }
+            await _dialogService.ShowAlertAsync("Medical history saved successfully!");
         }
         catch (Exception ex)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Error saving medical history: {ex.Message}");
-            }
+            await _dialogService.ShowAlertAsync($"Error saving medical history: {ex.Message}");
         }
     }
 
@@ -485,48 +490,31 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task AddPatientFlowAsync(Patient? newPatient)
-    {
-        if (newPatient is null)
-        {
-            return;
-        }
-
-        NewPatient = newPatient;
-        AddPatientCommand.Execute(null);
-    }
-
     private async void AddPatientAsync()
     {
-        if (NewPatient is null)
-        {
+        var patient = await _dialogService.ShowAddPatientDialogAsync();
+
+        if (patient is null)
             return;
-        }
 
         try
         {
-            Patient createdPatient = _patientService.CreatePatient(NewPatient);
+            Patient createdPatient = _patientService.CreatePatient(patient);
+
             LoadAllPatients();
-            _ = ShowMedicalHistoryAction?.Invoke(createdPatient.Id);
 
-            NewPatient = new Patient { Dob = DateTime.Today.AddYears(-20), };
-            OnPropertyChanged(nameof(NewPatient));
+            var (history, skipped) = await _dialogService.ShowMedicalHistoryAsync();
 
-            CloseAddPatientWindow?.Invoke();
-        }
-        catch (ArgumentException ex)
-        {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction(ex.Message);
-            }
+            await ProcessMedicalHistoryResultAsync(
+                createdPatient.Id,
+                history,
+                skipped);
+
+            await _dialogService.ShowAlertAsync("Patient added successfully.");
         }
         catch (Exception ex)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Database Error: {ex.Message}");
-            }
+            await _dialogService.ShowAlertAsync($"Error: {ex.Message}");
         }
     }
 
@@ -537,7 +525,7 @@ internal class AdminViewModel : INotifyPropertyChanged
             return; // Nobody is selected!
         }
 
-        Task<bool>? confirmTask = ConfirmAction?.Invoke(
+        Task<bool>? confirmTask = _dialogService.ShowConfirmAsync(
             $"Are you sure you want to archive {SelectedPatient.FirstName} {SelectedPatient.LastName}?",
             "Confirm Archive");
 
@@ -564,10 +552,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         // 1. Strict Validation: Cannot dearchive deceased patients
         if (SelectedPatient.IsDeceased)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Cannot dearchive this patient. The record indicates the patient is deceased.");
-            }
+            await _dialogService.ShowAlertAsync("Cannot dearchive this patient. The record indicates the patient is deceased.");
 
             return;
         }
@@ -605,17 +590,11 @@ internal class AdminViewModel : INotifyPropertyChanged
             EditingPatient = null!;
             SelectedPatient = null!;
 
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Patient updated successfully.");
-            }
+            await _dialogService.ShowAlertAsync("Patient updated successfully.");
         }
         catch (Exception ex)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Update failed: {ex.Message}");
-            }
+            await _dialogService.ShowAlertAsync($"Update failed: {ex.Message}");
         }
     }
 
@@ -723,10 +702,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         catch (ArgumentException ex)
         {
             // This catches "Min > Max" errors from your Service logic
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction(ex.Message);
-            }
+            await _dialogService.ShowAlertAsync(ex.Message);
         }
     }
 
@@ -754,7 +730,7 @@ internal class AdminViewModel : INotifyPropertyChanged
             return;
         }
 
-        DateTime? chosenDate = await (RequestDateAction?.Invoke("Enter Date of Death:", "Mark as Deceased") ?? Task.FromResult<DateTime?>(null));
+        DateTime? chosenDate = await (_dialogService.ShowDatePickerAsync("Enter Date of Death:", "Mark as Deceased") ?? Task.FromResult<DateTime?>(null));
         if (chosenDate is null)
         {
             return; // User cancelled
@@ -763,10 +739,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         // 2. Validation: Cannot be in the future
         if (chosenDate > DateTime.Now)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Date of death cannot be in the future.");
-            }
+            await _dialogService.ShowAlertAsync("Date of death cannot be in the future.");
 
             return;
         }
@@ -774,10 +747,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         // 3. Validation: Cannot be before Date of Birth
         if (chosenDate < SelectedPatient.Dob)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Date of death cannot be earlier than the Date of Birth.");
-            }
+            await _dialogService.ShowAlertAsync("Date of death cannot be earlier than the Date of Birth.");
 
             return;
         }
@@ -808,17 +778,11 @@ internal class AdminViewModel : INotifyPropertyChanged
             LoadArchivedPatients();
 
             OnPropertyChanged(nameof(IsNotDeceased));
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("This patient has now become a ghost. Beware!!!");
-            }
+            await _dialogService.ShowAlertAsync("This patient has now become a ghost. Beware!!!");
         }
         catch (Exception ex)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Error: {ex.Message}");
-            }
+            await _dialogService.ShowAlertAsync($"Error: {ex.Message}");
         }
     }
 
@@ -829,15 +793,12 @@ internal class AdminViewModel : INotifyPropertyChanged
     {
         if (SelectedPatient?.IsDeceased != true || !SelectedPatient.IsDonor)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Patient must be deceased and registered as a donor.");
-            }
+            await _dialogService.ShowAlertAsync("Patient must be deceased and registered as a donor.");
 
             return;
         }
 
-        OpenOrganDonorDialogAction?.Invoke(SelectedPatient);
+        await _dialogService.ShowOrganDonorDialogAsync(SelectedPatient);
     }
 
     /// <summary>
@@ -847,20 +808,14 @@ internal class AdminViewModel : INotifyPropertyChanged
     {
         if (SelectedPatient is null)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Please select a patient first.");
-            }
+            await _dialogService.ShowAlertAsync("Please select a patient first.");
 
             return;
         }
 
         if (!SelectedPatient.IsDeceased)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("Patient must be marked as deceased before registering as an organ donor.");
-            }
+            await _dialogService.ShowAlertAsync("Patient must be marked as deceased before registering as an organ donor.");
 
             return;
         }
@@ -889,10 +844,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Error marking patient as organ donor: {ex.Message}");
-            }
+            await _dialogService.ShowAlertAsync($"Error marking patient as organ donor: {ex.Message}");
         }
     }
 
@@ -906,17 +858,11 @@ internal class AdminViewModel : INotifyPropertyChanged
         {
             // This forces the "Edit" buttons to re-check if they should be disabled
             OnPropertyChanged(nameof(IsNotDeceased));
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction("The patient has been marked as deceased. The record is now locked and moved to the archive.");
-            }
+            await _dialogService.ShowAlertAsync("The patient has been marked as deceased. The record is now locked and moved to the archive.");
         }
         catch (Exception ex)
         {
-            if (ShowAlertAction is not null)
-            {
-                await ShowAlertAction($"Error: {ex.Message}");
-            }
+            await _dialogService.ShowAlertAsync($"Error: {ex.Message}");
         }
     }
 
