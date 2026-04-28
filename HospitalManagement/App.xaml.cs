@@ -111,6 +111,7 @@ public partial class App : Application
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();
         _ = services.AddSingleton<IExternalProvider, MockStaffProxy>();
         _ = services.AddSingleton<IExternalPatientPublisher, ExternalPatientPublisher>();
+        _ = services.AddTransient<MainWindow>();
 
         return services.BuildServiceProvider();
     }

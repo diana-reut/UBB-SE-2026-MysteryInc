@@ -241,4 +241,11 @@ internal sealed partial class AdminView : Window
             patientWindow.Activate();
         }
     }
+
+    private void Home_Click(object sender, RoutedEventArgs e)
+    {
+        MainWindow mainWindow = (Application.Current as App)!.Services.GetRequiredService<MainWindow>();
+        mainWindow.Activate();
+        Close();
+    }
 }
