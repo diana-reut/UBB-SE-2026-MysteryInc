@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using HospitalManagement.View;
 
 namespace HospitalManagement.View.DialogServiceAdmin;
 
