@@ -1,4 +1,6 @@
-﻿using HospitalManagement.Entity;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
@@ -13,11 +15,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace HospitalManagement.ViewModel;
 
-internal class AdminViewModel : INotifyPropertyChanged
+internal partial class AdminViewModel : ObservableObject, INotifyPropertyChanged
 {
     private readonly IPatientService _patientService;
     private readonly IGhostService _ghostService;
@@ -66,7 +67,8 @@ internal class AdminViewModel : INotifyPropertyChanged
 
     public Action? CloseAddPatientWindow { get; set; }
 
-    private void NavigateHome()
+    [RelayCommand]
+    private static void NavigateHome()
     {
         MainWindow mainWindow = (Application.Current as App)!.Services
             .GetRequiredService<MainWindow>();
@@ -74,16 +76,19 @@ internal class AdminViewModel : INotifyPropertyChanged
         mainWindow.Activate();
     }
 
+    [RelayCommand]
     private void ToggleStatistics()
     {
         IsStatisticsVisible = !IsStatisticsVisible;
     }
 
+    [RelayCommand]
     private void ExecuteSwitchToActive()
     {
         IsArchivedMode = false;
     }
 
+    [RelayCommand]
     private void NavigateToStatistics()
     {
         CurrentView = "Statistics";
@@ -283,44 +288,6 @@ internal class AdminViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    // commands
-    public ICommand NavigateToStatisticsCommand { get; }
-
-    public ICommand GhostSightingCommand { get; }
-
-    public ICommand OpenPatientDetailsCommand { get; }
-
-    public ICommand UpdatePatientCommand { get; }
-
-    public ICommand SearchPatientCommand { get; }
-
-    public ICommand FilterPatientCommand { get; }
-
-    public ICommand ClearFilterCommand { get; }
-
-    public ICommand MarkAsDeceasedCommand { get; }
-
-    public ICommand MarkAsOrganDonorCommand { get; }
-
-    public ICommand LoadAllPatientsCommand { get; }
-
-    public ICommand LoadArchivedPatientsCommand { get; }
-
-    public ICommand AddPatientCommand { get; }
-
-    public ICommand ArchivePatientCommand { get; }
-
-    public ICommand DearchivePatientCommand { get; }
-
-    public ICommand OpenOrganDonorCommand { get; }
-
-    public ICommand ReportGhostCommand { get; }
-
-    public ICommand ToggleStatisticsCommand { get; }
-
-    public ICommand SwitchToActiveCommand { get; }
-
-    public ICommand NavigateHomeCommand { get; }
 
     // --- Constructor ---
     public AdminViewModel()
@@ -331,39 +298,26 @@ internal class AdminViewModel : INotifyPropertyChanged
         _dialogService = (Application.Current as App)!.Services.GetRequiredService<IDialogService>();
 
         Patients = [];
-        LoadAllPatientsCommand = new RelayCommand(LoadAllPatients);
-
         ArchivedPatients = [];
-        LoadArchivedPatientsCommand = new RelayCommand(LoadArchivedPatients);
-
         NewPatient = new Patient { Dob = DateTime.Today, };
 
-        NavigateToStatisticsCommand = new RelayCommand(NavigateToStatistics);
-        AddPatientCommand = new RelayCommand(AddPatientAsync);
-        ArchivePatientCommand = new RelayCommand(ArchivePatientAsync);
-        DearchivePatientCommand = new RelayCommand(DearchivePatientAsync);
-        UpdatePatientCommand = new RelayCommand(UpdatePatientAsync);
-        SearchPatientCommand = new RelayCommand(SearchPatient);
-        FilterPatientCommand = new RelayCommand(ExecuteFilterAsync);
-        ClearFilterCommand = new RelayCommand(ClearFilters);
-        NavigateHomeCommand = new RelayCommand(NavigateHome);
-        MarkAsDeceasedCommand = new RelayCommand(MarkAsDeceasedAsync);
-        MarkAsOrganDonorCommand = new RelayCommand(MarkAsOrganDonorAsync);
-        OpenOrganDonorCommand = new RelayCommand(OpenOrganDonorDialogAsync);
-        ReportGhostCommand = new RelayCommand(ReportGhostAsync);
-        ToggleStatisticsCommand = new RelayCommand(ToggleStatistics);
-        SwitchToActiveCommand = new RelayCommand(ExecuteSwitchToActive);
-        OpenPatientDetailsCommand = new RelayCommand(OpenPatientDetails);
 
         // Ghost addition
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
-        GhostSightingCommand = new RelayCommand(() => _ghostService.SawAGhost());
+        // GhostSightingCommand = new RelayCommand(() => _ghostService.SawAGhost());
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
 
         LoadAllPatients();
         CurrentView = "AdminDashboard";
     }
 
+    [RelayCommand]
+    public void GhostSighting()
+    {
+        _ghostService.SawAGhost();
+    }
+
+    [RelayCommand]
     public void LoadAllPatients()
     {
         var emptyFilter = new PatientFilter();
@@ -381,6 +335,8 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+
+    [RelayCommand]
     public void LoadArchivedPatients()
     {
         IsArchivedMode = true;
@@ -399,6 +355,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+    [RelayCommand]
     private void OpenPatientDetails()
     {
         if (SelectedPatient is null)
@@ -473,6 +430,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         return phone;
     }
 
+    [RelayCommand]
     private async void AddPatientAsync()
     {
         Patient? patient = await _dialogService.ShowAddPatientDialogAsync();
@@ -503,6 +461,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+    [RelayCommand]
     private async void ArchivePatientAsync()
     {
         if (SelectedPatient is null)
@@ -527,6 +486,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         LoadArchivedPatients();
     }
 
+    [RelayCommand]
     private async void DearchivePatientAsync()
     {
         if (SelectedPatient is null)
@@ -547,6 +507,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         LoadArchivedPatients();
     }
 
+    [RelayCommand]
     private async void UpdatePatientAsync()
     {
         if (EditingPatient is null || SelectedPatient is null)
@@ -581,6 +542,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+    [RelayCommand]
     public void SearchPatient()
     {
         var filter = new PatientFilter();
@@ -617,6 +579,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         NoResultsFound = Patients.Count == 0 && !string.IsNullOrWhiteSpace(SearchQuery);
     }
 
+    [RelayCommand]
     private async void ExecuteFilterAsync()
     {
         try
@@ -672,6 +635,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+    [RelayCommand]
     private void ClearFilters()
     {
         MinAge = null;
@@ -684,6 +648,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         NoResultsFound = false;
     }
 
+    [RelayCommand]
     private async void MarkAsDeceasedAsync()
     {
         if (SelectedPatient is null)
@@ -742,6 +707,9 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+
+    // idk where this is used...
+    [RelayCommand]
     private async void OpenOrganDonorDialogAsync()
     {
         if (SelectedPatient?.IsDeceased != true || !SelectedPatient.IsDonor)
@@ -754,6 +722,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         await _dialogService.ShowOrganDonorDialogAsync(SelectedPatient);
     }
 
+    [RelayCommand]
     private async void MarkAsOrganDonorAsync()
     {
         if (SelectedPatient is null)
@@ -792,6 +761,7 @@ internal class AdminViewModel : INotifyPropertyChanged
         }
     }
 
+    [RelayCommand]
     private async void ReportGhostAsync()
     {
         // part of this was deleting during merge so idk what comes here
