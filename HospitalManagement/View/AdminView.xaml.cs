@@ -36,10 +36,7 @@ internal sealed partial class AdminView : Window
 
         _viewModel = (Application.Current as App)!.Services.GetRequiredService<AdminViewModel>();
 
-        if (Content is FrameworkElement rootElement)
-        {
-            rootElement.DataContext = _viewModel;
-        }
+        RootGrid.DataContext = _viewModel;
     }
 
     private void PatientListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)

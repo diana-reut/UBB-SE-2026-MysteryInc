@@ -10,7 +10,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid x:Name="RootGrid">
         <Grid.Resources>
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <converters:DateToStringConverter x:Key="DateToStringConverter"/>
@@ -77,8 +77,8 @@
                 <Border Background="#2C3A4A" Padding="15" CornerRadius="10" Margin="0,0,0,15">
                     <StackPanel Orientation="Horizontal" Spacing="15">
                         <TextBox PlaceholderText="Search by Name or CNP..." Width="250" Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                        <Button Content="Add New Patient" Command="{Binding AddPatientAsyncCommand}" CornerRadius="6"/>
-                        <Button Content="I saw a ghost!" Command="{Binding ReportGhostAsyncCommand}" Background="#FFE779" Foreground="#1E2A38" FontWeight="Bold" CornerRadius="4" Padding="12,8"/>
+                        <Button Content="Add New Patient" Command="{Binding AddPatientCommand}" CornerRadius="6"/>
+                        <Button Content="I saw a ghost!" Command="{Binding ReportGhostCommand}" Background="#FFE779" Foreground="#1E2A38" FontWeight="Bold" CornerRadius="4" Padding="12,8"/>
                         <Button Content="" FontFamily="Segoe MDL2 Assets" Background="Transparent" VerticalAlignment="Center">
                             <Button.Flyout>
                                 <Flyout Placement="BottomEdgeAlignedRight">
@@ -97,7 +97,7 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <Button Content="Clear" Command="{Binding ClearFiltersCommand}" HorizontalAlignment="Stretch" Grid.Column="0"/>
-                                            <Button Content="Apply" Command="{Binding ExecuteFilterAsyncCommand}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Grid.Column="1"/>
+                                            <Button Content="Apply" Command="{Binding ExecuteFilterCommand}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Grid.Column="1"/>
                                         </Grid>
                                     </StackPanel>
                                 </Flyout>
@@ -227,16 +227,16 @@
                     <TextBox Text="{Binding EditingPatient.PhoneNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <TextBlock Text="Emergency Contact" Foreground="White"/>
                     <TextBox Text="{Binding EditingPatient.EmergencyContact, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    <Button Content="Update Patient" Command="{Binding UpdatePatientAsyncCommand}" HorizontalAlignment="Stretch" Margin="0,15,0,0" CornerRadius="6"/>
+                    <Button Content="Update Patient" Command="{Binding UpdatePatientCommand}" HorizontalAlignment="Stretch" Margin="0,15,0,0" CornerRadius="6"/>
                     <Button Content="Archive Patient" Command="{Binding ArchivePatientCommand}" HorizontalAlignment="Stretch" Foreground="Red" CornerRadius="6"/>
-                    <Button Content="Mark as Deceased" Command="{Binding MarkAsDeceasedAsyncCommand}" HorizontalAlignment="Stretch" IsEnabled="{Binding IsNotDeceased}" CornerRadius="6"/>
+                    <Button Content="Mark as Deceased" Command="{Binding MarkAsDeceasedCommand}" HorizontalAlignment="Stretch" IsEnabled="{Binding IsNotDeceased}" CornerRadius="6"/>
                 </StackPanel>
 
                 <StackPanel Spacing="10" Visibility="{Binding IsArchivedMode, Converter={StaticResource BoolToVis}}">
                     <TextBlock Text="Archive Actions" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
-                    <Button Content="Restore to Active" Command="{Binding DearchivePatientAsyncCommand}" IsEnabled="{Binding IsNotDeceased}" HorizontalAlignment="Stretch" CornerRadius="6"/>
+                    <Button Content="Restore to Active" Command="{Binding DearchivePatientCommand}" IsEnabled="{Binding IsNotDeceased}" HorizontalAlignment="Stretch" CornerRadius="6"/>
                     <Button Content="Mark as Deceased" Command="{Binding MarkAsDeceasedCommand}" IsEnabled="{Binding IsNotDeceased}" Background="#442222" HorizontalAlignment="Stretch" CornerRadius="6"/>
-                    <Button Content="Mark as Organ Donor" Command="{Binding MarkAsOrganDonorAsyncCommand}" IsEnabled="{Binding IsDeceased}" Background="#224444" HorizontalAlignment="Stretch" CornerRadius="6"/>
+                    <Button Content="Mark as Organ Donor" Command="{Binding MarkAsOrganDonorCommand}" IsEnabled="{Binding IsDeceased}" Background="#224444" HorizontalAlignment="Stretch" CornerRadius="6"/>
                 </StackPanel>
             </Grid>
         </Border>
