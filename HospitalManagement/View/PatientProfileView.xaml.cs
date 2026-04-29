@@ -73,7 +73,7 @@ internal sealed partial class PatientProfileView : Page
 
     private void OnShowAlert(string title, string content)
     {
-        ShowAlert(title, content);
+        ShowAlertAsync(title, content);
     }
 
     private void OnOpenFile(string path)
@@ -98,7 +98,7 @@ internal sealed partial class PatientProfileView : Page
         prescriptionWindow.Activate();
     }
 
-    private async void ShowAlert(string title, string content)
+    private async void ShowAlertAsync(string title, string content)
     {
         var dialog = new ContentDialog
         {
