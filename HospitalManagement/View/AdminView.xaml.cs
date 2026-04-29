@@ -66,11 +66,11 @@ internal sealed partial class AdminView : Window
                 {
                     try
                     {
-                        var medicalHistoryDialog = new MedicalHistoryDialog
-                        {
-                            XamlRoot = rootElement.XamlRoot,
-                        };
-                        medicalHistoryDialog.Initialize();
+                    MedicalHistoryDialog medicalHistoryDialog =
+    (Application.Current as App)!.Services.GetRequiredService<MedicalHistoryDialog>();
+
+                            medicalHistoryDialog.XamlRoot = rootElement.XamlRoot;
+                            medicalHistoryDialog.Initialize();
 
                         ContentDialogResult result = await medicalHistoryDialog.ShowAsync();
 
