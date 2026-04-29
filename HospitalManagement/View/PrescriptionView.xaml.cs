@@ -2,7 +2,6 @@ using HospitalManagement.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.View;
 
@@ -12,10 +11,9 @@ internal sealed partial class PrescriptionView : UserControl
 
     public PrescriptionView(PrescriptionViewModel viewModel)
     {
-        ViewModel = (App.Current as App).Services.GetService<PrescriptionViewModel>();
-        DataContext = ViewModel;
         InitializeComponent();
-        ViewModel = viewModel;
+
+        ViewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = ViewModel;
 
         DateFromPicker.DateChanged += DateFromPicker_DateChanged;
@@ -24,29 +22,23 @@ internal sealed partial class PrescriptionView : UserControl
 
     private void OnApplyFilterClicked(object sender, RoutedEventArgs e)
     {
-        if (ViewModel is null)
-        {
-            return;
-        }
-
-        int? idSearch = int.TryParse(SearchIdBox.Text, out int id) ? id : null;
-        string? patientOrDoctor = string.IsNullOrWhiteSpace(SearchNameBox.Text) ? null : SearchNameBox.Text;
-        string? medname = string.IsNullOrWhiteSpace(SearchMedBox.Text) ? null : SearchMedBox.Text;
-
-        DateTime? fromDate = DateFromPicker.Date?.Date;
-        DateTime? toDate = DateToPicker.Date?.Date;
-
-        ViewModel.ApplyFilterCommand(idSearch, medname, fromDate, toDate, patientOrDoctor, patientOrDoctor);
+        ViewModel.ApplyFilterFromView(
+            SearchIdBox.Text,
+            SearchMedBox.Text,
+            DateFromPicker.Date,
+            DateToPicker.Date,
+            SearchNameBox.Text
+        );
     }
 
     private void OnNextClicked(object sender, RoutedEventArgs e)
     {
-        ViewModel?.NextPage();
+        ViewModel.NextPage();
     }
 
     private void OnPrevClicked(object sender, RoutedEventArgs e)
     {
-        ViewModel?.PrevPage();
+        ViewModel.PrevPage();
     }
 
     private void DateFromPicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)

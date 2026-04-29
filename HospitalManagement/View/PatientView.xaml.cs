@@ -50,11 +50,14 @@ internal sealed partial class PatientView : Window
 
         ViewModel.OpenPrescriptionDialogAction = async (prescription) =>
         {
-            var prescriptionDialog = new PrescriptionDialog
+            var dialogViewModel = new PrescriptionDialogViewModel();
+            dialogViewModel.Initialize(prescription);
+
+            var prescriptionDialog = new PrescriptionDialog(dialogViewModel)
             {
                 XamlRoot = Content.XamlRoot,
             };
-            prescriptionDialog.Initialize(prescription);
+
             _ = await prescriptionDialog.ShowAsync();
         };
     }

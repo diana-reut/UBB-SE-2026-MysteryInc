@@ -14,19 +14,25 @@ internal sealed partial class TransplantRequestView : Page
 
     public TransplantRequestView(int patientId, Window parentWindow)
     {
-        Func<int, TransplantRequestViewModel> vmFactory = (Application.Current as App)!.Services.GetRequiredService<Func<int, TransplantRequestViewModel>>();
+        Func<int, TransplantRequestViewModel> vmFactory =
+            (Application.Current as App)!
+                .Services
+                .GetRequiredService<Func<int, TransplantRequestViewModel>>();
+
         ViewModel = vmFactory(patientId);
         _parentWindow = parentWindow;
+
         InitializeComponent();
+
+        DataContext = ViewModel;
     }
 
     private async void Submit_ClickAsync(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            ErrorText.Visibility = Visibility.Collapsed;
-            ViewModel.SubmitRequest();
+        ViewModel.SubmitRequest();
 
+        if (ViewModel.RequestSucceeded)
+        {
             var dialog = new ContentDialog
             {
                 Title = "Success",
@@ -34,14 +40,9 @@ internal sealed partial class TransplantRequestView : Page
                 CloseButtonText = "OK",
                 XamlRoot = Content.XamlRoot,
             };
-            _ = await dialog.ShowAsync();
 
+            await dialog.ShowAsync();
             _parentWindow.Close();
-        }
-        catch (Exception ex)
-        {
-            ErrorText.Text = ex.Message;
-            ErrorText.Visibility = Visibility.Visible;
         }
     }
 
