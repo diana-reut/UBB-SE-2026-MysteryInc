@@ -47,23 +47,6 @@ public sealed partial class MainWindow : Window
             else if (_viewModel.CurrentView?.ToString() == "AdminDashboard")
             {
                 AdminView adminWindow = (App.Current as App)!.Services.GetRequiredService<View.AdminView>();
-
-                // 1. Get the ViewModel from the window we just created
-                if (adminWindow.Content is FrameworkElement root && root.DataContext is AdminViewModel adminVM)
-                {
-                    // 2. Inject the "Close & Re-open" logic into the Command
-                    adminVM.NavigateToHomeCommand = new RelayCommand(() =>
-                    {
-                        var roleSelection = new MainWindow();
-                        roleSelection.Activate();
-                        adminWindow.Close();
-                    });
-
-                    // 3. Force the UI to refresh its binding (Just in case)
-                    root.DataContext = null;
-                    root.DataContext = adminVM;
-                }
-
                 adminWindow.Activate();
                 Close();
             }
