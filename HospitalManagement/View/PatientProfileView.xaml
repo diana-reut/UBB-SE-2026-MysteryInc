@@ -37,9 +37,9 @@
 
                     <TextBlock Text="General Information" FontSize="20" FontWeight="Bold" Foreground="#ffffff" Margin="0,0,0,10"/>
 
-                    <TextBlock Text="{x:Bind ViewModel.CurrentPatient.FirstName, Mode=OneWay, FallbackValue='Loading...'}" FontSize="18"/>
-                    <TextBlock Text="{x:Bind ViewModel.CurrentPatient.LastName, Mode=OneWay, FallbackValue=''}" FontSize="18"/>
-                    <TextBlock Text="{x:Bind ViewModel.CurrentPatient.Cnp, Mode=OneWay, FallbackValue=''}" Foreground="Gray" Margin="0,0,0,10"/>
+                    <TextBlock Text="{x:Bind _viewModel.CurrentPatient.FirstName, Mode=OneWay, FallbackValue='Loading...'}" FontSize="18"/>
+                    <TextBlock Text="{x:Bind _viewModel.CurrentPatient.LastName, Mode=OneWay, FallbackValue=''}" FontSize="18"/>
+                    <TextBlock Text="{x:Bind _viewModel.CurrentPatient.Cnp, Mode=OneWay, FallbackValue=''}" Foreground="Gray" Margin="0,0,0,10"/>
 
                     <MenuFlyoutSeparator Margin="0,10"/>
 
@@ -47,29 +47,29 @@
 
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <TextBlock Text="Blood Type: " Foreground="Gray"/>
-                        <TextBlock Text="{x:Bind ViewModel.CurrentPatient.MedicalHistory.BloodType, Mode=OneWay, TargetNullValue='N/A', FallbackValue='N/A'}"/>
+                        <TextBlock Text="{x:Bind _viewModel.CurrentPatient.MedicalHistory.BloodType, Mode=OneWay, TargetNullValue='N/A', FallbackValue='N/A'}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <TextBlock Text="RH Factor: " Foreground="Gray"/>
-                        <TextBlock Text="{x:Bind ViewModel.CurrentPatient.MedicalHistory.Rh, Mode=OneWay, TargetNullValue='N/A', FallbackValue='N/A'}"/>
+                        <TextBlock Text="{x:Bind _viewModel.CurrentPatient.MedicalHistory.Rh, Mode=OneWay, TargetNullValue='N/A', FallbackValue='N/A'}"/>
                     </StackPanel>
 
                     <StackPanel Spacing="2">
                         <TextBlock Text="Allergies: " Foreground="Gray"/>
-                        <TextBlock Text="{x:Bind ViewModel.FormattedAllergies, Mode=OneWay}" TextWrapping="Wrap" Margin="10,0,0,0"/>
+                        <TextBlock Text="{x:Bind _viewModel.FormattedAllergies, Mode=OneWay}" TextWrapping="Wrap" Margin="10,0,0,0"/>
                     </StackPanel>
 
                     <StackPanel Spacing="2">
                         <TextBlock Text="Chronic Conditions: " Foreground="Gray"/>
-                        <TextBlock Text="{x:Bind ViewModel.FormattedChronicConditions, Mode=OneWay}" TextWrapping="Wrap" Margin="10,0,0,0"/>
+                        <TextBlock Text="{x:Bind _viewModel.FormattedChronicConditions, Mode=OneWay}" TextWrapping="Wrap" Margin="10,0,0,0"/>
                     </StackPanel>
 
                     <MenuFlyoutSeparator Margin="0,10"/>
 
                     <Expander Header="File Records" HorizontalAlignment="Stretch">
-                        <ListView ItemsSource="{x:Bind ViewModel.CurrentPatient.MedicalHistory.MedicalRecords, Mode=OneWay}"
-                                  SelectedItem="{x:Bind ViewModel.SelectedRecord, Mode=TwoWay}"
+                        <ListView ItemsSource="{x:Bind _viewModel.CurrentPatient.MedicalHistory.MedicalRecords, Mode=OneWay}"
+                                  SelectedItem="{x:Bind _viewModel.SelectedRecord, Mode=TwoWay}"
                                   DoubleTapped="RecordList_DoubleTapped"
                                   SelectionMode="Single">
                             <ListView.ItemTemplate>
@@ -84,7 +84,7 @@
         </Border>
 
         <Border Grid.Row="1" Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Margin="10,0,0,0" Padding="20" CornerRadius="8">
-            <StackPanel Visibility="{x:Bind ViewModel.SelectedRecord, Mode=OneWay, Converter={StaticResource NullToVis}, FallbackValue=Collapsed}" Spacing="15">
+            <StackPanel Visibility="{x:Bind _viewModel.SelectedRecord, Mode=OneWay, Converter={StaticResource NullToVis}, FallbackValue=Collapsed}" Spacing="15">
                 <TextBlock Text="Consultation Details" FontSize="20" FontWeight="Bold" Foreground="#ffffff" Margin="0,0,0,10"/>
 
                 <Grid ColumnSpacing="15" RowSpacing="15">
@@ -102,22 +102,22 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Patient Name:" Foreground="Gray"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.CurrentPatient.FullName, Mode=OneWay}" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind _viewModel.CurrentPatient.FullName, Mode=OneWay}" FontWeight="SemiBold"/>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Date:" Foreground="Gray"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.SelectedRecord.ConsultationDate, Mode=OneWay, Converter={StaticResource DateConverter}}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind _viewModel.SelectedRecord.ConsultationDate, Mode=OneWay, Converter={StaticResource DateConverter}}"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Source:" Foreground="Gray"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.SelectedRecord.SourceType, Mode=OneWay}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind _viewModel.SelectedRecord.SourceType, Mode=OneWay}"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Staff ID:" Foreground="Gray"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.SelectedRecord.StaffId, Mode=OneWay}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind _viewModel.SelectedRecord.StaffId, Mode=OneWay}"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Reported Symptoms:" Foreground="Gray"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.SelectedRecord.Symptoms, Mode=OneWay}" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind _viewModel.SelectedRecord.Symptoms, Mode=OneWay}" TextWrapping="Wrap"/>
 
                     <TextBlock Grid.Row="5" Grid.Column="0" Text="Diagnosis:" Foreground="Gray"/>
-                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind ViewModel.SelectedRecord.Diagnosis, Mode=OneWay}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{x:Bind _viewModel.SelectedRecord.Diagnosis, Mode=OneWay}" TextWrapping="Wrap" FontWeight="SemiBold"/>
                 </Grid>
 
                 <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
