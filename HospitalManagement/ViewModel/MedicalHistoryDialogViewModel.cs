@@ -53,11 +53,6 @@ internal class MedicalHistoryDialogViewModel
         return true;
     }
 
-    public void RemoveAllergy(AllergyEntry allergyEntry)
-    {
-        AllergyList.Remove(allergyEntry);
-    }
-
     public bool TryCreateMedicalHistory(
         string? bloodTypeText,
         string? rhText,

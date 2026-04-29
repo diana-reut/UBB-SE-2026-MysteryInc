@@ -58,13 +58,6 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
         }
     }
 
-    private void RemoveAllergyButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.Tag is AllergyEntry allergyEntry)
-        {
-            _viewModel.RemoveAllergy(allergyEntry);
-        }
-    }
 
     private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
