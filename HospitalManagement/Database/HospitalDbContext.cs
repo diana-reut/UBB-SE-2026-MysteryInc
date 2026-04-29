@@ -35,7 +35,7 @@ internal sealed partial class HospitalDbContext : IDbContext
 
         try
         {
-            return command.ExecuteReader(System.Data.CommandBehavior.SequentialAccess);
+            return command.ExecuteReader();
         }
         catch
         {
