@@ -2,53 +2,52 @@ using System;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class PatientView : Window
 {
-    public PatientViewModel ViewModel { get; }
-
+    private readonly PatientViewModel _viewModel;
     private Action _goBackCallback;
 
-    public PatientView(PatientViewModel viewModel)
+    public PatientView()
     {
         _goBackCallback = null!;
         InitializeComponent();
-        ViewModel = viewModel;
+
+        _viewModel = (Application.Current as App)!.Services.GetRequiredService<PatientViewModel>();
 
         if (Content is FrameworkElement rootElement)
         {
-            rootElement.DataContext = ViewModel;
+            rootElement.DataContext = _viewModel;
         }
 
         MaximizeWindow();
-
         SetupViewModelActions();
     }
 
     public void Initialize(int patientId, Action goBackCallback)
     {
         _goBackCallback = goBackCallback;
-        ViewModel.GoBackAction = GoBack;
-
-        ViewModel.LoadFullPatientProfile(patientId);
+        _viewModel.GoBackAction = GoBack;
+        _viewModel.LoadFullPatientProfile(patientId);
     }
 
     private void SetupViewModelActions()
     {
-        ViewModel.OpenRouletteAction = async (basePrice, onComplete) =>
+        _viewModel.OpenRouletteAction = async (basePrice) =>
         {
             var rouletteDialog = new DiscountRouletteDialog
             {
                 XamlRoot = Content.XamlRoot,
             };
             rouletteDialog.Initialize(basePrice);
-            rouletteDialog.OnSpinComplete = onComplete;
+            rouletteDialog.OnSpinComplete = _viewModel.HandleRouletteResult;
             _ = await rouletteDialog.ShowAsync();
         };
 
-        ViewModel.OpenPrescriptionDialogAction = async (prescription) =>
+        _viewModel.OpenPrescriptionDialogAction = async (prescription) =>
         {
             var prescriptionDialog = new PrescriptionDialog
             {
