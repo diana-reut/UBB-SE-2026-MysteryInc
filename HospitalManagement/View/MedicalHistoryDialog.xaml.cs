@@ -19,14 +19,10 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
     public MedicalHistory MedicalHistory => _viewModel.MedicalHistory!;
     public bool WasSkipped { get; private set; }
 
-    public MedicalHistoryDialog()
+    public MedicalHistoryDialog(MedicalHistoryDialogViewModel viewModel)
     {
         InitializeComponent();
-
-        IAllergyService allergyService =
-          (Application.Current as App)!.Services.GetRequiredService<IAllergyService>();
-
-        _viewModel = new MedicalHistoryDialogViewModel(allergyService);
+        _viewModel = viewModel;
 
         Closing += MedicalHistoryDialog_Closing;
         AllergiesList.ItemsSource = _viewModel.AllergyList;

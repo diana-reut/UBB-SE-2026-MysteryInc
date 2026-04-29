@@ -99,6 +99,8 @@ public partial class App : Application
         _ = services.AddTransient<PatientProfileView>();
         _ = services.AddTransient<MedicalStaffViewModel>();
         _ = services.AddTransient<TransplantRequestViewModel>();
+        _ = services.AddTransient<MedicalHistoryDialogViewModel>();
+        _ = services.AddTransient<MedicalHistoryDialog>();
         _ = services.AddSingleton<Func<int, TransplantRequestViewModel>>(serviceProvider =>
             id =>
             {
