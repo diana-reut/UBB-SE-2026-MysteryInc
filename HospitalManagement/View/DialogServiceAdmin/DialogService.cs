@@ -67,7 +67,7 @@ internal class DialogService : IDialogService
             : null;
     }
 
-    public async Task<(MedicalHistory MedicalHistory, bool WasSkipped)> ShowMedicalHistoryAsync()
+    public async Task<MedicalHistoryEntry> ShowMedicalHistoryAsync()
     {
         var dialog = new MedicalHistoryDialog
         {
@@ -78,7 +78,11 @@ internal class DialogService : IDialogService
 
         _ = await dialog.ShowAsync();
 
-        return (dialog.MedicalHistory, dialog.WasSkipped);
+        return new MedicalHistoryEntry
+        {
+            History = dialog.MedicalHistory,
+            WasSkipped = dialog.WasSkipped,
+        };
     }
 
     public async Task ShowOrganDonorDialogAsync(Patient patient)
