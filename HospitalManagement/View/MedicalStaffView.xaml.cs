@@ -14,7 +14,7 @@ internal sealed partial class MedicalStaffView : Window
     public MedicalStaffView()
     {
         InitializeComponent();
-        ViewModel = (App.Current as App).Services.GetService<MedicalStaffViewModel>();
+        ViewModel = ((App)Application.Current).Services.GetRequiredService<MedicalStaffViewModel>();
 
         if (Content is FrameworkElement rootElement)
         {
@@ -36,7 +36,7 @@ internal sealed partial class MedicalStaffView : Window
             };
 
             // 3. Instantiate your Page passing the actual Patient Id
-            IServiceProvider scope = (Application.Current as App).Services;
+            IServiceProvider scope = ((App)Application.Current).Services;
             PatientProfileView profilePage = scope.GetRequiredService<PatientProfileView>();
             profilePage.Initialize(selectedPatient.Id);
 

@@ -14,9 +14,9 @@ internal sealed partial class PharmacistView : Window
 
     public PharmacistView()
     {
-        ViewModel = (App.Current as App).Services.GetService<PharmacistViewModel>();
+        ViewModel = ((App)Application.Current).Services.GetRequiredService<PharmacistViewModel>();
         InitializeComponent();
-        _services = (App.Current as App).Services;
+        _services = ((App)Application.Current).Services;
 
         nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);

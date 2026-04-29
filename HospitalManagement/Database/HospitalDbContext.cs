@@ -26,21 +26,28 @@ internal sealed partial class HospitalDbContext : IDbContext
     public DbDataReader ExecuteQuery(string sql)
     {
         EnsureConnectionOpen();
-        SqlCommand command = new SqlCommand(sql, _connection);
+        var command = new SqlCommand(sql, _connection);
 
         if (_transaction is not null)
         {
             command.Transaction = _transaction;
         }
 
-        // Never use CloseConnection - let the context manage the connection lifecycle
-        return command.ExecuteReader();
+        try
+        {
+            return command.ExecuteReader(System.Data.CommandBehavior.SequentialAccess);
+        }
+        catch
+        {
+            command.Dispose();
+            throw;
+        }
     }
 
     public int ExecuteNonQuery(string sql)
     {
         EnsureConnectionOpen();
-        SqlCommand command = new SqlCommand(sql, _connection);
+        var command = new SqlCommand(sql, _connection);
 
         if (_transaction is not null)
         {

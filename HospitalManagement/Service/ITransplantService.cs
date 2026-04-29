@@ -13,5 +13,6 @@ internal interface ITransplantService
 
     public List<Transplant> GetTopMatchesForDonor(int donorId, string organType);
 
+    public List<TransplantMatch> GetTopMatchesAsDisplayModels(int donorID, string organType);
     public bool IsUrgent(int patientId);
 }
