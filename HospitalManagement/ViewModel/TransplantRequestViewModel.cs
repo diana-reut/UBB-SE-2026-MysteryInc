@@ -1,5 +1,4 @@
 ﻿using HospitalManagement.Service;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -10,6 +9,7 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
 {
     private readonly ITransplantService _transplantService;
     private readonly IPatientService _patientService;
+
     private int _patientId;
 
     public string PatientName { get; set; } = null!;
@@ -18,10 +18,13 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
 
     public string? WarningMessage { get; set; }
 
+    public Visibility UrgentVisibility
+        => IsUrgent ? Visibility.Visible : Visibility.Collapsed;
 
-    public Visibility UrgentVisibility => IsUrgent ? Visibility.Visible : Visibility.Collapsed;
-
-    public Visibility WarningVisibility => !string.IsNullOrEmpty(WarningMessage) ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility WarningVisibility
+        => !string.IsNullOrEmpty(WarningMessage)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
 
     private string? _selectedOrgan;
 
@@ -31,47 +34,88 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
 
         set
         {
-            if (_selectedOrgan != value)
-            {
-                _selectedOrgan = value;
-                OnPropertyChanged();
-            }
+            if (_selectedOrgan == value)
+                return;
+
+            _selectedOrgan = value;
+            OnPropertyChanged();
         }
     }
 
-    public TransplantRequestViewModel()
+
+    private string? _errorMessage;
+
+    public string? ErrorMessage
     {
-        _transplantService = (Application.Current as App)!.Services.GetRequiredService<ITransplantService>();
-        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
+        get => _errorMessage;
+
+        private set
+        {
+            _errorMessage = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasError));
+        }
+    }
+
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
+
+    private bool _requestSucceeded;
+
+    public bool RequestSucceeded
+    {
+        get => _requestSucceeded;
+
+        private set
+        {
+            _requestSucceeded = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public TransplantRequestViewModel(
+        ITransplantService transplantService,
+        IPatientService patientService)
+    {
+        _transplantService = transplantService;
+        _patientService = patientService;
     }
 
     public void Initialize(int patientId)
     {
         _patientId = patientId;
-        Entity.Patient patient = _patientService.GetById(patientId);
-        if (patient is not null)
-        {
+
+        var patient = _patientService.GetById(patientId);
+
+        if (patient != null)
             PatientName = $"{patient.FirstName} {patient.LastName}";
-        }
 
         IsUrgent = _transplantService.IsUrgent(patientId);
         WarningMessage = _transplantService.GetChronicWarning(patientId);
 
         OnPropertyChanged(nameof(PatientName));
-        OnPropertyChanged(nameof(IsUrgent));
-        OnPropertyChanged(nameof(UrgentVisibility));
-        OnPropertyChanged(nameof(WarningMessage));
-        OnPropertyChanged(nameof(WarningVisibility));
     }
 
     public void SubmitRequest()
     {
-        if (string.IsNullOrEmpty(SelectedOrgan))
-        {
-            throw new MyNotImplementedException("Please select an organ type from the dropdown.");
-        }
+        ErrorMessage = null;
+        RequestSucceeded = false;
 
-        _transplantService.CreateWaitlistRequest(_patientId, SelectedOrgan);
+        try
+        {
+            if (string.IsNullOrEmpty(SelectedOrgan))
+            {
+                ErrorMessage = "Please select an organ type from the dropdown.";
+                return;
+            }
+
+            _transplantService.CreateWaitlistRequest(_patientId, SelectedOrgan);
+
+            RequestSucceeded = true;
+        }
+        catch (MyNotImplementedException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

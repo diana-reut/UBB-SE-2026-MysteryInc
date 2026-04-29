@@ -46,7 +46,7 @@
 
                 <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                     <TextBox x:Name="SearchIdBox" PlaceholderText="ID..." Width="60" Height="36" CornerRadius="6" VerticalContentAlignment="Center"/>
-                    <TextBox x:Name="SearchNameBox" PlaceholderText="Patient / Doctor Name" Width="160" Height="36" CornerRadius="6" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="SearchNameBox" PlaceholderText="Patient Name" Width="160" Height="36" CornerRadius="6" VerticalContentAlignment="Center"/>
                     <TextBox x:Name="SearchMedBox" PlaceholderText="Medication Name" Width="150" Height="36" CornerRadius="6" VerticalContentAlignment="Center"/>
 
                     <CalendarDatePicker x:Name="DateFromPicker" PlaceholderText="Date From" Width="140" Height="36" CornerRadius="6" VerticalAlignment="Center"/>
@@ -96,7 +96,6 @@
                                         <TextBlock Text="{x:Bind Id}" FontSize="14" FontWeight="Bold" Foreground="{ThemeResource BrandPrimary}" />
                                     </StackPanel>
 
-                                    <!-- POPUP MESSAGE  -->
                                     <Button.Flyout>
                                         <Flyout>
                                             <Flyout.FlyoutPresenterStyle>
@@ -165,9 +164,9 @@
              </GridView>
         </ScrollViewer>
 
-        <!-- PAGINATION SECTION -->
+
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="30" Margin="0,20,0,0">
-            <!-- PREVIOUS BUTTON  -->
+
             <Button Click="OnPrevClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
 
                 <Button.Resources>
@@ -191,7 +190,6 @@
                 </TextBlock>
             </Border>
 
-            <!--NEXT BUTTON-->
                 <Button Click="OnNextClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
 
                     <Button.Resources>
