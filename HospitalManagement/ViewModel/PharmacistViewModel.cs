@@ -1,85 +1,89 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using HospitalManagement.Service;
+using HospitalManagement.View;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace HospitalManagement.ViewModel;
 
-internal class PharmacistViewModel : INotifyPropertyChanged
+public partial class PharmacistViewModel : ObservableObject
 {
     private readonly IGhostService _ghostService;
+    private readonly IServiceProvider _services;
 
+    [ObservableProperty]
+    private object? _currentContent;
 
-    private string? _currentView;
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public string? CurrentView
-    {
-        get => _currentView;
-
-        set
-        {
-            _currentView = value;
-            OnPropertyChanged();
-        }
-    }
-
+    [ObservableProperty]
     private bool _isExorcismAlertVisible;
 
-    public bool IsExorcismAlertVisible
-    {
-        get => _isExorcismAlertVisible;
-
-        set
-        {
-            _isExorcismAlertVisible = value;
-            OnPropertyChanged();
-        }
-    }
-
-
-    public ICommand ShowPrescriptionsCommand { get; }
-
-    public ICommand ShowAddictsCommand { get; }
-
-    public ICommand ReportGhostCommand { get; }
+    public event Action? RequestClose;
 
     public PharmacistViewModel()
     {
         _ghostService = (Application.Current as App)!.Services.GetRequiredService<IGhostService>();
-        _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
+        _services = (Application.Current as App)!.Services;
 
-        ShowPrescriptionsCommand = new RelayCommand(ShowPrescriptions);
-        ShowAddictsCommand = new RelayCommand(ShowAddicts);
-
-        ReportGhostCommand = new RelayCommand(ReportGhost);
-        CurrentView = "Prescriptions";
+        _ghostService.ExorcismTriggered += OnExorcismTriggered;
 
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
+
+        ShowPrescriptions();
     }
 
+    [RelayCommand]
     private void ShowPrescriptions()
     {
-        CurrentView = "Prescriptions";
+        try
+        {
+            CurrentContent = _services.GetRequiredService<PrescriptionView>();
+        }
+        catch( Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Navigation Error: {ex.Message}");
+        }
     }
 
-    private void ShowAddicts()
+    [RelayCommand]
+    public void ShowAddicts()
     {
-        CurrentView = "Addicts";
+        try
+        {
+            CurrentContent = _services.GetRequiredService<AddictView>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Navigation Error: {ex.Message}");
+        }
     }
 
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
+    [RelayCommand]
+    public void ReportGhost()
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        try
+        {
+            _ghostService.SawAGhost();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Navigation Error: {ex.Message}");
+        }
     }
 
-    private void ReportGhost()
+    public void NavigateBackToHome()
     {
-        _ghostService.SawAGhost();
+        var mainWindow = new MainWindow();
+        mainWindow.Activate();
+        RequestClose?.Invoke();
+    }
 
-        // System.Diagnostics.Debug.WriteLine($">> GHOST REPORTED FROM PHARMACIST AT {DateTime.Now} <<");
+    private void OnExorcismTriggered(object? sender, EventArgs e)
+    {
+        IsExorcismAlertVisible = true;
     }
 }
