@@ -1,41 +1,55 @@
 using HospitalManagement.Entity;
+using HospitalManagement.Entity.Enums;
+using HospitalManagement.Service;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
-using HospitalManagement.ViewModel;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class MedicalHistoryDialog : ContentDialog
 {
-    private readonly MedicalHistoryDialogViewModel _viewModel;
-    private const string DefaultAllergySeverity = "Mild";
-    private const string DefaultBloodType = "A";
-    private const string DefaultRhFactor = "Positive";
-    private const string AllergyDisplayMemberPath = "AllergyName";
-    private const string AllergySelectedValuePath = "AllergyId";
+    public MedicalHistory MedicalHistory { get; private set; } = null!;
 
-    public MedicalHistory MedicalHistory => _viewModel.MedicalHistory!;
     public bool WasSkipped { get; private set; }
-    public MedicalHistoryDialog(MedicalHistoryDialogViewModel viewModel)
+
+    // Track allergies being added in the dialog: wrapper objects instead of tuples
+    private readonly ObservableCollection<AllergyEntry> _allergyList = [];
+    private List<Allergy> _availableAllergies = [];
+
+    private readonly IAllergyService _allergyService;
+
+    public MedicalHistoryDialog()
     {
         InitializeComponent();
-        _viewModel = viewModel;
-
+        _allergyService = (Application.Current as App)!.Services.GetRequiredService<IAllergyService>();
         Closing += MedicalHistoryDialog_Closing;
-        AllergiesList.ItemsSource = _viewModel.AllergyList;
+        AllergiesList.ItemsSource = _allergyList;
     }
 
     public void Initialize()
     {
-        _viewModel.LoadAllergies();
-        AllergyNameEntry.ItemsSource = _viewModel.AvailableAllergies;
-        AllergyNameEntry.DisplayMemberPath = AllergyDisplayMemberPath;
-        AllergyNameEntry.SelectedValuePath = AllergySelectedValuePath;
+        try
+        {
+            _availableAllergies = [.. _allergyService.GetAllergies()];
 
+            AllergyNameEntry.ItemsSource = _availableAllergies;
+            AllergyNameEntry.DisplayMemberPath = "AllergyName";
+            AllergyNameEntry.SelectedValuePath = "AllergyId";
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load allergies in Dialog: {ex.Message}");
+        }
     }
 
     private void MedicalHistoryDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
     {
+        // If user clicked "Skip" or closed dialog (not Primary button), mark as skipped
         if (args.Result != ContentDialogResult.Primary)
         {
             WasSkipped = true;
@@ -44,39 +58,97 @@ internal sealed partial class MedicalHistoryDialog : ContentDialog
 
     private void AddAllergyButton_Click(object sender, RoutedEventArgs e)
     {
-        string severity =
-            (AllergySeverityEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? DefaultAllergySeverity;
-
-        bool added = _viewModel.TryAddAllergy(
-            AllergyNameEntry.SelectedItem as Allergy,
-            severity);
-
-        if (added)
+        try
         {
+            // Get selected allergy from ComboBox
+            string severity = (AllergySeverityEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Mild";
+
+            // Validate selection
+            if (AllergyNameEntry.SelectedItem is not Allergy selectedAllergy)
+            {
+                System.Diagnostics.Debug.WriteLine("Allergy must be selected");
+                return;
+            }
+
+            // Check if allergy already added
+            if (_allergyList.Any(a => a.Allergy.AllergyId == selectedAllergy.AllergyId))
+            {
+                System.Diagnostics.Debug.WriteLine("This allergy has already been added");
+                return;
+            }
+
+            // Add to list using wrapper class
+            _allergyList.Add(new AllergyEntry { Allergy = selectedAllergy, Severity = severity, });
+
+            System.Diagnostics.Debug.WriteLine($"ADDED ALLERGY: {selectedAllergy.AllergyName} - {severity}");
+            System.Diagnostics.Debug.WriteLine($"Total allergies in list: {_allergyList.Count}");
+
+            // Clear selection
             AllergyNameEntry.SelectedIndex = -1;
             AllergySeverityEntry.SelectedIndex = 0;
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error adding allergy: {ex.Message}");
+        }
     }
 
+    private void RemoveAllergyButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is Button button && button.Tag is AllergyEntry allergyEntry)
+            {
+                _ = _allergyList.Remove(allergyEntry);
+                System.Diagnostics.Debug.WriteLine($"REMOVED ALLERGY: {allergyEntry.Allergy.AllergyName}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error removing allergy: {ex.Message}");
+        }
+    }
 
     private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        string bloodType =
-            (BloodTypeEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? DefaultBloodType;
-
-        string rh =
-            (RhFactorEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? DefaultRhFactor;
-
-        bool created = _viewModel.TryCreateMedicalHistory(
-            bloodType,
-            rh,
-            ChronicConditionsEntry.Text);
-
-        if (!created)
+        try
         {
-            args.Cancel = true;
-            return;
+            // Parse Blood Type
+            string bloodTypeStr = (BloodTypeEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "A";
+            BloodType bloodType = Enum.Parse<BloodType>(bloodTypeStr);
+
+            // Parse RH Factor
+            string rhStr = (RhFactorEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Positive";
+            Rh rhFactor = rhStr == "Positive" ? Rh.Positive : Rh.Negative;
+
+            // Parse Chronic Conditions (comma-separated)
+            List<string> chronicConditions = [];
+            if (!string.IsNullOrWhiteSpace(ChronicConditionsEntry.Text))
+            {
+                chronicConditions = [.. ChronicConditionsEntry.Text
+                    .Split(',')
+                    .Select(c => c.Trim())
+                    .Where(c => !string.IsNullOrWhiteSpace(c))];
+            }
+
+            // Convert allergy list to MedicalHistory format
+            List<(Allergy, string)> allergies = [.. _allergyList.Select(entry => (entry.Allergy, entry.Severity))];
+
+            // Create MedicalHistory object
+            MedicalHistory = new MedicalHistory
+            {
+                BloodType = bloodType,
+                Rh = rhFactor,
+                ChronicConditions = chronicConditions,
+                Allergies = allergies,
+            };
+
+            WasSkipped = false;
         }
-        WasSkipped = false;
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error parsing medical history: {ex.Message}");
+            args.Cancel = true;
+        }
     }
 }
