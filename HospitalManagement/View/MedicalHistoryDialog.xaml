@@ -67,7 +67,7 @@
                      ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid ColumnDefinitions="250,*,80" Padding="8" Background="White">
+                        <Grid ColumnDefinitions="180,100,Auto" Padding="8" Background="White">
                             <TextBlock Grid.Column="0"
                                        Text="{Binding Allergy.AllergyName}" 
                                        VerticalAlignment="Center"
@@ -81,6 +81,8 @@
                                        HorizontalAlignment="Center"/>
                             <Button Grid.Column="2"
                                     Content="Remove" 
+                                    Padding="10,4"
+                                    Margin="8,0,0,0"
                                     HorizontalAlignment="Right"
                                     Tag="{Binding}" 
                                     Click="RemoveAllergyButton_Click"/>
