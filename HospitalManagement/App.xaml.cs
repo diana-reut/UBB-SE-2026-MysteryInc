@@ -4,6 +4,7 @@ using HospitalManagement.Integration.External;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
+using HospitalManagement.View.DialogServiceAdmin;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -113,6 +114,8 @@ public partial class App : Application
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();
         _ = services.AddSingleton<IExternalProvider, MockStaffProxy>();
         _ = services.AddSingleton<IExternalPatientPublisher, ExternalPatientPublisher>();
+        _ = services.AddSingleton<IDialogService, DialogService>();
+        _ = services.AddTransient<MainWindow>();
 
         return services.BuildServiceProvider();
     }
