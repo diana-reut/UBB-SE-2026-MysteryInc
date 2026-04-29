@@ -1,6 +1,9 @@
 ﻿using HospitalManagement.Entity;
 using HospitalManagement.Integration;
 using HospitalManagement.Service;
+using HospitalManagement.View;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -21,9 +24,6 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
     private readonly IGhostService _ghostService;
 
     private bool _isExorcismAlertVisible;
-
-    public Action<Patient>? OpenBloodDonorsAction { get; set; }
-    public Action<Patient>? OpenTransplantRequestAction { get; set; }
 
     public bool IsExorcismAlertVisible
     {
@@ -87,21 +87,23 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
     public ICommand GhostSightingCommand { get; set; }
 
 
+    // NEW COMMANDS FOR MEDICAL STAFF ACTIONS
     public ICommand FindBloodDonorsCommand { get; set; }
 
     public ICommand RequestTransplantCommand { get; set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public MedicalStaffViewModel(IPatientService patientService, IGhostService ghostService)
+    public MedicalStaffViewModel()
     {
-        _patientService =patientService;
-        _ghostService =ghostService;
+        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
+        _ghostService = (Application.Current as App)!.Services.GetRequiredService<IGhostService>();
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
 
         SearchCommand = new RelayCommand(ExecuteSearch);
 
+        // INITIALIZE THE NEW COMMANDS
         FindBloodDonorsCommand = new RelayCommand(FindBloodDonors);
         RequestTransplantCommand = new RelayCommand(RequestTransplant);
         GhostSightingCommand = new RelayCommand(() => _ghostService.SawAGhost());
@@ -150,20 +152,45 @@ internal class MedicalStaffViewModel : INotifyPropertyChanged
         }
     }
 
+    // --- EMPTY METHODS READY FOR FEATURE IMPLEMENTATION ---
     private void FindBloodDonors()
     {
-        if (SelectedPatient is not null)
+        if (SelectedPatient is null)
         {
-            OpenBloodDonorsAction?.Invoke(SelectedPatient);
+            return;
         }
+
+        // Create the new Window
+        var donorsWindow = new Window
+        {
+            Title = $"Compatible Donors - {SelectedPatient.FirstName} {SelectedPatient.LastName}",
+        };
+
+        // Launch your brand new page!
+        IServiceProvider scope = (Application.Current as App)!.Services;
+        BloodDonorsView donorsPage = scope.GetRequiredService<BloodDonorsView>();
+        donorsPage.Initialize(SelectedPatient.Id);
+        donorsWindow.Content = donorsPage;
+        donorsWindow.Activate();
     }
 
     private void RequestTransplant()
     {
-        if (SelectedPatient is not null)
+        if (SelectedPatient is null)
         {
-            OpenTransplantRequestAction?.Invoke(SelectedPatient);
+            return;
         }
+
+        var requestWindow = new Window
+        {
+            Title = $"Organ Transplant Request - {SelectedPatient.FirstName} {SelectedPatient.LastName}",
+        };
+
+        // Launch the correctly named page!
+        var requestPage = new TransplantRequestView(SelectedPatient.Id, requestWindow);
+
+        requestWindow.Content = requestPage;
+        requestWindow.Activate();
     }
 
     protected void OnPropertyChanged([CallerMemberName] string? name = null)
