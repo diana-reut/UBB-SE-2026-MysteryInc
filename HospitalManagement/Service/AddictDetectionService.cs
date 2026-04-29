@@ -12,6 +12,10 @@ internal class AddictDetectionService : IAddictDetectionService
     private readonly IPrescriptionRepository _prescriptionRepository;
     private readonly IMedicalHistoryRepository _medicalHistoryRepository;
 
+    private const string ReportHeader = "==================================================\n           LAW ENFORCEMENT ALERT REPORT           \n==================================================";
+    private const string ReportFooter = "--------------------------------------------------\nSUSPICIOUS ACTIVITY: SUSPECTED DRUG SHOPPING BEHAVIOR\nCRITERIA MET: MULTIPLE DOCTORS (>=3) WITHIN 30 DAYS\n--- SUPPORTING EVIDENCE (MEDICAL RECORDS) ---";
+    private const string ReportPharmacistFooter = "==================================================\nACTION REQUIRED: AWAITING PHARMACIST CONFIRMATION.";
+
     public AddictDetectionService(IPrescriptionRepository prescriptionRepository, IMedicalHistoryRepository medicalHistoryRepository)
     {
         _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
@@ -62,16 +66,11 @@ internal class AddictDetectionService : IAddictDetectionService
 
         var reportBuilder = new System.Text.StringBuilder();
 
-        _ = reportBuilder.AppendLine("==================================================")
-            .AppendLine("           LAW ENFORCEMENT ALERT REPORT           ")
-            .AppendLine("==================================================")
+        _ = reportBuilder.AppendLine(ReportHeader)
             .AppendLine(CultureInfo.InvariantCulture, $"DATE GENERATED: {DateTime.Now:yyyy-MM-dd HH:mm}")
             .AppendLine(CultureInfo.InvariantCulture, $"SUBJECT: {patient.FirstName} {patient.LastName} (CNP: {patient.Cnp})")
             .AppendLine(CultureInfo.InvariantCulture, $"CONTACT: {patient.PhoneNo}")
-            .AppendLine("--------------------------------------------------")
-            .AppendLine("SUSPICIOUS ACTIVITY: SUSPECTED DRUG SHOPPING BEHAVIOR")
-            .AppendLine("CRITERIA MET: MULTIPLE DOCTORS (>=3) WITHIN 30 DAYS\n")
-            .AppendLine("--- SUPPORTING EVIDENCE (MEDICAL RECORDS) ---");
+            .AppendLine(ReportFooter);
 
         if (recentPrescriptions.Count == 0)
         {
@@ -95,8 +94,7 @@ internal class AddictDetectionService : IAddictDetectionService
             }
         }
 
-        _ = reportBuilder.AppendLine("==================================================")
-            .AppendLine("ACTION REQUIRED: AWAITING PHARMACIST CONFIRMATION.");
+        _ = reportBuilder.AppendLine(ReportPharmacistFooter);
 
         return reportBuilder.ToString();
     }

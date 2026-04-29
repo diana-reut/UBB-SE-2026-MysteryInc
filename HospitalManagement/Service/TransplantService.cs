@@ -15,6 +15,11 @@ internal class TransplantService : ITransplantService
     private readonly IBloodCompatibilityService _compatibilityService;
     private readonly IMedicalHistoryRepository _historyRepo;
 
+    private const int MaxScoreModifier = 20;
+    private const int MinScoreModifier = 5;
+    private const int ComparativeERVisits = 10;
+    private const int TimeIntervalMonths = 3;
+
     public TransplantService(
         ITransplantRepository transplantRepo,
         IPatientRepository patientRepo,
@@ -159,9 +164,9 @@ internal class TransplantService : ITransplantService
     private float CalculatePostMortemScore(Patient donor, Patient receiver)
     {
         float score = _compatibilityService.CalculateScore(donor, receiver);
-        DateTime threeMonthsAgo = DateTime.Now.AddMonths(-3);
+        DateTime threeMonthsAgo = DateTime.Now.AddMonths(-TimeIntervalMonths);
         int erVisits = _recordRepo.GetERVisitCount(receiver.Id, threeMonthsAgo);
-        score += erVisits >= 10 ? 20 : 5;
+        score += erVisits >= ComparativeERVisits ? MaxScoreModifier : MinScoreModifier;
         return score;
     }
 }

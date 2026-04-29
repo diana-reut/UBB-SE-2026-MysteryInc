@@ -1,128 +1,55 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using HospitalManagement.Entity;
 using HospitalManagement.Service;
 
 namespace HospitalManagement.ViewModel;
 
-internal partial class OrganDonorDialogViewModel : INotifyPropertyChanged
+internal partial class OrganDonorDialogViewModel : ObservableObject
 {
     private readonly ITransplantService _transplantService;
 
+    [ObservableProperty]
     private Patient? _deceasedPatient;
 
-    public Patient? DeceasedPatient
-    {
-        get => _deceasedPatient;
-        set
-        {
-            _deceasedPatient = value;
-            OnPropertyChanged();
-        }
-    }
-
+    [ObservableProperty]
     private string? _selectedOrgan;
 
-    public string? SelectedOrgan
-    {
-        get => _selectedOrgan;
-        set
-        {
-            _selectedOrgan = value;
-            OnPropertyChanged();
-            LoadTopMatches();
-        }
-    }
-
-    public ObservableCollection<string> Organs { get; }
-
-    private ObservableCollection<TransplantMatch>? _topMatches;
-
-    public ObservableCollection<TransplantMatch>? TopMatches
-    {
-        get => _topMatches;
-        set
-        {
-            _topMatches = value;
-            OnPropertyChanged();
-        }
-    }
-
+    [ObservableProperty]
     private TransplantMatch? _selectedMatch;
 
-    public TransplantMatch? SelectedMatch
-    {
-        get => _selectedMatch;
-        set
-        {
-            _selectedMatch = value;
-            OnPropertyChanged();
-        }
-    }
-
+    [ObservableProperty]
     private bool _isLoading;
 
-    public bool IsLoading
-    {
-        get => _isLoading;
-        set
-        {
-            _isLoading = value;
-            OnPropertyChanged();
-        }
-    }
-
+    [ObservableProperty]
     private string? _loadingMessage;
 
-    public string? LoadingMessage
-    {
-        get => _loadingMessage;
-        set
-        {
-            _loadingMessage = value;
-            OnPropertyChanged();
-        }
-    }
-
+    [ObservableProperty]
     private string? _errorMessage;
 
-    public string? ErrorMessage
-    {
-        get => _errorMessage;
-        set
-        {
-            _errorMessage = value;
-            OnPropertyChanged();
-        }
-    }
+    public ObservableCollection<string> Organs { get; } =
+    [
+        "Heart", "Kidney", "Liver", "Pancreas", "Lung", "Cornea"
+    ];
+
+    public ObservableCollection<TransplantMatch> TopMatches { get; } = [];
 
     public Action<int, int, float>? OnAssignmentConfirmed { get; set; }
 
     public OrganDonorDialogViewModel(ITransplantService transplantService)
     {
         _transplantService = transplantService ?? throw new ArgumentNullException(nameof(transplantService));
-
-        Organs =
-        [
-            "Heart",
-            "Kidney",
-            "Liver",
-            "Pancreas",
-            "Lung",
-            "Cornea"
-        ];
-
-        TopMatches = [];
     }
+
+    partial void OnSelectedOrganChanged(string? value) => LoadTopMatches();
 
     private void LoadTopMatches()
     {
         if (DeceasedPatient is null || string.IsNullOrEmpty(SelectedOrgan))
         {
-            TopMatches?.Clear();
+            TopMatches.Clear();
             return;
         }
 
@@ -131,23 +58,23 @@ internal partial class OrganDonorDialogViewModel : INotifyPropertyChanged
 
         try
         {
-            System.Collections.Generic.List<TransplantMatch> matches =
+            List<TransplantMatch> matches =
                 _transplantService.GetTopMatchesAsDisplayModels(DeceasedPatient.Id, SelectedOrgan);
 
-            TopMatches?.Clear();
+            TopMatches.Clear();
             foreach (TransplantMatch match in matches)
             {
-                TopMatches?.Add(match);
+                TopMatches.Add(match);
             }
 
-            LoadingMessage = TopMatches?.Count == 0
+            LoadingMessage = TopMatches.Count == 0
                 ? $"No compatible recipients found for {SelectedOrgan}."
                 : "";
         }
         catch (Exception ex)
         {
             LoadingMessage = $"Error loading matches: {ex.Message}";
-            TopMatches?.Clear();
+            TopMatches.Clear();
         }
         finally
         {
@@ -182,12 +109,5 @@ internal partial class OrganDonorDialogViewModel : INotifyPropertyChanged
             error = $"Error: {ex.Message}";
             return false;
         }
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

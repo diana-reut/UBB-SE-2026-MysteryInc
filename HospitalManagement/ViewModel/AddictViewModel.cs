@@ -1,49 +1,41 @@
-﻿using HospitalManagement.Entity;
-using HospitalManagement.Service;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HospitalManagement.Entity;
+using HospitalManagement.Service;
 
 namespace HospitalManagement.ViewModel;
 
-internal partial class AddictViewModel
+internal partial class AddictViewModel : ObservableObject
 {
     private readonly IAddictDetectionService _addictDetectionService;
 
-    public ObservableCollection<Patient> AddictCandidates { get; set; }
+    [ObservableProperty]
+    private ObservableCollection<Patient> _addictCandidates = [];
 
     public AddictViewModel(IAddictDetectionService addictDetectionService)
     {
         _addictDetectionService = addictDetectionService ?? throw new ArgumentNullException(nameof(addictDetectionService));
-
-        AddictCandidates = [];
         LoadAddicts();
     }
 
     public void LoadAddicts()
     {
-        AddictCandidates.Clear();
-
         List<Patient> candidates = _addictDetectionService.GetAddictCandidates();
-
-        foreach (Patient candidate in candidates)
-        {
-            AddictCandidates.Add(candidate);
-        }
+        AddictCandidates = new ObservableCollection<Patient>(candidates);
     }
 
     public string GetPoliceReportMessage(int patientId)
     {
         Patient? targetPatient = AddictCandidates.FirstOrDefault(p => p.Id == patientId);
-
         if (targetPatient is null)
         {
             return "Error: Patient not found in the current flagged list.";
         }
-
         return _addictDetectionService.BuildPoliceReport(targetPatient);
     }
 
