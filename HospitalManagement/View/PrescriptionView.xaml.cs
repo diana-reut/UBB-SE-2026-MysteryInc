@@ -12,7 +12,8 @@ internal sealed partial class PrescriptionView : UserControl
 
     public PrescriptionView(PrescriptionViewModel viewModel)
     {
-        ViewModel = (App.Current as App).Services.GetService<PrescriptionViewModel>();
+        ViewModel = ((App)Application.Current).Services.GetRequiredService<PrescriptionViewModel>();
+
         DataContext = ViewModel;
         InitializeComponent();
         ViewModel = viewModel;

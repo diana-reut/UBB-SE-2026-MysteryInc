@@ -2,7 +2,7 @@
 
 namespace HospitalManagement.View;
 
-public sealed partial class PoliceAlertDialog : ContentDialog
+internal sealed partial class PoliceAlertDialog : ContentDialog
 {
     public PoliceAlertDialog(string reportText)
     {

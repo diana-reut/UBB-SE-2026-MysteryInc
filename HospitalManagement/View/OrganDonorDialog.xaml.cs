@@ -3,49 +3,30 @@ using HospitalManagement.ViewModel;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
-
 namespace HospitalManagement.View;
 
 internal sealed partial class OrganDonorDialog : ContentDialog
 {
-    public OrganDonorViewModel ViewModel { get; set; }
+    public OrganDonorDialogViewModel ViewModel { get; set; }
 
-    public OrganDonorDialog(OrganDonorViewModel viewModel)
+    public OrganDonorDialog(OrganDonorDialogViewModel viewModel)
     {
         InitializeComponent();
         ViewModel = viewModel;
         DataContext = ViewModel;
 
-        PrimaryButtonClick += (s, e) =>
-        {
-            if (ViewModel.SelectedMatch is null)
-            {
-                e.Cancel = true;
-                ViewModel.ErrorMessage = "Please select a recipient from the list before confirming.";
-                return;
-            }
-
-            if (string.IsNullOrEmpty(ViewModel.SelectedOrgan))
-            {
-                e.Cancel = true;
-                ViewModel.ErrorMessage = "Please select an organ before confirming.";
-                return;
-            }
-
-            try
-            {
-                ViewModel.ConfirmAssignment();
-            }
-            catch (Exception ex)
-            {
-                e.Cancel = true;
-                ViewModel.ErrorMessage = $"Error: {ex.Message}";
-            }
-        };
+        PrimaryButtonClick += OnPrimaryButtonClick;
     }
 
+    private void OnPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs e)
+    {
+        if (!ViewModel.TryConfirmAssignment(out string? error))
+        {
+            e.Cancel = true;
+            ViewModel.ErrorMessage = error;
+        }
+    }
 
-    // Initialize the dialog with a deceased donor and handle confirmation.
     public void Initialize(Patient donor, Action<int, int, float> onAssigned)
     {
         ViewModel.DeceasedPatient = donor;

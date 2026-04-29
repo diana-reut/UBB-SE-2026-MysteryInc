@@ -31,23 +31,6 @@ internal partial class AddictViewModel
 
         foreach (Patient candidate in candidates)
         {
-            string chronicString = _addictDetectionService.GetChronicConditions(candidate.Id);
-
-            if (candidate.MedicalHistory is not null)
-            {
-                if (candidate.MedicalHistory.ChronicConditions is null || candidate.MedicalHistory.ChronicConditions.Count == 0)
-                {
-                    candidate.MedicalHistory.ChronicConditions = [chronicString];
-                }
-            }
-            else
-            {
-                candidate.MedicalHistory = new MedicalHistory
-                {
-                    ChronicConditions = [chronicString],
-                };
-            }
-
             AddictCandidates.Add(candidate);
         }
     }
@@ -70,8 +53,6 @@ internal partial class AddictViewModel
         if (targetPatient is not null)
         {
             _ = AddictCandidates.Remove(targetPatient);
-
-            // pe viitor, daca se cere la backend, aici am putea schimba starea in baza de date ca ex: "Reported = true"
         }
     }
 

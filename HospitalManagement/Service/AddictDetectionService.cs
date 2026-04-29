@@ -18,7 +18,6 @@ internal class AddictDetectionService : IAddictDetectionService
         _medicalHistoryRepository = medicalHistoryRepository ?? throw new ArgumentNullException(nameof(medicalHistoryRepository));
     }
 
-
     public List<Patient> GetAddictCandidates()
     {
         List<Patient> flaggedPatients = _prescriptionRepository.GetAddictCandidatePatients();
@@ -31,38 +30,20 @@ internal class AddictDetectionService : IAddictDetectionService
             {
                 patient.MedicalHistory.ChronicConditions = _medicalHistoryRepository.GetChronicConditions(patient.MedicalHistory.Id);
             }
+
+            patient.MedicalHistory ??= new MedicalHistory
+            {
+                ChronicConditions = ["None reported."],
+            };
+
+            if (patient.MedicalHistory.ChronicConditions is null || patient.MedicalHistory.ChronicConditions.Count == 0)
+            {
+                patient.MedicalHistory.ChronicConditions = ["None reported."];
+            }
         }
 
         return flaggedPatients;
     }
-
-    public string GetChronicConditions(int patientId)
-    {
-        if (patientId <= 0)
-        {
-            throw new ArgumentException("Invalid Patient ID.");
-        }
-
-        MedicalHistory? history = _medicalHistoryRepository.GetByPatientId(patientId);
-
-        if (history is null)
-        {
-            return "None reported.";
-        }
-
-        if (history.ChronicConditions is null || history.ChronicConditions.Count == 0)
-        {
-            history.ChronicConditions = _medicalHistoryRepository.GetChronicConditions(history.Id);
-        }
-
-        if (history.ChronicConditions is null || history.ChronicConditions.Count == 0)
-        {
-            return "None reported.";
-        }
-
-        return string.Join(", ", history.ChronicConditions);
-    }
-
 
     public string BuildPoliceReport(Patient patient)
     {
@@ -101,11 +82,9 @@ internal class AddictDetectionService : IAddictDetectionService
             int evidenceCount = 1;
             foreach (Prescription rx in recentPrescriptions)
             {
-                string meds = "Unknown";
-                if (rx.MedicationList?.Count > 0)
-                {
-                    meds = string.Join(", ", rx.MedicationList.Select(m => m.MedName));
-                }
+                string meds = rx.MedicationList?.Count > 0
+                    ? string.Join(", ", rx.MedicationList.Select(m => m.MedName))
+                    : "Unknown";
 
                 _ = reportBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{evidenceCount}] Medical Record ID: {rx.RecordId}")
                     .AppendLine(CultureInfo.InvariantCulture, $"    Prescription ID: {rx.Id} | Date: {rx.Date:yyyy-MM-dd}")
