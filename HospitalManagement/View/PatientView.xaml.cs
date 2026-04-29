@@ -42,8 +42,8 @@ internal sealed partial class PatientView : Window
             {
                 XamlRoot = Content.XamlRoot,
             };
-            rouletteDialog.Initialize(basePrice);
-            rouletteDialog.OnSpinComplete = _viewModel.HandleRouletteResult;
+            rouletteDialog.OnSpinComplete = onComplete;
+            rouletteDialog.ViewModel.Initialize(basePrice);
             _ = await rouletteDialog.ShowAsync();
         };
 
