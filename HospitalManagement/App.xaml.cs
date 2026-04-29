@@ -94,7 +94,7 @@ public partial class App : Application
         _ = services.AddTransient<BloodDonorsViewModel>();
         _ = services.AddTransient<BloodDonorsView>();
         _ = services.AddTransient<StatisticsViewModel>();
-        _ = services.AddTransient<StatisticsWindow>();
+        _ = services.AddTransient<StatisticsView>();
         _ = services.AddTransient<PatientProfileViewModel>();
         _ = services.AddTransient<PatientProfileView>();
         _ = services.AddTransient<MedicalStaffViewModel>();
