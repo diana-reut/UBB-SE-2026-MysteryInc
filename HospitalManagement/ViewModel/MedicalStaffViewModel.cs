@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace HospitalManagement.ViewModel;
-
+//ma omor
 internal class MedicalStaffViewModel : INotifyPropertyChanged
 {
     private string _searchQuery = "";

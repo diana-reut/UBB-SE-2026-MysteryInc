@@ -9,7 +9,7 @@ using HospitalManagement.View;
 
 namespace HospitalManagement.ViewModel;
 
-
+//help
 internal class MedicalHistoryDialogViewModel
 {
     private readonly IAllergyService _allergyService;

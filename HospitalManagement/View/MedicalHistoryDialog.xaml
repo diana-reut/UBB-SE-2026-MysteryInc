@@ -9,7 +9,6 @@
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick">
 
     <StackPanel Spacing="12" Width="400" Margin="0,10,0,0">
-        <!-- Blood Type -->
         <StackPanel Spacing="5">
             <TextBlock Text="Blood Type" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
             <ComboBox x:Name="BloodTypeEntry" HorizontalAlignment="Stretch" SelectedIndex="0">
@@ -20,7 +19,6 @@
             </ComboBox>
         </StackPanel>
 
-        <!-- RH Factor -->
         <StackPanel Spacing="5">
             <TextBlock Text="RH Factor" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
             <ComboBox x:Name="RhFactorEntry" HorizontalAlignment="Stretch" SelectedIndex="0">
