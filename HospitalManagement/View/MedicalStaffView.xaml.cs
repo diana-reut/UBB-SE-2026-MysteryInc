@@ -6,7 +6,7 @@ using System;
 
 
 namespace HospitalManagement.View;
-//ma planf
+//ma plang
 internal sealed partial class MedicalStaffView : Window
 {
     public MedicalStaffViewModel ViewModel { get; }

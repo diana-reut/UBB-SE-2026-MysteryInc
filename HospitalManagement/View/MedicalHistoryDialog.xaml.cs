@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 using HospitalManagement.ViewModel;
 
 namespace HospitalManagement.View;
-//ma impusc
+//m
 internal sealed partial class MedicalHistoryDialog : ContentDialog
 {
     private readonly MedicalHistoryDialogViewModel _viewModel;
