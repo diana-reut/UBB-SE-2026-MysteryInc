@@ -1,76 +1,23 @@
-﻿using HospitalManagement.Service;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using HospitalManagement.Service;
 using Microsoft.UI.Xaml;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.ViewModel;
 
-internal class TransplantRequestViewModel : INotifyPropertyChanged
+internal partial class TransplantRequestViewModel : ObservableObject
 {
     private readonly ITransplantService _transplantService;
     private readonly IPatientService _patientService;
 
     private int _patientId;
 
-    public string PatientName { get; set; } = null!;
-
-    public bool IsUrgent { get; set; }
-
-    public string? WarningMessage { get; set; }
-
-    public Visibility UrgentVisibility
-        => IsUrgent ? Visibility.Visible : Visibility.Collapsed;
-
-    public Visibility WarningVisibility
-        => !string.IsNullOrEmpty(WarningMessage)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-
-    private string? _selectedOrgan;
-
-    public string? SelectedOrgan
-    {
-        get => _selectedOrgan;
-
-        set
-        {
-            if (_selectedOrgan == value)
-                return;
-
-            _selectedOrgan = value;
-            OnPropertyChanged();
-        }
-    }
+    public Action? CloseWindowAction { get; set; }
 
 
-    private string? _errorMessage;
-
-    public string? ErrorMessage
-    {
-        get => _errorMessage;
-
-        private set
-        {
-            _errorMessage = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(HasError));
-        }
-    }
-
-    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
-
-    private bool _requestSucceeded;
-
-    public bool RequestSucceeded
-    {
-        get => _requestSucceeded;
-
-        private set
-        {
-            _requestSucceeded = value;
-            OnPropertyChanged();
-        }
-    }
+    public Func<string, string, Task>? ShowDialogAction { get; set; }
 
     public TransplantRequestViewModel(
         ITransplantService transplantService,
@@ -80,37 +27,83 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
         _patientService = patientService;
     }
 
+    [ObservableProperty]
+    private string patientName = string.Empty;
+
+    [ObservableProperty]
+    private bool isUrgent;
+
+    [ObservableProperty]
+    private string? warningMessage;
+
+    public Visibility UrgentVisibility =>
+        IsUrgent ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility WarningVisibility =>
+        string.IsNullOrEmpty(WarningMessage)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+
+    partial void OnIsUrgentChanged(bool value)
+        => OnPropertyChanged(nameof(UrgentVisibility));
+
+    partial void OnWarningMessageChanged(string? value)
+        => OnPropertyChanged(nameof(WarningVisibility));
+
+    [ObservableProperty]
+    private string? selectedOrgan;
+
+    [ObservableProperty]
+    private string? errorMessage;
+
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
+
+    partial void OnErrorMessageChanged(string? value)
+        => OnPropertyChanged(nameof(HasError));
+
+    [ObservableProperty]
+    private bool requestSucceeded;
+
+
     public void Initialize(int patientId)
     {
         _patientId = patientId;
 
         var patient = _patientService.GetById(patientId);
 
-        if (patient != null)
+        if (patient is not null)
             PatientName = $"{patient.FirstName} {patient.LastName}";
 
         IsUrgent = _transplantService.IsUrgent(patientId);
         WarningMessage = _transplantService.GetChronicWarning(patientId);
-
-        OnPropertyChanged(nameof(PatientName));
     }
 
-    public void SubmitRequest()
+    [RelayCommand]
+    private async Task SubmitRequest()
     {
         ErrorMessage = null;
         RequestSucceeded = false;
 
+        if (string.IsNullOrEmpty(SelectedOrgan))
+        {
+            ErrorMessage = "Please select an organ type.";
+            return;
+        }
+
         try
         {
-            if (string.IsNullOrEmpty(SelectedOrgan))
-            {
-                ErrorMessage = "Please select an organ type from the dropdown.";
-                return;
-            }
-
             _transplantService.CreateWaitlistRequest(_patientId, SelectedOrgan);
 
             RequestSucceeded = true;
+
+            if (ShowDialogAction is not null)
+            {
+                await ShowDialogAction(
+                    "Success",
+                    "The patient has been successfully added to the Organ Transplant Waitlist.");
+            }
+
+            CloseWindowAction?.Invoke();
         }
         catch (MyNotImplementedException ex)
         {
@@ -118,10 +111,9 @@ internal class TransplantRequestViewModel : INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
+    [RelayCommand]
+    private void Cancel()
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        CloseWindowAction?.Invoke();
     }
 }

@@ -1,48 +1,20 @@
 ﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
 using Microsoft.UI.Xaml;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using HospitalManagement.Entity;
 
 namespace HospitalManagement.ViewModel;
 
-internal class PrescriptionDialogViewModel : INotifyPropertyChanged
+internal partial class PrescriptionDialogViewModel : ObservableObject
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged(string name)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-    private string _doctorNotes = "No notes provided";
-
-    public string DoctorNotes
-    {
-        get => _doctorNotes;
-        private set
-        {
-            if (_doctorNotes != value)
-            {
-                _doctorNotes = value;
-                OnPropertyChanged(nameof(DoctorNotes));
-            }
-        }
-    }
+    [ObservableProperty]
+    private string doctorNotes = "No notes provided";
 
     public ObservableCollection<PrescriptionItem> PrescriptionItems { get; } = new();
 
-    private Visibility _noMedicationsVisibility = Visibility.Visible;
-
-    public Visibility NoMedicationsVisibility
-    {
-        get => _noMedicationsVisibility;
-        private set
-        {
-            if (_noMedicationsVisibility != value)
-            {
-                _noMedicationsVisibility = value;
-                OnPropertyChanged(nameof(NoMedicationsVisibility));
-            }
-        }
-    }
+    [ObservableProperty]
+    private Visibility noMedicationsVisibility = Visibility.Visible;
 
     public PrescriptionDialogViewModel()
     {
@@ -60,7 +32,8 @@ internal class PrescriptionDialogViewModel : INotifyPropertyChanged
                 : Visibility.Collapsed;
     }
 
-    public void Initialize(Prescription prescription)
+    [RelayCommand]
+    public void Initialize(Prescription? prescription)
     {
         PrescriptionItems.Clear();
 

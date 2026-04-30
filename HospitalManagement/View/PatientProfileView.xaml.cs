@@ -92,7 +92,9 @@ internal sealed partial class PatientProfileView : Page
         var prescriptionWindow = new Window { Title = "Prescription Details" };
         PrescriptionView prescriptionPage = _services.GetRequiredService<PrescriptionView>();
 
-        prescriptionPage.ViewModel.ApplyFilterCommand(prescriptionId, null, null, null, null, null);
+        prescriptionPage.ViewModel.SearchIdText = prescriptionId.ToString();
+
+        prescriptionPage.ViewModel.ApplyFilterCommand.Execute(null);
 
         prescriptionWindow.Content = prescriptionPage;
         prescriptionWindow.Activate();

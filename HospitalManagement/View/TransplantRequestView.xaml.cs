@@ -1,8 +1,9 @@
-using System;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
@@ -14,40 +15,35 @@ internal sealed partial class TransplantRequestView : Page
 
     public TransplantRequestView(int patientId, Window parentWindow)
     {
-        Func<int, TransplantRequestViewModel> vmFactory =
+        InitializeComponent();
+
+        var factory =
             (Application.Current as App)!
                 .Services
                 .GetRequiredService<Func<int, TransplantRequestViewModel>>();
 
-        ViewModel = vmFactory(patientId);
+        ViewModel = factory(patientId);
         _parentWindow = parentWindow;
 
-        InitializeComponent();
-
         DataContext = ViewModel;
+
+        ViewModel.CloseWindowAction = () => _parentWindow.Close();
+
+        ViewModel.ShowDialogAction = ShowDialogAsync;
+
+        ViewModel.Initialize(patientId);
     }
 
-    private async void Submit_ClickAsync(object sender, RoutedEventArgs e)
+    private async Task ShowDialogAsync(string title, string content)
     {
-        ViewModel.SubmitRequest();
-
-        if (ViewModel.RequestSucceeded)
+        var dialog = new ContentDialog
         {
-            var dialog = new ContentDialog
-            {
-                Title = "Success",
-                Content = "The patient has been successfully added to the Organ Transplant Waitlist.",
-                CloseButtonText = "OK",
-                XamlRoot = Content.XamlRoot,
-            };
+            Title = title,
+            Content = content,
+            CloseButtonText = "OK",
+            XamlRoot = Content.XamlRoot
+        };
 
-            await dialog.ShowAsync();
-            _parentWindow.Close();
-        }
-    }
-
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        _parentWindow.Close();
+        await dialog.ShowAsync();
     }
 }

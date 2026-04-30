@@ -45,16 +45,16 @@
                 <TextBlock Text="Filter Options" FontWeight="SemiBold" FontSize="14" Foreground="White" Margin="0,0,0,6"/>
 
                 <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                    <TextBox x:Name="SearchIdBox" PlaceholderText="ID..." Width="60" Height="36" CornerRadius="6" VerticalContentAlignment="Center"/>
-                    <TextBox x:Name="SearchNameBox" PlaceholderText="Patient Name" Width="160" Height="36" CornerRadius="6" VerticalContentAlignment="Center"/>
-                    <TextBox x:Name="SearchMedBox" PlaceholderText="Medication Name" Width="150" Height="36" CornerRadius="6" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="SearchIdBox" PlaceholderText="ID..." Width="60" Height="36" CornerRadius="6" VerticalContentAlignment="Center" Text="{x:Bind ViewModel.SearchIdText, Mode=TwoWay}"/>
+                    <TextBox x:Name="SearchNameBox" PlaceholderText="Patient Name" Width="160" Height="36" CornerRadius="6" VerticalContentAlignment="Center" Text="{x:Bind ViewModel.SearchName, Mode=TwoWay}"/>
+                    <TextBox x:Name="SearchMedBox" PlaceholderText="Medication Name" Width="150" Height="36" CornerRadius="6" VerticalContentAlignment="Center"  Text="{x:Bind ViewModel.SearchMedication, Mode=TwoWay}"/>
 
-                    <CalendarDatePicker x:Name="DateFromPicker" PlaceholderText="Date From" Width="140" Height="36" CornerRadius="6" VerticalAlignment="Center"/>
+                    <CalendarDatePicker x:Name="DateFromPicker" PlaceholderText="Date From" Width="140" Height="36" CornerRadius="6" VerticalAlignment="Center"  Date="{x:Bind ViewModel.DateFrom, Mode=TwoWay}"/>
                     <TextBlock Text="-" VerticalAlignment="Center" Foreground="#A1A1AA" FontWeight="Bold"/>
-                    <CalendarDatePicker x:Name="DateToPicker" PlaceholderText="Date To" Width="140" Height="36" CornerRadius="6" VerticalAlignment="Center"/>
+                    <CalendarDatePicker x:Name="DateToPicker" PlaceholderText="Date To" Width="140" Height="36" CornerRadius="6" VerticalAlignment="Center" Date="{x:Bind ViewModel.DateTo, Mode=TwoWay}"/>
 
-                    <Button Content="Search" Style="{StaticResource AccentButtonStyle}" 
-                            Click="OnApplyFilterClicked" Width="90" Height="36" Margin="10,0,0,0"/>
+                    <Button Content="Search" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.ApplyFilterCommand}" 
+                            Width="90" Height="36" Margin="10,0,0,0"/>
                 
                 <TextBlock Text="{x:Bind ViewModel.InfoMessage, Mode=OneWay}" 
                            Foreground="{StaticResource GhostAccent}" FontWeight="SemiBold" 
@@ -167,7 +167,7 @@
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="30" Margin="0,20,0,0">
 
-            <Button Click="OnPrevClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
+            <Button Command="{x:Bind ViewModel.PrevPageCommand}" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
 
                 <Button.Resources>
                     <SolidColorBrush x:Key="ButtonBackground" Color="#00a896"/>
@@ -190,7 +190,7 @@
                 </TextBlock>
             </Border>
 
-                <Button Click="OnNextClicked" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
+            <Button Command="{x:Bind ViewModel.NextPageCommand}" Width="110" Height="40" CornerRadius="20" Background="#00a896" BorderThickness="0" Foreground="White">
 
                     <Button.Resources>
                     <SolidColorBrush x:Key="ButtonBackground" Color="#00a896"/>

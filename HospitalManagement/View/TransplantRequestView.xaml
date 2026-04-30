@@ -45,8 +45,14 @@
                 TextWrapping="Wrap"/>
 
             <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
-                <Button Content="Submit Request" Click="Submit_ClickAsync" Style="{StaticResource AccentButtonStyle}"/>
-                <Button Content="Cancel" Click="Cancel_Click"/>
+
+                <Button Content="Submit Request"
+                        Command="{x:Bind ViewModel.SubmitRequestCommand}"
+                        Style="{StaticResource AccentButtonStyle}"/>
+
+                <Button Content="Cancel"
+                        Command="{x:Bind ViewModel.CancelCommand}"/>
+
             </StackPanel>
         </StackPanel>
     </Grid>
