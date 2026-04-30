@@ -108,6 +108,7 @@ public partial class App : Application
                 return vm;
             });
         _ = services.AddSingleton<DiscountRouletteViewModel>();
+        _ = services.AddSingleton<Func<PrescriptionView>>(sp => () => sp.GetRequiredService<PrescriptionView>());
 
         // MORE
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();

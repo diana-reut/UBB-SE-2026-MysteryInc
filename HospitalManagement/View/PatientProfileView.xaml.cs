@@ -1,104 +1,81 @@
 using HospitalManagement.Entity;
 using HospitalManagement.ViewModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class PatientProfileView : Page
 {
-    public PatientProfileViewModel ViewModel { get; }
-
-    private readonly IServiceProvider _services;
+    private readonly PatientProfileViewModel _viewModel;
 
     public PatientProfileView()
     {
         InitializeComponent();
 
-        _services = (Application.Current as App)!.Services;
-        ViewModel = _services.GetRequiredService<PatientProfileViewModel>();
-        DataContext = ViewModel;
+        _viewModel = (Application.Current as App)!.Services.GetRequiredService<PatientProfileViewModel>();
 
-        // Initialize Callbacks
-        ViewModel.ShowAlertAction = OnShowAlert;
-        ViewModel.OpenFileAction = OnOpenFile;
-        ViewModel.ShowPrescriptionAction = OnShowPrescriptionAsync;
+
+        DataContext = _viewModel;
+
+        _viewModel.ShowAlertAction = ShowAlertAsync;
+        _viewModel.OpenFileAction = OpenFile;
 
         Loaded += Page_Loaded;
     }
 
     public void Initialize(int patientId)
     {
-        ViewModel.LoadFullPatientProfile(patientId);
+        _viewModel.LoadFullPatientProfile(patientId);
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
-        ViewModel.CheckHighRiskStatus();
+        _viewModel.CheckHighRiskStatus();
     }
 
     private async void ViewPrescription_ClickAsync(object sender, RoutedEventArgs e)
     {
-        await ViewModel.ViewPrescriptionAsync();
+        await _viewModel.ViewPrescriptionAsync();
     }
 
     private void ExportPDF_ClickAsync(object sender, RoutedEventArgs e)
     {
-        ViewModel.ExportSelectedRecord();
+        _viewModel.ExportSelectedRecord();
     }
 
     private void ImportER_ClickAsync(object sender, RoutedEventArgs e)
     {
-        ViewModel.ImportRecords(isER: true);
+        _viewModel.ImportRecords(isER: true);
     }
 
     private void ImportStaff_ClickAsync(object sender, RoutedEventArgs e)
     {
-        ViewModel.ImportRecords(isER: false);
+        _viewModel.ImportRecords(isER: false);
     }
 
     private void RecordList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         if (sender is ListView listView && listView.SelectedItem is MedicalRecord clickedRecord)
         {
-            ViewModel.SelectedRecord = clickedRecord;
+            _viewModel.SelectedRecord = clickedRecord;
         }
     }
 
-    // --- ViewModel Callback Implementations ---
-
-    private void OnShowAlert(string title, string content)
+    private void OpenFile(string path)
     {
-        ShowAlert(title, content);
-    }
-
-    private void OnOpenFile(string path)
-    {
-        using (System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        var psi = new System.Diagnostics.ProcessStartInfo
         {
             FileName = path,
             UseShellExecute = true,
-        }))
-        {
-        }
+        };
+        System.Diagnostics.Process.Start(psi);
     }
 
-    private async Task OnShowPrescriptionAsync(int prescriptionId)
-    {
-        var prescriptionWindow = new Window { Title = "Prescription Details" };
-        PrescriptionView prescriptionPage = _services.GetRequiredService<PrescriptionView>();
-
-        prescriptionPage.ViewModel.ApplyFilterCommand(prescriptionId, null, null, null, null, null);
-
-        prescriptionWindow.Content = prescriptionPage;
-        prescriptionWindow.Activate();
-    }
-
-    private async void ShowAlert(string title, string content)
+    private async void ShowAlertAsync(string title, string content)
     {
         var dialog = new ContentDialog
         {

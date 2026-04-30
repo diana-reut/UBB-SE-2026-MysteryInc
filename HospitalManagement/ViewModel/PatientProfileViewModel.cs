@@ -1,25 +1,24 @@
-﻿using HospitalManagement.Entity;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using HospitalManagement.Entity;
 using HospitalManagement.Integration.Export;
 using HospitalManagement.Service;
-using Microsoft.Extensions.DependencyInjection;
+using HospitalManagement.View;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace HospitalManagement.ViewModel;
 
-internal class PatientProfileViewModel : INotifyPropertyChanged
+internal partial class PatientProfileViewModel : ObservableObject
 {
-    private Patient? _patient;
-    private MedicalRecord? _selectedRecord;
     private readonly IPatientService _patientService;
     private readonly IImportService _importService;
     private readonly IExportService _exportService;
+    private readonly PrescriptionView _prescriptionView;
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    private readonly Func<PrescriptionView> _prescriptionViewFactory;
 
     public Action<string, string>? ShowAlertAction { get; set; }
 
@@ -27,39 +26,28 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
 
     public Func<int, Task>? ShowPrescriptionAction { get; set; }
 
+    private Patient? _currentPatient;
+
     public Patient? CurrentPatient
     {
-        get => _patient;
-
+        get => _currentPatient;
         set
         {
-            if (_patient == value)
+            if (SetProperty(ref _currentPatient, value))
             {
-                return;
+                OnPropertyChanged(nameof(FormattedChronicConditions));
+                OnPropertyChanged(nameof(FormattedAllergies));
             }
-
-            _patient = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(FormattedChronicConditions));
-            OnPropertyChanged(nameof(FormattedAllergies));
         }
     }
+
+    private MedicalRecord? _selectedRecord;
 
     public MedicalRecord? SelectedRecord
     {
         get => _selectedRecord;
 
-        set
-        {
-            if (_selectedRecord == value)
-            {
-                return;
-            }
-
-            _selectedRecord = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SelectedRecord));
-        }
+        set => SetProperty(ref _selectedRecord, value);
     }
 
     public string FormattedChronicConditions
@@ -67,7 +55,6 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
         get
         {
             List<string>? conditions = CurrentPatient?.MedicalHistory?.ChronicConditions;
-
             if (conditions is null || conditions.Count == 0)
             {
                 return "None";
@@ -83,45 +70,44 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
         {
             List<(Allergy Allergy, string SeverityLevel)>? allergies = CurrentPatient?.MedicalHistory?.Allergies;
             if (allergies is null || allergies.Count == 0)
-            {
                 return "None";
-            }
 
-            var stringList = new List<string>();
-            foreach ((Allergy Allergy, string SeverityLevel) item in allergies)
-            {
-                stringList.Add($"{item.Allergy.AllergyName} ({item.SeverityLevel})");
-            }
+            var result = new List<string>();
+            foreach (var item in allergies)
+                result.Add($"{item.Allergy.AllergyName} ({item.SeverityLevel})");
 
-            return string.Join(", ", stringList);
+            return string.Join(", ", result);
         }
     }
 
-    public PatientProfileViewModel()
+    public PatientProfileViewModel(IPatientService patientService, IExportService exportService, IImportService importService, PrescriptionView prescriptionView, Func<PrescriptionView> prescriptionViewFactory)
     {
-        _patientService = (Application.Current as App)!.Services.GetRequiredService<IPatientService>();
-        _exportService = (Application.Current as App)!.Services.GetRequiredService<IExportService>();
-        _importService = (Application.Current as App)!.Services.GetRequiredService<IImportService>();
+        _patientService = patientService;
+        _exportService = exportService;
+        _importService = importService;
+        _prescriptionView = prescriptionView;
+        _prescriptionViewFactory = prescriptionViewFactory;
 
-        // Initialize with empty state to prevent null reference bindings in XAML
+
         CurrentPatient = new Patient
         {
             MedicalHistory = new MedicalHistory { MedicalRecords = [], },
         };
     }
 
-    // This is called by the View after it has been created
     public void LoadFullPatientProfile(int id)
     {
         try
         {
             Patient? p = _patientService.GetPatientDetails(id);
-            if (p is not null)
+            if (p is null)
             {
-                p.MedicalHistory ??= new MedicalHistory();
-                p.MedicalHistory.MedicalRecords ??= [];
-                CurrentPatient = p;
+                return;
             }
+
+            p.MedicalHistory ??= new MedicalHistory();
+            p.MedicalHistory.MedicalRecords ??= [];
+            CurrentPatient = p;
         }
         catch (Exception ex)
         {
@@ -129,17 +115,10 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
         }
     }
 
-    protected void OnPropertyChanged([CallerMemberName] string? name = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
-
     public void CheckHighRiskStatus()
     {
         if (CurrentPatient is not null && _patientService.IsHighRiskPatient(CurrentPatient.Id))
-        {
             ShowAlertAction?.Invoke("High Risk Patient Alert", "Warning: This patient is flagged as High Risk.");
-        }
     }
 
     public void ExportSelectedRecord()
@@ -163,26 +142,27 @@ internal class PatientProfileViewModel : INotifyPropertyChanged
     public async Task ViewPrescriptionAsync()
     {
         if (SelectedRecord is null)
-        {
             return;
-        }
 
         Prescription? prescription = _patientService.GetPrescriptionByRecordId(SelectedRecord.Id);
 
-        if (prescription is not null)
-        {
-            if (ShowPrescriptionAction is null)
-            {
-                ShowAlertAction?.Invoke("Not Implemented", "The action to show prescriptions is not implemented.");
-                return;
-            }
-
-            await ShowPrescriptionAction.Invoke(prescription.Id);
-        }
-        else
+        if (prescription is null)
         {
             ShowAlertAction?.Invoke("No Prescription", "This consultation does not have an associated prescription.");
+            return;
         }
+
+        var prescriptionWindow = new Window { Title = "Prescription Details" };
+        prescriptionWindow.Activate();
+
+        prescriptionWindow.DispatcherQueue.TryEnqueue(() =>
+        {
+            var prescriptionPage = _prescriptionViewFactory();
+            prescriptionPage.ViewModel.ApplyFilterCommand(prescription.Id, null, null, null, null, null);
+            var frame = new Frame();
+            prescriptionWindow.Content = frame;
+            frame.Content = prescriptionPage;
+        });
     }
 
     public void ImportRecords(bool isER)
