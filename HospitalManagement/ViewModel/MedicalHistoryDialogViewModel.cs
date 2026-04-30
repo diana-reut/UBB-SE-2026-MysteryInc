@@ -88,4 +88,14 @@ internal class MedicalHistoryDialogViewModel
 
         return true;
     }
+
+    public void RemoveAllergy(AllergyEntry allergyEntry)
+    {
+        if (allergyEntry is null)
+        {
+            return;
+        }
+
+        _ = AllergyList.Remove(allergyEntry);
+    }
 }
