@@ -9,7 +9,6 @@
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick">
 
     <StackPanel Spacing="12" Width="400" Margin="0,10,0,0">
-        <!-- Blood Type -->
         <StackPanel Spacing="5">
             <TextBlock Text="Blood Type" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
             <ComboBox x:Name="BloodTypeEntry" HorizontalAlignment="Stretch" SelectedIndex="0">
@@ -20,7 +19,6 @@
             </ComboBox>
         </StackPanel>
 
-        <!-- RH Factor -->
         <StackPanel Spacing="5">
             <TextBlock Text="RH Factor" Foreground="Gray" FontSize="12" FontWeight="SemiBold"/>
             <ComboBox x:Name="RhFactorEntry" HorizontalAlignment="Stretch" SelectedIndex="0">
@@ -59,7 +57,6 @@
                         Click="AddAllergyButton_Click"/>
             </StackPanel>
 
-            <!-- Allergies List -->
             <ListBox x:Name="AllergiesList" 
                      Height="120"
                      Background="LightGray"
@@ -67,7 +64,7 @@
                      ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid ColumnDefinitions="250,*,80" Padding="8" Background="White">
+                        <Grid ColumnDefinitions="*,Auto,Auto" Padding="10.6" Background="White">
                             <TextBlock Grid.Column="0"
                                        Text="{Binding Allergy.AllergyName}" 
                                        VerticalAlignment="Center"
@@ -78,10 +75,12 @@
                                        VerticalAlignment="Center"
                                        Foreground="Black"
                                        FontSize="14"
-                                       HorizontalAlignment="Center"/>
+                                       Margin="16,0"/>
                             <Button Grid.Column="2"
                                     Content="Remove" 
                                     HorizontalAlignment="Right"
+                                    Background="#333333"
+                                    Foreground="White"
                                     Tag="{Binding}" 
                                     Click="RemoveAllergyButton_Click"/>
                         </Grid>
