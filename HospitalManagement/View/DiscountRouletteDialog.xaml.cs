@@ -1,69 +1,16 @@
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
-internal sealed partial class DiscountRouletteDialog : ContentDialog, INotifyPropertyChanged
+internal sealed partial class DiscountRouletteDialog : ContentDialog
 {
-    private decimal _basePrice;
-    private int _discountPercentage;
-    private decimal _finalPrice;
-    private bool _showResult;
-    private bool _isSpinning;
-    private bool _isPrimaryButtonEnabled;
-
-    private readonly int[] _discountOptions = [0, 10, 25, 50, 100,];
-
-    public decimal BasePrice
-    {
-        get => _basePrice;
-
-        set
-        {
-            _basePrice = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public int DiscountPercentage
-    {
-        get => _discountPercentage;
-
-        set
-        {
-            _discountPercentage = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public decimal FinalPrice
-    {
-        get => _finalPrice;
-
-        set
-        {
-            _finalPrice = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public Visibility ShowResult => _showResult ? Visibility.Visible : Visibility.Collapsed;
-
-    public new bool IsPrimaryButtonEnabled
-    {
-        get => _isPrimaryButtonEnabled;
-
-        set
-        {
-            _isPrimaryButtonEnabled = value;
-            OnPropertyChanged();
-        }
-    }
+    public DiscountRouletteViewModel ViewModel { get; }
 
     public int SelectedDiscountPercentage { get; private set; }
 
@@ -71,67 +18,25 @@ internal sealed partial class DiscountRouletteDialog : ContentDialog, INotifyPro
 
     public DiscountRouletteDialog()
     {
+        ViewModel = (Application.Current as App)!.Services.GetRequiredService<DiscountRouletteViewModel>();
         InitializeComponent();
-        DataContext = this;
-        _isSpinning = false;
-        _isPrimaryButtonEnabled = true;
+        DataContext = ViewModel;
+
+        ViewModel.SpinCompleted += OnSpinCompleted;
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
     }
 
-    public void Initialize(decimal basePrice)
+    private void OnSpinCompleted(int percent, decimal price)
     {
-        BasePrice = basePrice;
-        _showResult = false;
-        SelectedDiscountPercentage = 0;
-        IsPrimaryButtonEnabled = true;
-    }
-
-    public async void SpinButton_ClickAsync(object sender, RoutedEventArgs e)
-    {
-        if (_isSpinning)
-        {
-            return;
-        }
-
-        await SpinWheelAsync();
-    }
-
-    private async Task SpinWheelAsync()
-    {
-        _isSpinning = true;
-        IsPrimaryButtonEnabled = false;
-
-        // Simulate spinning animation (3 seconds)
-        await Task.Delay(3000);
-
-        // Select random discount
-        var rand = new Random();
-        int randomIndex = RandomNumberGenerator.GetInt32(_discountOptions.Length);
-        SelectedDiscountPercentage = _discountOptions[randomIndex];
-
-        // Calculate final price
-        FinalPrice = BasePrice * (1 - SelectedDiscountPercentage / 100m);
-
-        // Show result
-        _showResult = true;
-        DiscountPercentage = SelectedDiscountPercentage;
-        OnPropertyChanged(nameof(ShowResult));
-        OnPropertyChanged(nameof(DiscountPercentage));
-        OnPropertyChanged(nameof(FinalPrice));
-
-        // Wait for user to see result (2 seconds)
-        await Task.Delay(2000);
-
-        // Close dialog and invoke callback
-        OnSpinComplete?.Invoke(SelectedDiscountPercentage, FinalPrice);
+        OnSpinComplete?.Invoke(percent, price);
         Hide();
-
-        _isSpinning = false;
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    internal void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        if (e.PropertyName == nameof(ViewModel.IsSpinning) && ViewModel.IsSpinning)
+        {
+            SpinAnimation.Begin();
+        }
     }
 }

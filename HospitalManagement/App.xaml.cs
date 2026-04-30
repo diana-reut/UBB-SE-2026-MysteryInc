@@ -4,6 +4,7 @@ using HospitalManagement.Integration.External;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
+using HospitalManagement.View.DialogServiceAdmin;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -99,8 +100,6 @@ public partial class App : Application
         _ = services.AddTransient<PatientProfileView>();
         _ = services.AddTransient<MedicalStaffViewModel>();
         _ = services.AddTransient<TransplantRequestViewModel>();
-        _ = services.AddTransient<MedicalHistoryDialogViewModel>();
-        _ = services.AddTransient<MedicalHistoryDialog>();
         _ = services.AddSingleton<Func<int, TransplantRequestViewModel>>(serviceProvider =>
             id =>
             {
@@ -108,11 +107,14 @@ public partial class App : Application
                 vm.Initialize(id);
                 return vm;
             });
+        _ = services.AddSingleton<DiscountRouletteViewModel>();
 
         // MORE
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();
         _ = services.AddSingleton<IExternalProvider, MockStaffProxy>();
         _ = services.AddSingleton<IExternalPatientPublisher, ExternalPatientPublisher>();
+        _ = services.AddSingleton<IDialogService, DialogService>();
+        _ = services.AddTransient<MainWindow>();
 
         return services.BuildServiceProvider();
     }

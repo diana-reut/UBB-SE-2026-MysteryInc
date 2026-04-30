@@ -109,12 +109,7 @@ internal class PatientService : IPatientService
             throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
         }
 
-        if (data.PhoneNo.Length != 10)
-        {
-            throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
-        }
-
-        if (!Regex.IsMatch(data.PhoneNo, @"^\d{10}$"))
+        if (!Regex.IsMatch(data.PhoneNo, @"^\+*[\d ]{10,}$"))
         {
             throw new ArgumentException("Validation Error: Phone number must be exactly 10 digits and contain no letters.");
         }
