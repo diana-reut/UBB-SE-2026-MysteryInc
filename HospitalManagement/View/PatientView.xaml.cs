@@ -1,8 +1,10 @@
-using System;
-using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
+using HospitalManagement.Entity;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using System;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
@@ -36,27 +38,30 @@ internal sealed partial class PatientView : Window
 
     private void SetupViewModelActions()
     {
-        _viewModel.OpenRouletteAction = async (basePrice) =>
-        {
-            var rouletteDialog = new DiscountRouletteDialog
-            {
-                XamlRoot = Content.XamlRoot,
-            };
-            rouletteDialog.ViewModel.Initialize(basePrice);
-            rouletteDialog.ViewModel.SpinCompleted += _viewModel.HandleRouletteResult;
-            _ = await rouletteDialog.ShowAsync();
-            rouletteDialog.ViewModel.SpinCompleted -= _viewModel.HandleRouletteResult;
-        };
+        _viewModel.OpenRouletteAction = OpenRouletteAsync;
+        _viewModel.OpenPrescriptionDialogAction = OpenPrescriptionDialogAsync;
+    }
 
-        _viewModel.OpenPrescriptionDialogAction = async (prescription) =>
+    private async Task OpenRouletteAsync(decimal basePrice)
+    {
+        var rouletteDialog = new DiscountRouletteDialog
         {
-            var prescriptionDialog = new PrescriptionDialog
-            {
-                XamlRoot = Content.XamlRoot,
-            };
-            prescriptionDialog.Initialize(prescription);
-            _ = await prescriptionDialog.ShowAsync();
+            XamlRoot = Content.XamlRoot,
         };
+        rouletteDialog.ViewModel.Initialize(basePrice);
+        rouletteDialog.ViewModel.SpinCompleted += _viewModel.HandleRouletteResult;
+        _ = await rouletteDialog.ShowAsync();
+        rouletteDialog.ViewModel.SpinCompleted -= _viewModel.HandleRouletteResult;
+    }
+
+    private async Task OpenPrescriptionDialogAsync(Prescription prescription)
+    {
+        var prescriptionDialog = new PrescriptionDialog
+        {
+            XamlRoot = Content.XamlRoot,
+        };
+        prescriptionDialog.Initialize(prescription);
+        _ = await prescriptionDialog.ShowAsync();
     }
 
     private void MaximizeWindow()

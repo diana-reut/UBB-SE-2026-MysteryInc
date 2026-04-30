@@ -1,13 +1,15 @@
+using CommunityToolkit.Mvvm.Input;
+using HospitalManagement.Entity;
+using HospitalManagement.Integration.Export;
+using HospitalManagement.Service;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using HospitalManagement.Entity;
-using HospitalManagement.Service;
-using HospitalManagement.Integration.Export;
-using System.Collections.Generic;
 
 namespace HospitalManagement.ViewModel;
 
@@ -171,9 +173,9 @@ internal class PatientViewModel : INotifyPropertyChanged
 
     public Action? GoBackAction { get; set; }
 
-    public Action<decimal>? OpenRouletteAction { get; set; }
+    public Func<decimal, Task>? OpenRouletteAction { get; set; }
 
-    public Action<Prescription>? OpenPrescriptionDialogAction { get; set; }
+    public Func<Prescription, Task>? OpenPrescriptionDialogAction { get; set; }
 
     public PatientViewModel(IPatientService patientService, IExportService exportService, IBillingService billingService)
     {
@@ -184,8 +186,8 @@ internal class PatientViewModel : INotifyPropertyChanged
         Allergies = [];
         BackCommand = new RelayCommand(GoBack);
         ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
-        ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
-        ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
+        ApplyDiscountCommand = new AsyncRelayCommand(ApplyDiscountAsync, CanApplyDiscount);
+        ViewPrescriptionCommand = new AsyncRelayCommand(ViewSelectedPrescriptionAsync, CanViewPrescription);
     }
 
     public void LoadFullPatientProfile(int id)
@@ -304,7 +306,7 @@ internal class PatientViewModel : INotifyPropertyChanged
         return SelectedMedicalRecord is not null && !DiscountApplied && _billingService is not null;
     }
 
-    private void ViewSelectedPrescription()
+    private async Task ViewSelectedPrescriptionAsync()
     {
         if (SelectedMedicalRecord is null)
         {
@@ -320,7 +322,10 @@ internal class PatientViewModel : INotifyPropertyChanged
                 return;
             }
 
-            OpenPrescriptionDialogAction?.Invoke(prescription);
+            if (OpenPrescriptionDialogAction is not null)
+            {
+                await OpenPrescriptionDialogAction.Invoke(prescription);
+            }
         }
         catch (Exception ex)
         {
@@ -328,14 +333,17 @@ internal class PatientViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplyDiscount()
+    private async Task ApplyDiscountAsync()
     {
         if (SelectedMedicalRecord is null || _billingService is null)
         {
             return;
         }
 
-        OpenRouletteAction?.Invoke(BasePrice);
+        if (OpenRouletteAction is not null)
+        {
+            await OpenRouletteAction.Invoke(BasePrice);
+        }
     }
 
     private void ExportSelectedRecord()

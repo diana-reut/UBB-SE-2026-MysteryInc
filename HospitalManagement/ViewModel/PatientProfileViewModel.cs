@@ -2,6 +2,9 @@
 using HospitalManagement.Entity;
 using HospitalManagement.Integration.Export;
 using HospitalManagement.Service;
+using HospitalManagement.View;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,6 +16,9 @@ internal partial class PatientProfileViewModel : ObservableObject
     private readonly IPatientService _patientService;
     private readonly IImportService _importService;
     private readonly IExportService _exportService;
+    private readonly PrescriptionView _prescriptionView;
+
+    private readonly Func<PrescriptionView> _prescriptionViewFactory;
 
     public Action<string, string>? ShowAlertAction { get; set; }
 
@@ -74,11 +80,14 @@ internal partial class PatientProfileViewModel : ObservableObject
         }
     }
 
-    public PatientProfileViewModel(IPatientService patientService, IExportService exportService, IImportService importService)
+    public PatientProfileViewModel(IPatientService patientService, IExportService exportService, IImportService importService, PrescriptionView prescriptionView, Func<PrescriptionView> prescriptionViewFactory)
     {
         _patientService = patientService;
         _exportService = exportService;
         _importService = importService;
+        _prescriptionView = prescriptionView;
+        _prescriptionViewFactory = prescriptionViewFactory;
+
 
         CurrentPatient = new Patient
         {
@@ -133,9 +142,7 @@ internal partial class PatientProfileViewModel : ObservableObject
     public async Task ViewPrescriptionAsync()
     {
         if (SelectedRecord is null)
-        {
             return;
-        }
 
         Prescription? prescription = _patientService.GetPrescriptionByRecordId(SelectedRecord.Id);
 
@@ -145,13 +152,17 @@ internal partial class PatientProfileViewModel : ObservableObject
             return;
         }
 
-        if (ShowPrescriptionAction is null)
-        {
-            ShowAlertAction?.Invoke("Not Implemented", "The action to show prescriptions is not implemented.");
-            return;
-        }
+        var prescriptionWindow = new Window { Title = "Prescription Details" };
+        prescriptionWindow.Activate();
 
-        await ShowPrescriptionAction.Invoke(prescription.Id);
+        prescriptionWindow.DispatcherQueue.TryEnqueue(() =>
+        {
+            var prescriptionPage = _prescriptionViewFactory();
+            prescriptionPage.ViewModel.ApplyFilterCommand(prescription.Id, null, null, null, null, null);
+            var frame = new Frame();
+            prescriptionWindow.Content = frame;
+            frame.Content = prescriptionPage;
+        });
     }
 
     public void ImportRecords(bool isER)

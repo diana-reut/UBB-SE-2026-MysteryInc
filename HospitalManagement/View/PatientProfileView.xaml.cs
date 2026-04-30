@@ -4,16 +4,15 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class PatientProfileView : Page
 {
-    private PatientProfileViewModel _viewModel;
+    private readonly PatientProfileViewModel _viewModel;
 
-    public PatientProfileView(PatientProfileViewModel viewModel)
+    public PatientProfileView()
     {
         InitializeComponent();
 
@@ -24,7 +23,6 @@ internal sealed partial class PatientProfileView : Page
 
         _viewModel.ShowAlertAction = ShowAlertAsync;
         _viewModel.OpenFileAction = OpenFile;
-        _viewModel.ShowPrescriptionAction = ShowPrescriptionAsync;
 
         Loaded += Page_Loaded;
     }
@@ -75,15 +73,6 @@ internal sealed partial class PatientProfileView : Page
             UseShellExecute = true,
         };
         System.Diagnostics.Process.Start(psi);
-    }
-
-    private async Task ShowPrescriptionAsync(int prescriptionId)
-    {
-        var prescriptionWindow = new Window { Title = "Prescription Details" };
-        var prescriptionPage = (Application.Current as App)!.Services.GetRequiredService<PrescriptionView>();
-        prescriptionPage.ViewModel.ApplyFilterCommand(prescriptionId, null, null, null, null, null);
-        prescriptionWindow.Content = prescriptionPage;
-        prescriptionWindow.Activate();
     }
 
     private async void ShowAlertAsync(string title, string content)
