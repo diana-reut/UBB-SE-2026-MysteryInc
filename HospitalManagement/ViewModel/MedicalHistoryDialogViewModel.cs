@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HospitalManagement.Entity;
 using HospitalManagement.Entity.Enums;
 using HospitalManagement.Service;
@@ -55,7 +53,10 @@ internal class MedicalHistoryDialogViewModel
 
     public void RemoveAllergy(AllergyEntry allergyEntry)
     {
-        AllergyList.Remove(allergyEntry);
+        if (allergyEntry is not null)
+        {
+            AllergyList.Remove(allergyEntry);
+        }
     }
 
     public bool TryCreateMedicalHistory(
