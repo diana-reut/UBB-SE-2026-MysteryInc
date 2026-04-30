@@ -4,13 +4,15 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using HospitalManagement.ViewModel;
+using HospitalManagement.Service;
 
 namespace HospitalManagement.View.DialogServiceAdmin;
 
 internal class DialogService : IDialogService
 {
     private Window? _window;
-
+    
     public void SetWindow(Window window)
     {
         _window = window;
@@ -69,7 +71,10 @@ internal class DialogService : IDialogService
 
     public async Task<MedicalHistoryEntry> ShowMedicalHistoryAsync()
     {
-        var dialog = new MedicalHistoryDialog
+        var viewModel = (Application.Current as App)!.Services
+        .GetRequiredService<MedicalHistoryDialogViewModel>();
+
+        var dialog = new MedicalHistoryDialog(viewModel)
         {
             XamlRoot = XamlRoot,
         };
