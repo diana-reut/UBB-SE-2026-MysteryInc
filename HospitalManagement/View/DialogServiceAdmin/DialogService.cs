@@ -69,11 +69,11 @@ internal class DialogService : IDialogService
 
     public async Task<MedicalHistoryEntry> ShowMedicalHistoryAsync()
     {
-        var dialog = new MedicalHistoryDialog
-        {
-            XamlRoot = XamlRoot,
-        };
+        var dialog = (Application.Current as App)!
+            .Services
+            .GetRequiredService<MedicalHistoryDialog>();
 
+        dialog.XamlRoot = XamlRoot;
         dialog.Initialize();
 
         _ = await dialog.ShowAsync();
