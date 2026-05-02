@@ -1,15 +1,21 @@
+using CommunityToolkit.Mvvm.Input;
+using HospitalManagement.Entity;
+using HospitalManagement.Integration.Export;
+using HospitalManagement.Service;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using HospitalManagement.Entity;
-using HospitalManagement.Service;
-using HospitalManagement.Integration.Export;
-using System.Collections.Generic;
 
 namespace HospitalManagement.ViewModel;
+
+// this refactoring took years from my life
+
+// hope and prayers that it's ok
 
 internal class PatientViewModel : INotifyPropertyChanged
 {
@@ -29,9 +35,7 @@ internal class PatientViewModel : INotifyPropertyChanged
             OnPropertyChanged();
             if (_selectedPatient is not null)
             {
-                // Set medical history directly from the patient object
                 MedicalHistory = _selectedPatient.MedicalHistory;
-                // Load medical records and allergies
                 LoadMedicalRecords();
             }
         }
@@ -55,12 +59,7 @@ internal class PatientViewModel : INotifyPropertyChanged
     {
         get
         {
-            if (MedicalHistory is null)
-            {
-                return "None";
-            }
-
-            if (MedicalHistory.ChronicConditions is null || MedicalHistory.ChronicConditions.Count == 0)
+            if (MedicalHistory?.ChronicConditions is null || MedicalHistory.ChronicConditions.Count == 0)
             {
                 return "None";
             }
@@ -92,19 +91,9 @@ internal class PatientViewModel : INotifyPropertyChanged
         {
             _selectedMedicalRecord = value;
             OnPropertyChanged();
-            // Calculate base price when record is selected
-            if (_selectedMedicalRecord is not null && _billingService is not null && SelectedPatient is not null)
+            if (_selectedMedicalRecord is not null)
             {
-                try
-                {
-                    BasePrice = _billingService.ComputeBasePrice(SelectedPatient.Id, _selectedMedicalRecord.Id);
-                    FinalPrice = _selectedMedicalRecord.FinalPrice > 0 ? _selectedMedicalRecord.FinalPrice : BasePrice;
-                    DiscountApplied = _selectedMedicalRecord.DiscountApplied.HasValue;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error calculating base price: {ex.Message}");
-                }
+                LoadBillingForRecord(_selectedMedicalRecord);
             }
         }
     }
@@ -184,9 +173,9 @@ internal class PatientViewModel : INotifyPropertyChanged
 
     public Action? GoBackAction { get; set; }
 
-    public Action<decimal, Action<int, decimal>>? OpenRouletteAction { get; set; }
+    public Func<decimal, Task>? OpenRouletteAction { get; set; }
 
-    public Action<Prescription>? OpenPrescriptionDialogAction { get; set; }
+    public Func<Prescription, Task>? OpenPrescriptionDialogAction { get; set; }
 
     public PatientViewModel(IPatientService patientService, IExportService exportService, IBillingService billingService)
     {
@@ -197,8 +186,8 @@ internal class PatientViewModel : INotifyPropertyChanged
         Allergies = [];
         BackCommand = new RelayCommand(GoBack);
         ExportRecordCommand = new RelayCommand(ExportSelectedRecord, CanExportRecord);
-        ViewPrescriptionCommand = new RelayCommand(ViewSelectedPrescription, CanViewPrescription);
-        ApplyDiscountCommand = new RelayCommand(ApplyDiscount, CanApplyDiscount);
+        ApplyDiscountCommand = new AsyncRelayCommand(ApplyDiscountAsync, CanApplyDiscount);
+        ViewPrescriptionCommand = new AsyncRelayCommand(ViewSelectedPrescriptionAsync, CanViewPrescription);
     }
 
     public void LoadFullPatientProfile(int id)
@@ -206,42 +195,63 @@ internal class PatientViewModel : INotifyPropertyChanged
         try
         {
             Patient p = _patientService.GetPatientDetails(id);
-            if (p is not null)
+            if (p is null)
             {
-                p.MedicalHistory ??= new MedicalHistory();
-
-                if (p.MedicalHistory.MedicalRecords is null)
-                {
-                    p.MedicalHistory.MedicalRecords = [];
-                }
-
-                SelectedPatient = p;
+                return;
             }
+
+            p.MedicalHistory ??= new MedicalHistory();
+            p.MedicalHistory.MedicalRecords ??= [];
+            SelectedPatient = p;
         }
         catch (Exception ex)
         {
-            // Keep the dummy data if the database completely fails
             Console.WriteLine(ex);
         }
     }
 
-    private void LoadMedicalHistory()
+    public void HandleRouletteResult(int discount, decimal finalPrice)
     {
-        if (SelectedPatient is null)
+        if (SelectedMedicalRecord is null || _billingService is null)
         {
-            MedicalHistory = null!;
             return;
         }
 
         try
         {
-            // Assuming PatientService has a method to get medical history
-            MedicalHistory = _patientService.GetMedicalHistory(SelectedPatient.Id);
-            Console.WriteLine(MedicalHistory?.Rh);
+            decimal calculatedFinalPrice = _billingService.ApplyDiscount(BasePrice, discount);
+
+            SelectedMedicalRecord.DiscountApplied = discount;
+            SelectedMedicalRecord.FinalPrice = calculatedFinalPrice;
+
+            FinalPrice = calculatedFinalPrice;
+            DiscountApplied = true;
+            OnPropertyChanged(nameof(SelectedMedicalRecord));
+
+            System.Diagnostics.Debug.WriteLine($"Discount applied: {discount}% | Final Price: {calculatedFinalPrice}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading medical history: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Error applying discount: {ex.Message}");
+        }
+    }
+
+    private void LoadBillingForRecord(MedicalRecord record)
+    {
+        if (_billingService is null || SelectedPatient is null)
+        {
+            return;
+        }
+
+        try
+        {
+            BasePrice = _billingService.ComputeBasePrice(SelectedPatient.Id, record.Id);
+            FinalPrice = record.FinalPrice > 0 ? record.FinalPrice : BasePrice;
+            DiscountApplied = record.DiscountApplied.HasValue;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error calculating base price: {ex.Message}");
         }
     }
 
@@ -258,12 +268,11 @@ internal class PatientViewModel : INotifyPropertyChanged
         {
             List<MedicalRecord> records = _patientService.GetMedicalRecords(MedicalHistory.Id);
             MedicalRecords?.Clear();
-            foreach (MedicalRecord? record in records.OrderByDescending(r => r.ConsultationDate))
+            foreach (MedicalRecord record in records.OrderByDescending(r => r.ConsultationDate))
             {
                 MedicalRecords?.Add(record);
             }
 
-            // Load allergies
             List<string> allergies = _patientService.GetPatientAllergies(SelectedPatient.Id);
             Allergies?.Clear();
             foreach (string allergy in allergies)
@@ -297,7 +306,7 @@ internal class PatientViewModel : INotifyPropertyChanged
         return SelectedMedicalRecord is not null && !DiscountApplied && _billingService is not null;
     }
 
-    private void ViewSelectedPrescription()
+    private async Task ViewSelectedPrescriptionAsync()
     {
         if (SelectedMedicalRecord is null)
         {
@@ -313,8 +322,10 @@ internal class PatientViewModel : INotifyPropertyChanged
                 return;
             }
 
-            // Open the prescription dialog
-            OpenPrescriptionDialogAction?.Invoke(prescription);
+            if (OpenPrescriptionDialogAction is not null)
+            {
+                await OpenPrescriptionDialogAction.Invoke(prescription);
+            }
         }
         catch (Exception ex)
         {
@@ -322,38 +333,17 @@ internal class PatientViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ApplyDiscount()
+    private async Task ApplyDiscountAsync()
     {
         if (SelectedMedicalRecord is null || _billingService is null)
         {
             return;
         }
 
-        OpenRouletteAction?.Invoke(
-            BasePrice,
-            (discount, finalPrice) =>
-            {
-                try
-                {
-                    // Use BillingService to calculate the final price correctly
-                    decimal calculatedFinalPrice = _billingService.ApplyDiscount(BasePrice, discount);
-
-                    // Update the medical record with discount and final price
-                    SelectedMedicalRecord.DiscountApplied = discount;
-                    SelectedMedicalRecord.FinalPrice = calculatedFinalPrice;
-
-                    // Update the UI
-                    FinalPrice = calculatedFinalPrice;
-                    DiscountApplied = true;
-                    OnPropertyChanged(nameof(SelectedMedicalRecord));
-
-                    System.Diagnostics.Debug.WriteLine($"Discount applied: {discount}% | Final Price: {calculatedFinalPrice}");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error applying discount: {ex.Message}");
-                }
-            });
+        if (OpenRouletteAction is not null)
+        {
+            await OpenRouletteAction.Invoke(BasePrice);
+        }
     }
 
     private void ExportSelectedRecord()

@@ -99,6 +99,8 @@ public partial class App : Application
         _ = services.AddTransient<PatientProfileViewModel>();
         _ = services.AddTransient<PatientProfileView>();
         _ = services.AddTransient<MedicalStaffViewModel>();
+        _ = services.AddTransient<MedicalHistoryDialogViewModel>();
+        _ = services.AddTransient<MedicalHistoryDialog>();
         _ = services.AddTransient<TransplantRequestViewModel>();
         _ = services.AddTransient<AddPatientDialogViewModel>();
         _ = services.AddSingleton<Func<int, TransplantRequestViewModel>>(serviceProvider =>
@@ -109,6 +111,7 @@ public partial class App : Application
                 return vm;
             });
         _ = services.AddSingleton<DiscountRouletteViewModel>();
+        _ = services.AddSingleton<Func<PrescriptionView>>(sp => () => sp.GetRequiredService<PrescriptionView>());
 
         // MORE
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();
