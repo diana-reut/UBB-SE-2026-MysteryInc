@@ -13,9 +13,12 @@ internal class TransplantService : ITransplantService
     private readonly IPatientRepository _patientRepo;
     private readonly IMedicalRecordRepository _recordRepo;
     private readonly IBloodCompatibilityService _compatibilityService;
-
-    // 1. ADDED THE MISSING REPOSITORY TO FIX THE BUG
     private readonly IMedicalHistoryRepository _historyRepo;
+
+    private const int MaxScoreModifier = 20;
+    private const int MinScoreModifier = 5;
+    private const int ComparativeERVisits = 10;
+    private const int TimeIntervalMonths = 3;
 
     public TransplantService(
         ITransplantRepository transplantRepo,
@@ -56,7 +59,6 @@ internal class TransplantService : ITransplantService
             throw new InvalidOperationException("Donor must be deceased and registered.");
         }
 
-        // FIX: Prevent null crashes by eager loading the history
         donor.MedicalHistory = _historyRepo.GetByPatientId(donor.Id);
 
         List<Transplant> waitlist = _transplantRepo.GetWaitingByOrgan(organType);
@@ -70,7 +72,6 @@ internal class TransplantService : ITransplantService
                 continue;
             }
 
-            // FIX: Eagerly load the receiver's history
             receiver.MedicalHistory = _historyRepo.GetByPatientId(receiver.Id);
 
             if (receiver.MedicalHistory?.BloodType is null || receiver.MedicalHistory.Rh is null)
@@ -103,18 +104,36 @@ internal class TransplantService : ITransplantService
             .Take(5)];
     }
 
+    public List<TransplantMatch> GetTopMatchesAsDisplayModels(int donorID, string organType)
+    {
+        List<Transplant> matches = GetTopMatchesForDonor(donorID, organType);
+        var result = new List<TransplantMatch>();
+
+        foreach (Transplant transplant in matches)
+        {
+            Patient? receiver = _patientRepo.GetById(transplant.ReceiverId);
+            MedicalHistory? receiverHistory = receiver is not null ? _historyRepo.GetByPatientId(receiver.Id) : null;
+            string receiverName = receiver is not null ? $"{receiver.FirstName} {receiver.LastName}" : "Unknown";
+            string bloodType = receiverHistory?.BloodType?.ToString() ?? "Unknown";
+
+            result.Add(new TransplantMatch
+            {
+                TransplantId = transplant.TransplantId,
+                ReceiverId = transplant.ReceiverId,
+                ReceiverName = receiverName,
+                BloodType = bloodType,
+                CompatibilityScore = transplant.CompatibilityScore,
+                RequestDate = transplant.RequestDate,
+                WaitingDays = (DateTime.Now - transplant.RequestDate).Days,
+            });
+        }
+
+        return result;
+    }
+
     public void AssignDonor(int transplantId, int donorId, float finalScore)
     {
         _transplantRepo.Update(transplantId, donorId, finalScore);
-    }
-
-    private float CalculatePostMortemScore(Patient donor, Patient receiver)
-    {
-        float score = _compatibilityService.CalculateScore(donor, receiver);
-        DateTime threeMonthsAgo = DateTime.Now.AddMonths(-3);
-        int erVisits = _recordRepo.GetERVisitCount(receiver.Id, threeMonthsAgo);
-        score += erVisits >= 10 ? 20 : 5;
-        return score;
     }
 
     public bool IsUrgent(int patientId)
@@ -128,7 +147,6 @@ internal class TransplantService : ITransplantService
     {
         Patient? patient = _patientRepo.GetById(patientId);
 
-        // FIX: Actually fetch the conditions from the database!
         if (patient is not null)
         {
             patient.MedicalHistory = _historyRepo.GetByPatientId(patientId);
@@ -141,5 +159,14 @@ internal class TransplantService : ITransplantService
         }
 
         return null;
+    }
+
+    private float CalculatePostMortemScore(Patient donor, Patient receiver)
+    {
+        float score = _compatibilityService.CalculateScore(donor, receiver);
+        DateTime threeMonthsAgo = DateTime.Now.AddMonths(-TimeIntervalMonths);
+        int erVisits = _recordRepo.GetERVisitCount(receiver.Id, threeMonthsAgo);
+        score += erVisits >= ComparativeERVisits ? MaxScoreModifier : MinScoreModifier;
+        return score;
     }
 }

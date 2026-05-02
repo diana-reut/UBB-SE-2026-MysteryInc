@@ -65,6 +65,11 @@ internal sealed partial class PatientProfileView : Page
         }
     }
 
+    private void OnShowAlert(string title, string content)
+    {
+        ShowAlertAsync(title, content);
+    }
+
     private void OpenFile(string path)
     {
         var psi = new System.Diagnostics.ProcessStartInfo

@@ -90,7 +90,7 @@ public partial class App : Application
         _ = services.AddTransient<PharmacistView>();
         _ = services.AddTransient<PrescriptionViewModel>();
         _ = services.AddTransient<PrescriptionView>();
-        _ = services.AddTransient<OrganDonorViewModel>();
+        _ = services.AddTransient<OrganDonorDialogViewModel>();
         _ = services.AddTransient<OrganDonorDialog>();
         _ = services.AddTransient<BloodDonorsViewModel>();
         _ = services.AddTransient<BloodDonorsView>();
@@ -102,6 +102,7 @@ public partial class App : Application
         _ = services.AddTransient<MedicalHistoryDialogViewModel>();
         _ = services.AddTransient<MedicalHistoryDialog>();
         _ = services.AddTransient<TransplantRequestViewModel>();
+        _ = services.AddTransient<AddPatientDialogViewModel>();
         _ = services.AddSingleton<Func<int, TransplantRequestViewModel>>(serviceProvider =>
             id =>
             {

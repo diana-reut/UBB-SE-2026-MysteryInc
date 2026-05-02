@@ -1,61 +1,64 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using HospitalManagement.Entity;
-using System;
-using HospitalManagement.Validators;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class AddPatientDialog : ContentDialog
 {
-    public Patient NewPatient { get; private set; } = null!;
+    public Entity.Patient NewPatient { get; private set; } = null!;
+
+    private readonly ViewModel.AddPatientDialogViewModel _viewModel;
 
     public AddPatientDialog()
     {
+        _viewModel = ((App)Application.Current).Services.GetRequiredService<ViewModel.AddPatientDialogViewModel>();
         InitializeComponent();
     }
 
     private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        bool formHasError = false;
-        (TextBlock Error, bool Valid)[] validationResults =
-        [
-            (Error: FirstNameError, Valid: ValidationHelper.IsValidName(FirstNameEntry.Text)),
-            (Error: LastNameError, Valid: ValidationHelper.IsValidName(LastNameEntry.Text)),
-            (Error: CnpError, Valid: ValidationHelper.IsValidCnp(CnpEntry.Text)),
-            (Error: PhoneError, Valid: ValidationHelper.IsValidPhone(PhoneEntry.Text)),
-            (Error: EmergencyError, Valid: ValidationHelper.IsValidPhone(EmergencyEntry.Text)),
-        ];
+        string sex = (SexEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "M";
 
-        for (int i = 0; i < validationResults.Length; i++)
-        {
-            (TextBlock error, bool valid) = validationResults[i];
-            if (valid)
-            {
-                error.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            }
-            else
-            {
-                error.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-                formHasError = true;
-            }
-        }
+        ViewModel.AddPatientDialogViewModel.FormValidationResult result = ViewModel.AddPatientDialogViewModel.ValidateForm(
+            FirstNameEntry.Text,
+            LastNameEntry.Text,
+            CnpEntry.Text,
+            PhoneEntry.Text,
+            EmergencyEntry.Text
+        );
 
+        FirstNameError.Visibility = result.FirstNameValid ? Visibility.Collapsed : Visibility.Visible;
+        LastNameError.Visibility = result.LastNameValid ? Visibility.Collapsed : Visibility.Visible;
+        CnpError.Visibility = result.CnpValid ? Visibility.Collapsed : Visibility.Visible;
+        PhoneError.Visibility = result.PhoneValid ? Visibility.Collapsed : Visibility.Visible;
+        EmergencyError.Visibility = result.EmergencyValid ? Visibility.Collapsed : Visibility.Visible;
 
-        if (formHasError)
+        if (!result.IsValid)
         {
             args.Cancel = true;
             return;
         }
 
-        NewPatient = new Patient
+        (bool success, string? errorMessage, Entity.Patient? patient) = _viewModel.SubmitPatient(
+            FirstNameEntry.Text,
+            LastNameEntry.Text,
+            sex,
+            DobEntry.Date,
+            CnpEntry.Text,
+            PhoneEntry.Text,
+            EmergencyEntry.Text
+        );
+
+        if (!success)
         {
-            FirstName = FirstNameEntry.Text,
-            LastName = LastNameEntry.Text,
-            Sex = Enum.Parse<Entity.Enums.Sex>((SexEntry.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "M"),
-            Dob = DobEntry.Date?.DateTime ?? DateTime.Now,
-            Cnp = CnpEntry.Text,
-            PhoneNo = PhoneEntry.Text,
-            EmergencyContact = EmergencyEntry.Text,
-        };
+            ErrorLabel.Text = errorMessage;
+            ErrorLabel.Visibility = Visibility.Visible;
+            args.Cancel = true;
+            return;
+        }
+
+        ErrorLabel.Visibility = Visibility.Collapsed;
+        NewPatient = patient!;
     }
 }

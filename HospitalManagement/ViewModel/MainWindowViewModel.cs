@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using HospitalManagement.Service;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 
 namespace HospitalManagement.ViewModel;
 
@@ -57,7 +58,7 @@ internal class MainWindowViewModel : INotifyPropertyChanged
         RedirectToPharmacistRoleCommand = new RelayCommand(RedirectToPharmacistRole);
         // GhostSightingCommand = new RelayCommand(RecordGhostSighting);
 
-        _ghostService = (App.Current as App).Services.GetService<IGhostService>() ?? throw new InvalidOperationException("GhostService not registered in DI container.");
+        _ghostService = ((App)Application.Current).Services.GetService<IGhostService>() ?? throw new InvalidOperationException("GhostService not registered in DI container.");
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         GhostSightingCommand = new RelayCommand(() => _ghostService.SawAGhost());
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();

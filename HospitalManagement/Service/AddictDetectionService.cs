@@ -12,12 +12,15 @@ internal class AddictDetectionService : IAddictDetectionService
     private readonly IPrescriptionRepository _prescriptionRepository;
     private readonly IMedicalHistoryRepository _medicalHistoryRepository;
 
+    private const string ReportHeader = "==================================================\n           LAW ENFORCEMENT ALERT REPORT           \n==================================================";
+    private const string ReportFooter = "--------------------------------------------------\nSUSPICIOUS ACTIVITY: SUSPECTED DRUG SHOPPING BEHAVIOR\nCRITERIA MET: MULTIPLE DOCTORS (>=3) WITHIN 30 DAYS\n--- SUPPORTING EVIDENCE (MEDICAL RECORDS) ---";
+    private const string ReportPharmacistFooter = "==================================================\nACTION REQUIRED: AWAITING PHARMACIST CONFIRMATION.";
+
     public AddictDetectionService(IPrescriptionRepository prescriptionRepository, IMedicalHistoryRepository medicalHistoryRepository)
     {
         _prescriptionRepository = prescriptionRepository ?? throw new ArgumentNullException(nameof(prescriptionRepository));
         _medicalHistoryRepository = medicalHistoryRepository ?? throw new ArgumentNullException(nameof(medicalHistoryRepository));
     }
-
 
     public List<Patient> GetAddictCandidates()
     {
@@ -31,38 +34,20 @@ internal class AddictDetectionService : IAddictDetectionService
             {
                 patient.MedicalHistory.ChronicConditions = _medicalHistoryRepository.GetChronicConditions(patient.MedicalHistory.Id);
             }
+
+            patient.MedicalHistory ??= new MedicalHistory
+            {
+                ChronicConditions = ["None reported."],
+            };
+
+            if (patient.MedicalHistory.ChronicConditions is null || patient.MedicalHistory.ChronicConditions.Count == 0)
+            {
+                patient.MedicalHistory.ChronicConditions = ["None reported."];
+            }
         }
 
         return flaggedPatients;
     }
-
-    public string GetChronicConditions(int patientId)
-    {
-        if (patientId <= 0)
-        {
-            throw new ArgumentException("Invalid Patient ID.");
-        }
-
-        MedicalHistory? history = _medicalHistoryRepository.GetByPatientId(patientId);
-
-        if (history is null)
-        {
-            return "None reported.";
-        }
-
-        if (history.ChronicConditions is null || history.ChronicConditions.Count == 0)
-        {
-            history.ChronicConditions = _medicalHistoryRepository.GetChronicConditions(history.Id);
-        }
-
-        if (history.ChronicConditions is null || history.ChronicConditions.Count == 0)
-        {
-            return "None reported.";
-        }
-
-        return string.Join(", ", history.ChronicConditions);
-    }
-
 
     public string BuildPoliceReport(Patient patient)
     {
@@ -81,16 +66,11 @@ internal class AddictDetectionService : IAddictDetectionService
 
         var reportBuilder = new System.Text.StringBuilder();
 
-        _ = reportBuilder.AppendLine("==================================================")
-            .AppendLine("           LAW ENFORCEMENT ALERT REPORT           ")
-            .AppendLine("==================================================")
+        _ = reportBuilder.AppendLine(ReportHeader)
             .AppendLine(CultureInfo.InvariantCulture, $"DATE GENERATED: {DateTime.Now:yyyy-MM-dd HH:mm}")
             .AppendLine(CultureInfo.InvariantCulture, $"SUBJECT: {patient.FirstName} {patient.LastName} (CNP: {patient.Cnp})")
             .AppendLine(CultureInfo.InvariantCulture, $"CONTACT: {patient.PhoneNo}")
-            .AppendLine("--------------------------------------------------")
-            .AppendLine("SUSPICIOUS ACTIVITY: SUSPECTED DRUG SHOPPING BEHAVIOR")
-            .AppendLine("CRITERIA MET: MULTIPLE DOCTORS (>=3) WITHIN 30 DAYS\n")
-            .AppendLine("--- SUPPORTING EVIDENCE (MEDICAL RECORDS) ---");
+            .AppendLine(ReportFooter);
 
         if (recentPrescriptions.Count == 0)
         {
@@ -101,11 +81,9 @@ internal class AddictDetectionService : IAddictDetectionService
             int evidenceCount = 1;
             foreach (Prescription rx in recentPrescriptions)
             {
-                string meds = "Unknown";
-                if (rx.MedicationList?.Count > 0)
-                {
-                    meds = string.Join(", ", rx.MedicationList.Select(m => m.MedName));
-                }
+                string meds = rx.MedicationList?.Count > 0
+                    ? string.Join(", ", rx.MedicationList.Select(m => m.MedName))
+                    : "Unknown";
 
                 _ = reportBuilder.AppendLine(CultureInfo.InvariantCulture, $"[{evidenceCount}] Medical Record ID: {rx.RecordId}")
                     .AppendLine(CultureInfo.InvariantCulture, $"    Prescription ID: {rx.Id} | Date: {rx.Date:yyyy-MM-dd}")
@@ -116,8 +94,7 @@ internal class AddictDetectionService : IAddictDetectionService
             }
         }
 
-        _ = reportBuilder.AppendLine("==================================================")
-            .AppendLine("ACTION REQUIRED: AWAITING PHARMACIST CONFIRMATION.");
+        _ = reportBuilder.AppendLine(ReportPharmacistFooter);
 
         return reportBuilder.ToString();
     }
