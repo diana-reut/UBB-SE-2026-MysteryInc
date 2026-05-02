@@ -1,65 +1,67 @@
-using System;
+using HospitalManagement.Entity;
+using HospitalManagement.ViewModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using HospitalManagement.ViewModel;
+using System;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
 internal sealed partial class PatientView : Window
 {
-    public PatientViewModel ViewModel { get; }
-
+    private readonly PatientViewModel _viewModel;
     private Action _goBackCallback;
 
-    public PatientView(PatientViewModel viewModel)
+    public PatientView()
     {
         _goBackCallback = null!;
         InitializeComponent();
-        ViewModel = viewModel;
+
+        _viewModel = (Application.Current as App)!.Services.GetRequiredService<PatientViewModel>();
 
         if (Content is FrameworkElement rootElement)
         {
-            rootElement.DataContext = ViewModel;
+            rootElement.DataContext = _viewModel;
         }
 
         MaximizeWindow();
-
         SetupViewModelActions();
     }
 
     public void Initialize(int patientId, Action goBackCallback)
     {
         _goBackCallback = goBackCallback;
-        ViewModel.GoBackAction = GoBack;
-
-        ViewModel.LoadFullPatientProfile(patientId);
+        _viewModel.GoBackAction = GoBack;
+        _viewModel.LoadFullPatientProfile(patientId);
     }
 
     private void SetupViewModelActions()
     {
-        ViewModel.OpenRouletteAction = async (basePrice, onComplete) =>
+        _viewModel.OpenRouletteAction = OpenRouletteAsync;
+        _viewModel.OpenPrescriptionDialogAction = OpenPrescriptionDialogAsync;
+    }
+
+    private async Task OpenRouletteAsync(decimal basePrice)
+    {
+        var rouletteDialog = new DiscountRouletteDialog
         {
-            var rouletteDialog = new DiscountRouletteDialog
-            {
-                XamlRoot = Content.XamlRoot,
-            };
-            rouletteDialog.Initialize(basePrice);
-            rouletteDialog.OnSpinComplete = onComplete;
-            _ = await rouletteDialog.ShowAsync();
+            XamlRoot = Content.XamlRoot,
         };
+        rouletteDialog.ViewModel.Initialize(basePrice);
+        rouletteDialog.ViewModel.SpinCompleted += _viewModel.HandleRouletteResult;
+        _ = await rouletteDialog.ShowAsync();
+        rouletteDialog.ViewModel.SpinCompleted -= _viewModel.HandleRouletteResult;
+    }
 
-        ViewModel.OpenPrescriptionDialogAction = async (prescription) =>
+    private async Task OpenPrescriptionDialogAsync(Prescription prescription)
+    {
+        var prescriptionDialog = new PrescriptionDialog
         {
-            var dialogViewModel = new PrescriptionDialogViewModel();
-            dialogViewModel.Initialize(prescription);
-
-            var prescriptionDialog = new PrescriptionDialog(dialogViewModel)
-            {
-                XamlRoot = Content.XamlRoot,
-            };
-
-            _ = await prescriptionDialog.ShowAsync();
+            XamlRoot = Content.XamlRoot,
         };
+        prescriptionDialog.Initialize(prescription);
+        _ = await prescriptionDialog.ShowAsync();
     }
 
     private void MaximizeWindow()

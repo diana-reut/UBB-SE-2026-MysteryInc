@@ -22,6 +22,8 @@ internal class StatisticsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<Axis> AgeXAxes { get; } = [];
 
+    public ObservableCollection<ISeries> CartesianSeries { get; } = [];
+
 
     public ObservableCollection<string> MenuOptions { get; } = [
         "Patient Distribution",
@@ -31,17 +33,16 @@ internal class StatisticsViewModel : INotifyPropertyChanged
         "Demographics"
     ];
 
-    private string? _selectedStatistic;
+    private StatisticsType _selectedType;
 
-    public string? SelectedStatistic
+    public StatisticsType SelectedType
     {
-        get => _selectedStatistic;
+        get => _selectedType;
 
         set
         {
-            _selectedStatistic = value;
+            _selectedType = value;
             OnPropertyChanged();
-            LoadDataForSelection(value!);
         }
     }
 
@@ -74,40 +75,46 @@ internal class StatisticsViewModel : INotifyPropertyChanged
     public StatisticsViewModel(IStatisticsService statisticsService)
     {
         _statisticsService = statisticsService;
-        SelectedStatistic = MenuOptions[0];
     }
 
-    private void LoadDataForSelection(string selection)
+    public void LoadDataForSelection(string selection)
     {
         ErrorMessage = "";
 
-        switch (selection)
+        StatisticsType result = GetByString(selection);
+
+        switch (result)
         {
-            case "Patient Distribution":
+            case StatisticsType.PatientDistribution:
             {
                 LoadPatientDistribution();
                 break;
             }
-            case "Consultation Source":
+
+            case StatisticsType.ConsultationSource:
             {
                 LoadConsultationSources();
                 break;
             }
-            case "Top Diagnoses":
+
+            case StatisticsType.TopDiagnoses:
             {
                 LoadTopDiagnoses();
                 break;
             }
-            case "Top Medications":
+
+            case StatisticsType.TopMedications:
             {
                 LoadTopMedications();
                 break;
             }
-            case "Demographics":
+
+            case StatisticsType.Demographics:
             {
                 LoadDemographics();
                 break;
             }
+
             default:
             {
                 ErrorMessage = "Unknown statistic selected";
@@ -115,6 +122,19 @@ internal class StatisticsViewModel : INotifyPropertyChanged
                 break;
             }
         }
+    }
+
+    public static StatisticsType GetByString(string value)
+    {
+        return value switch
+        {
+            "Patient Distribution" => StatisticsType.PatientDistribution,
+            "Consultation Source" => StatisticsType.ConsultationSource,
+            "Top Diagnoses" => StatisticsType.TopDiagnoses,
+            "Top Medications" => StatisticsType.TopMedications,
+            "Demographics" => StatisticsType.Demographics,
+            _ => StatisticsType.PatientDistribution,
+        };
     }
 
     /// <summary>
@@ -181,7 +201,6 @@ internal class StatisticsViewModel : INotifyPropertyChanged
                 return;
             }
 
-            // Data Transformation: Map raw Map keys into UI-friendly labels with validation
             var series = new List<ISeries>();
             foreach (KeyValuePair<string, int> kvp in data)
             {
@@ -240,7 +259,7 @@ internal class StatisticsViewModel : INotifyPropertyChanged
             if (data is null || data.Count == 0)
             {
                 ErrorMessage = "No diagnosis data available";
-                CurrentSeries.Clear();
+                CartesianSeries.Clear();
                 XAxes.Clear();
                 return;
             }
@@ -254,26 +273,26 @@ internal class StatisticsViewModel : INotifyPropertyChanged
             if (validatedData.Count == 0)
             {
                 ErrorMessage = "No valid diagnosis data available";
-                CurrentSeries.Clear();
+                CartesianSeries.Clear();
                 XAxes.Clear();
                 return;
             }
 
-            // Set X-axis labels from diagnosis names
+            string[] newLabels = [.. validatedData.Keys];
+            int[] newValues = [.. validatedData.Values];
+
             XAxes.Clear();
 
             XAxes.Add(new Axis
             {
-                Labels = validatedData.Keys.ToArray(),
+                Labels = newLabels,
                 LabelsRotation = 15,
             });
 
-            // Create column series for bar chart with validated values
-            CurrentSeries.Clear();
-
-            CurrentSeries.Add(new ColumnSeries<int>
+            CartesianSeries.Clear();
+            CartesianSeries.Add(new ColumnSeries<int>
             {
-                Values = validatedData.Values.ToArray(),
+                Values = newValues,
                 Name = "Diagnoses",
             });
 
@@ -283,7 +302,7 @@ internal class StatisticsViewModel : INotifyPropertyChanged
         {
             // Error Handling: Catch any service-level exceptions
             ErrorMessage = $"Failed to load top diagnoses: {ex.Message}";
-            CurrentSeries.Clear();
+            CartesianSeries.Clear();
             XAxes.Clear();
         }
     }
@@ -302,7 +321,7 @@ internal class StatisticsViewModel : INotifyPropertyChanged
             if (data is null || data.Count == 0)
             {
                 ErrorMessage = "No medication data available";
-                CurrentSeries.Clear();
+                CartesianSeries.Clear();
                 XAxes.Clear();
                 return;
             }
@@ -316,7 +335,7 @@ internal class StatisticsViewModel : INotifyPropertyChanged
             if (validatedData.Count == 0)
             {
                 ErrorMessage = "No valid medication data available";
-                CurrentSeries.Clear();
+                CartesianSeries.Clear();
                 XAxes.Clear();
                 return;
             }
@@ -330,9 +349,9 @@ internal class StatisticsViewModel : INotifyPropertyChanged
             });
 
             // Create column series for bar chart with validated values
-            CurrentSeries.Clear();
+            CartesianSeries.Clear();
 
-            CurrentSeries.Add(new ColumnSeries<int>
+            CartesianSeries.Add(new ColumnSeries<int>
             {
                 Values = validatedData.Values.ToArray(),
                 Name = "Prescriptions",
@@ -344,7 +363,7 @@ internal class StatisticsViewModel : INotifyPropertyChanged
         {
             // Error Handling: Catch any service-level exceptions
             ErrorMessage = $"Failed to load top medications: {ex.Message}";
-            CurrentSeries.Clear();
+            CartesianSeries.Clear();
             XAxes.Clear();
         }
     }

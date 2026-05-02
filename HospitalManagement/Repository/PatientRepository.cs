@@ -116,7 +116,7 @@ internal class PatientRepository : IPatientRepository
 
         if (!string.IsNullOrWhiteSpace(patientFilter.CNP))
         {
-            patients = patients.Where(p => p.Cnp.StartsWith(patientFilter.CNP, StringComparison.Ordinal) == true);
+            patients = patients.Where(p => p.Cnp.StartsWith(patientFilter.CNP, StringComparison.Ordinal));
         }
 
         int currentYear = DateTime.Now.Year;
@@ -278,7 +278,7 @@ internal class PatientRepository : IPatientRepository
     {
         string query = $"SELECT * FROM Patient WHERE CNP={cnp}";
 
-        using var reader = _context.ExecuteQuery(query);
+        using DbDataReader reader = _context.ExecuteQuery(query);
         return reader.Read();
     }
 
@@ -315,7 +315,7 @@ internal class PatientRepository : IPatientRepository
             + $"{(p.IsDonor ? 1 : 0)}); "
             + "SELECT SCOPE_IDENTITY();";
 
-        using var reader = _context.ExecuteQuery(query);
+        using DbDataReader reader = _context.ExecuteQuery(query);
         if (reader.Read() && int.TryParse(reader[0].ToString(), out int newId))
         {
             p.Id = newId;

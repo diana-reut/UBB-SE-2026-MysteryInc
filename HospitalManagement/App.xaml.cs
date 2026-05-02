@@ -4,6 +4,7 @@ using HospitalManagement.Integration.External;
 using HospitalManagement.Repository;
 using HospitalManagement.Service;
 using HospitalManagement.View;
+using HospitalManagement.View.DialogServiceAdmin;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -89,16 +90,19 @@ public partial class App : Application
         _ = services.AddTransient<PharmacistView>();
         _ = services.AddTransient<PrescriptionViewModel>();
         _ = services.AddTransient<PrescriptionView>();
-        _ = services.AddTransient<OrganDonorViewModel>();
+        _ = services.AddTransient<OrganDonorDialogViewModel>();
         _ = services.AddTransient<OrganDonorDialog>();
         _ = services.AddTransient<BloodDonorsViewModel>();
         _ = services.AddTransient<BloodDonorsView>();
         _ = services.AddTransient<StatisticsViewModel>();
-        _ = services.AddTransient<StatisticsWindow>();
+        _ = services.AddTransient<StatisticsView>();
         _ = services.AddTransient<PatientProfileViewModel>();
         _ = services.AddTransient<PatientProfileView>();
         _ = services.AddTransient<MedicalStaffViewModel>();
+        _ = services.AddTransient<MedicalHistoryDialogViewModel>();
+        _ = services.AddTransient<MedicalHistoryDialog>();
         _ = services.AddTransient<TransplantRequestViewModel>();
+        _ = services.AddTransient<AddPatientDialogViewModel>();
         _ = services.AddSingleton<Func<int, TransplantRequestViewModel>>(serviceProvider =>
             id =>
             {
@@ -106,11 +110,15 @@ public partial class App : Application
                 vm.Initialize(id);
                 return vm;
             });
+        _ = services.AddSingleton<DiscountRouletteViewModel>();
+        _ = services.AddSingleton<Func<PrescriptionView>>(sp => () => sp.GetRequiredService<PrescriptionView>());
 
         // MORE
         _ = services.AddSingleton<IExternalProvider, MockERProxy>();
         _ = services.AddSingleton<IExternalProvider, MockStaffProxy>();
         _ = services.AddSingleton<IExternalPatientPublisher, ExternalPatientPublisher>();
+        _ = services.AddSingleton<IDialogService, DialogService>();
+        _ = services.AddTransient<MainWindow>();
 
         return services.BuildServiceProvider();
     }

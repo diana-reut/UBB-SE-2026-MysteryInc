@@ -8,6 +8,4 @@ internal interface IAddictDetectionService
     public string BuildPoliceReport(Patient patient);
 
     public List<Patient> GetAddictCandidates();
-
-    public string GetChronicConditions(int patientId);
 }

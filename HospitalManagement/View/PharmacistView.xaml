@@ -111,9 +111,13 @@
 
             </StackPanel>
         </Grid>
-
-        <ContentControl x:Name="MainContentArea" Grid.Column="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
-
+        
+        <ContentControl x:Name="MainContentArea" 
+                Grid.Column="1" 
+                HorizontalContentAlignment="Stretch" 
+                VerticalContentAlignment="Stretch"
+                Content="{Binding CurrentContent}"/>
+        
         <Grid Grid.Column="0" Grid.ColumnSpan="2"
               Background="#F0000000"
               IsHitTestVisible="True"
