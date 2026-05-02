@@ -6,7 +6,7 @@ using System;
 
 
 namespace HospitalManagement.View;
-
+//ma plang
 internal sealed partial class MedicalStaffView : Window
 {
     public MedicalStaffViewModel ViewModel { get; }
@@ -20,16 +20,42 @@ internal sealed partial class MedicalStaffView : Window
         {
             rootElement.DataContext = ViewModel;
         }
+
+        ViewModel.OpenBloodDonorsAction = selectedPatient =>
+        {
+            var donorsWindow = new Window
+            {
+                Title = $"Compatible Donors - {selectedPatient.FirstName} {selectedPatient.LastName}",
+            };
+
+            IServiceProvider scope = (Application.Current as App)!.Services;
+            BloodDonorsView donorsPage = scope.GetRequiredService<BloodDonorsView>();
+
+            donorsPage.Initialize(selectedPatient.Id);
+
+            donorsWindow.Content = donorsPage;
+            donorsWindow.Activate();
+        };
+
+        ViewModel.OpenTransplantRequestAction = selectedPatient =>
+        {
+            var requestWindow = new Window
+            {
+                Title = $"Organ Transplant Request - {selectedPatient.FirstName} {selectedPatient.LastName}",
+            };
+
+            var requestPage = new TransplantRequestView(selectedPatient.Id, requestWindow);
+
+            requestWindow.Content = requestPage;
+            requestWindow.Activate();
+        };
     }
 
-    // This goes in the code-behind of the page that lists all the patients
     private void PatientList_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
-        // 1. Cast the sender to a ListView, then check if the selected item is your Patient class
         if (sender is Microsoft.UI.Xaml.Controls.ListView listView
             && listView.SelectedItem is Entity.Patient selectedPatient)
         {
-            // 2. Create the Window
             var newWindow = new Window
             {
                 Title = "Patient Medical Profile",
@@ -40,7 +66,6 @@ internal sealed partial class MedicalStaffView : Window
             PatientProfileView profilePage = scope.GetRequiredService<PatientProfileView>();
             profilePage.Initialize(selectedPatient.Id);
 
-            // 4. Attach and show
             newWindow.Content = profilePage;
             newWindow.Activate();
         }
