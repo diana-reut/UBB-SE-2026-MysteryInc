@@ -95,13 +95,17 @@ internal partial class AdminViewModel : ObservableObject
     #region Patients
 
     public ObservableCollection<Patient> Patients { get; set; }
+
     public ObservableCollection<Patient> ArchivedPatients { get; set; }
+
     public Patient NewPatient { get; set; }
 
     private Patient? _selectedPatient;
+
     public Patient? SelectedPatient
     {
         get => _selectedPatient;
+
         set
         {
             _selectedPatient = value;
@@ -146,6 +150,7 @@ internal partial class AdminViewModel : ObservableObject
     public string? SearchQuery
     {
         get => _searchQuery;
+
         set
         {
             _searchQuery = value;
@@ -167,7 +172,7 @@ internal partial class AdminViewModel : ObservableObject
 
         Patients = [];
         ArchivedPatients = [];
-        NewPatient = new Patient { Dob = DateTime.Today };
+        NewPatient = new Patient { Dob = DateTime.Today, };
 
         _ghostService.ExorcismTriggered += (s, e) => IsExorcismAlertVisible = true;
         IsExorcismAlertVisible = _ghostService.IsExorcismTriggered();
@@ -280,13 +285,12 @@ internal partial class AdminViewModel : ObservableObject
 
         try
         {
-            Patient createdPatient = _patientService.CreatePatient(patient);
-            createdPatient.PhoneNo = FormatPhoneNumber(createdPatient.PhoneNo);
-            createdPatient.EmergencyContact = FormatPhoneNumber(createdPatient.EmergencyContact);
-            Patients.Add(createdPatient);
+            patient.PhoneNo = FormatPhoneNumber(patient.PhoneNo);
+            patient.EmergencyContact = FormatPhoneNumber(patient.EmergencyContact);
+            Patients.Add(patient);
 
             MedicalHistoryEntry entry = await _dialogService.ShowMedicalHistoryAsync();
-            await ProcessMedicalHistoryResultAsync(createdPatient.Id, entry.History, entry.WasSkipped);
+            await ProcessMedicalHistoryResultAsync(patient.Id, entry.History, entry.WasSkipped);
             await _dialogService.ShowAlertAsync("Patient added successfully.");
         }
         catch (Exception ex)
@@ -334,7 +338,7 @@ internal partial class AdminViewModel : ObservableObject
         if (EditingPatient is null || SelectedPatient is null) return;
 
         try
-        { 
+        {
             _patientService.UpdatePatient(EditingPatient);
 
             EditingPatient.PhoneNo = FormatPhoneNumber(EditingPatient.PhoneNo);
