@@ -38,12 +38,21 @@
                 <x:String>Lungs</x:String>
                 <x:String>Pancreas</x:String>
             </ComboBox>
-
-            <TextBlock x:Name="ErrorText" Foreground="#D13438" Visibility="Collapsed" TextWrapping="Wrap"/>
+            <TextBlock
+                Foreground="#D13438"
+                Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                TextWrapping="Wrap"/>
 
             <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
-                <Button Content="Submit Request" Click="Submit_ClickAsync" Style="{StaticResource AccentButtonStyle}"/>
-                <Button Content="Cancel" Click="Cancel_Click"/>
+
+                <Button Content="Submit Request"
+                        Command="{x:Bind ViewModel.SubmitRequestCommand}"
+                        Style="{StaticResource AccentButtonStyle}"/>
+
+                <Button Content="Cancel"
+                        Command="{x:Bind ViewModel.CancelCommand}"/>
+
             </StackPanel>
         </StackPanel>
     </Grid>

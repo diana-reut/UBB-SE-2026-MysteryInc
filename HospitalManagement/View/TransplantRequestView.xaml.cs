@@ -1,8 +1,9 @@
-using System;
 using HospitalManagement.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
@@ -14,39 +15,35 @@ internal sealed partial class TransplantRequestView : Page
 
     public TransplantRequestView(int patientId, Window parentWindow)
     {
-        Func<int, TransplantRequestViewModel> vmFactory = (Application.Current as App)!.Services.GetRequiredService<Func<int, TransplantRequestViewModel>>();
-        ViewModel = vmFactory(patientId);
-        _parentWindow = parentWindow;
         InitializeComponent();
+
+        var factory =
+            (Application.Current as App)!
+                .Services
+                .GetRequiredService<Func<int, TransplantRequestViewModel>>();
+
+        ViewModel = factory(patientId);
+        _parentWindow = parentWindow;
+
+        DataContext = ViewModel;
+
+        ViewModel.CloseWindowAction = () => _parentWindow.Close();
+
+        ViewModel.ShowDialogAction = ShowDialogAsync;
+
+        ViewModel.Initialize(patientId);
     }
 
-    private async void Submit_ClickAsync(object sender, RoutedEventArgs e)
+    private async Task ShowDialogAsync(string title, string content)
     {
-        try
+        var dialog = new ContentDialog
         {
-            ErrorText.Visibility = Visibility.Collapsed;
-            ViewModel.SubmitRequest();
+            Title = title,
+            Content = content,
+            CloseButtonText = "OK",
+            XamlRoot = Content.XamlRoot
+        };
 
-            var dialog = new ContentDialog
-            {
-                Title = "Success",
-                Content = "The patient has been successfully added to the Organ Transplant Waitlist.",
-                CloseButtonText = "OK",
-                XamlRoot = Content.XamlRoot,
-            };
-            _ = await dialog.ShowAsync();
-
-            _parentWindow.Close();
-        }
-        catch (Exception ex)
-        {
-            ErrorText.Text = ex.Message;
-            ErrorText.Visibility = Visibility.Visible;
-        }
-    }
-
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        _parentWindow.Close();
+        await dialog.ShowAsync();
     }
 }

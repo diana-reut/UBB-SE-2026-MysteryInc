@@ -76,8 +76,22 @@ internal sealed partial class PatientProfileView : Page
         {
             FileName = path,
             UseShellExecute = true,
-        };
-        System.Diagnostics.Process.Start(psi);
+        }))
+        {
+        }
+    }
+
+    private async Task OnShowPrescriptionAsync(int prescriptionId)
+    {
+        var prescriptionWindow = new Window { Title = "Prescription Details" };
+        PrescriptionView prescriptionPage = _services.GetRequiredService<PrescriptionView>();
+
+        prescriptionPage.ViewModel.SearchIdText = prescriptionId.ToString();
+
+        prescriptionPage.ViewModel.ApplyFilterCommand.Execute(null);
+
+        prescriptionWindow.Content = prescriptionPage;
+        prescriptionWindow.Activate();
     }
 
     private async void ShowAlertAsync(string title, string content)
