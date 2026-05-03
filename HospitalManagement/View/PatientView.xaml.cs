@@ -56,11 +56,9 @@ internal sealed partial class PatientView : Window
 
     private async Task OpenPrescriptionDialogAsync(Prescription prescription)
     {
-        var prescriptionDialog = new PrescriptionDialog
-        {
-            XamlRoot = Content.XamlRoot,
-        };
-        prescriptionDialog.Initialize(prescription);
+        var prescriptionDialogViewModel = new PrescriptionDialogViewModel();
+        prescriptionDialogViewModel.Initialize(prescription);
+        var prescriptionDialog = new PrescriptionDialog(prescriptionDialogViewModel);
         _ = await prescriptionDialog.ShowAsync();
     }
 
