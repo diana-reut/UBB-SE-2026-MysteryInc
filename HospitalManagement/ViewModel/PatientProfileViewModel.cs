@@ -155,10 +155,13 @@ internal partial class PatientProfileViewModel : ObservableObject
         var prescriptionWindow = new Window { Title = "Prescription Details" };
         prescriptionWindow.Activate();
 
-        prescriptionWindow.DispatcherQueue.TryEnqueue(() =>
+        bool enqueuedCommand = prescriptionWindow.DispatcherQueue.TryEnqueue(() =>
         {
             var prescriptionPage = _prescriptionViewFactory();
-            prescriptionPage.ViewModel.ApplyFilterCommand(prescription.Id, null, null, null, null, null);
+            prescriptionPage
+                .ViewModel
+                .ApplyFilterCommand
+                .Execute(null);
             var frame = new Frame();
             prescriptionWindow.Content = frame;
             frame.Content = prescriptionPage;

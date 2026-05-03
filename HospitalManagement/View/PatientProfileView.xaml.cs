@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Tasks;
 
 namespace HospitalManagement.View;
 
@@ -76,15 +77,13 @@ internal sealed partial class PatientProfileView : Page
         {
             FileName = path,
             UseShellExecute = true,
-        }))
-        {
-        }
+        };
     }
 
     private async Task OnShowPrescriptionAsync(int prescriptionId)
     {
         var prescriptionWindow = new Window { Title = "Prescription Details" };
-        PrescriptionView prescriptionPage = _services.GetRequiredService<PrescriptionView>();
+        PrescriptionView prescriptionPage = (Application.Current as App).Services.GetRequiredService<PrescriptionView>();
 
         prescriptionPage.ViewModel.SearchIdText = prescriptionId.ToString();
 
